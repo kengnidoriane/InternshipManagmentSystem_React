@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
-/* src/index.css ou App.css */
+
 .bg-login-gradient {
     background: linear-gradient(180deg, #1A0F1B 17.75%, #1E111F 29.88%, #381F3A 81.26%, #5E1E63 104.17%);
-  }
+}
+
+.space{
+    letter-spacing: 48px;
+    font-weight: 100;
+    font-size: 30px;
+    font-family: 'Poiret One', cursive;
+}

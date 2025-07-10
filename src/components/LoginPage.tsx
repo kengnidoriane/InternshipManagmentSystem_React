@@ -4,7 +4,6 @@ import { FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { create } from 'zustand';
 import logo from '../assets/logo.png';
 
-// Store Zustand pour l'état d'erreur
 interface LoginState {
   error: string;
   setError: (msg: string) => void;
@@ -27,23 +26,20 @@ const LoginPage = () => {
   const { error, setError, clearError } = useLoginStore();
 
   const onSubmit = (data: LoginFormInputs) => {
-    // Simuler une erreur pour la démo
     if (data.email !== 'demo@demo.com' || data.password !== 'demo') {
       setError('Identifiants incorrects');
     } else {
       clearError();
-      // TODO: Rediriger ou autre action
     }
   };
 
   return (
     <div className="min-h-screen bg-login-gradient">
-        <img src={logo} alt="Logo" className="w-92 h-32 mb-32 mx-auto" />
-
-        {/* Logo */}
-        {/* Formulaire */}
+      <div className='flex flex-col mb-32 '>
+        <img src={logo} alt="Logo" className="-[495.8px] h-auto mx-auto " />
+        <p className='text-[#e1d3c1] mx-auto space'>ELITE</p>
+      </div>
         <form className="max-w-md mx-auto" onSubmit={handleSubmit(onSubmit)}>
-          {/* Email */}
           <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="email">
             <span>Email</span>
             <FiMail className="text-xl" />
@@ -52,10 +48,10 @@ const LoginPage = () => {
             id="email"
             type="email"
             autoComplete="email"
+            placeholder='-'
             className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
             {...register('email', { required: 'Email requis' })}
           />
-          {/* Mot de passe */}
           <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="password">
             <span>Mot de passe</span>
             <button
@@ -71,6 +67,7 @@ const LoginPage = () => {
             id="password"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
+            placeholder='-'
             className="w-full mb-2 bg-[#e1d3c1] text-center border border-gray-300 rounded focus:outline-none"
             {...register('password', { required: 'Mot de passe requis' })}
           />
@@ -81,7 +78,6 @@ const LoginPage = () => {
           >
             Se connecter
           </button>
-            {/* Message d'erreur sous le bouton */}
             <div className="flex justify-between items-center mt-2 mb-4">
             <div className="text-xs text-red-600 min-h-[1.5em] text-left">
               {error && 'Identifiants incorrects'}
@@ -91,8 +87,6 @@ const LoginPage = () => {
             </div>
           </div>
         </form>
-        {/* Lien créer un compte */}
-        
     </div>
   );
 };
