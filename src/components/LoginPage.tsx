@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { create } from 'zustand';
 import logo from '../assets/logo.png';
+import { login } from '../api/auth';
 
 interface LoginState {
   error: string;
@@ -25,21 +26,24 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { error, setError, clearError } = useLoginStore();
 
-  const onSubmit = (data: LoginFormInputs) => {
-    if (data.email !== 'demo@demo.com' || data.password !== 'demo') {
-      setError('Identifiants incorrects');
-    } else {
+  const onSubmit = async (data: LoginFormInputs) => {
+    try {
+      const result = await login(data.email, data.password);
+      localStorage.setItem('token', result.token);
       clearError();
+      // TODO: Rediriger vers le dashboard ou une page protégée
+    } catch {
+      setError('Identifiants incorrects');
     }
   };
 
   return (
     <div className="min-h-screen bg-login-gradient">
-      <div className='flex flex-col mb-32 '>
-        <img src={logo} alt="Logo" className="-[495.8px] h-auto mx-auto " />
-        <p className='text-[#e1d3c1] mx-auto space'>ELITE</p>
+      <div className='flex flex-col justify-center mb-32 '>
+        <img src={logo} alt="Logo" className="max-w-[350px] mx-auto " />
+        <p className='text-[#e1d3c1] text-center mx-auto space'>ELITE</p>
       </div>
-        <form className="max-w-md mx-auto" onSubmit={handleSubmit(onSubmit)}>
+        <form className="max-w-80 mx-auto" onSubmit={handleSubmit(onSubmit)}>
           <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="email">
             <span>Email</span>
             <FiMail className="text-xl" />
@@ -83,7 +87,7 @@ const LoginPage = () => {
               {error && 'Identifiants incorrects'}
             </div>
             <div className="text-xs text-white hover:underline">
-              <a href="#" className="text-xs text-white hover:underline">Créer un compte?</a>
+              <a href="/register" className="text-xs text-white hover:underline">Créer un compte?</a>
             </div>
           </div>
         </form>

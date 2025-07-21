@@ -1,14 +1,19 @@
 
 import './App.css'
-import LoginPage from './components/LoginPage'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './components/LoginPage';
+import RegisterStepper from './components/RegisterStepper';
 
-function App() {
-
+const App = () => {
   return (
-    <>
-      <LoginPage />
-    </>
-  )
-}
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterStepper />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
+  );
+};
 
-export default App
+export default App;
