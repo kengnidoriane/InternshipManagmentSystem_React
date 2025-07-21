@@ -1,19 +1,43 @@
 import axios from 'axios';
 
-export interface LoginResponse {
-  token: string;
-  // Ajoute d'autres champs si besoin (ex: user info)
+// Inscription étudiant
+export async function registerStudent(data: Record<string, unknown>) {
+  const response = await axios.post('/registration/registerStudent', data);
+  return response.data;
 }
 
-export async function login(email: string, password: string): Promise<LoginResponse> {
-  try {
-    const response = await axios.post<LoginResponse>('http://localhost:8080/api/auth/login', {
-      email,
-      password,
-    });
-    return response.data;
-  } catch {
-    // On peut améliorer la gestion d'erreur ici
-    throw new Error('Identifiants incorrects');
-  }
+// Inscription entreprise
+export async function registerEnterprise(data: Record<string, unknown>) {
+  const response = await axios.post('/registration/registerEnterprise', data);
+  return response.data;
+}
+
+// Inscription enseignant
+export async function registerTeacher(data: Record<string, unknown>) {
+  const response = await axios.post('/registration/registerTeacher', data);
+  return response.data;
+}
+
+// Vérification email étudiant
+export async function verifyStudentEmail(data: { email: string; token: string }) {
+  const response = await axios.post('/registration/verifyStudentEmail', data);
+  return response.data;
+}
+
+// Vérification email entreprise
+export async function verifyEnterpriseEmail(data: { email: string; token: string }) {
+  const response = await axios.post('/registration/verifyEnterpriseEmail', data);
+  return response.data;
+}
+
+// Vérification email enseignant
+export async function verifyTeacherEmail(data: { email: string; token: string }) {
+  const response = await axios.post('/registration/verifyTeacherEmail', data);
+  return response.data;
+}
+
+// Connexion
+export async function login(data: { email: string; password: string }) {
+  const response = await axios.post('/login', data);
+  return response.data; // { token, role }
 } 
