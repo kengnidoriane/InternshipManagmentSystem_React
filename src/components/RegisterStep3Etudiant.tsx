@@ -1,26 +1,37 @@
 import { useForm } from 'react-hook-form';
 import RegisterProgress from './RegisterProgress';
 
-interface RegisterStep3EtudiantProps {
-  onPrev: () => void;
-  onFinish: (data: EtudiantFormData) => void;
-}
+import { useRegistrationStore } from '../store/registrationStore';
 
 export interface EtudiantFormData {
   lastName: string;
   firstName: string;
 }
 
-const RegisterStep3Etudiant = ({ onPrev, onFinish }: RegisterStep3EtudiantProps) => {
-  const { register, handleSubmit, formState: { errors, isValid } } = useForm<EtudiantFormData>({ mode: 'onChange' });
+type Props = {
+  onPrev: () => void;
+  onFinish: (data: EtudiantFormData) => void;
+};
+
+const RegisterStep3Etudiant = ({ onPrev, onFinish }: Props) => {
+  const { formData, setFormData, setStep } = useRegistrationStore();
+  const { register, handleSubmit, formState: { errors, isValid } } = useForm<EtudiantFormData>({
+    mode: 'onChange',
+    defaultValues: {
+      lastName: formData.lastName || '',
+      firstName: formData.firstName || '',
+    },
+  });
 
   const onSubmit = (data: EtudiantFormData) => {
     onFinish(data);
   };
 
+  // Plus besoin de handlePrev, on utilise onPrev directement du parent
+
   return (
     <div>
-      <form className="w-full bg-white bg-opacity-90 rounded-xl shadow-lg p-8 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+      <form className="w-full px-8 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
         <label htmlFor="lastName" className="text-gray-700 font-medium mb-1">Nom</label>
         <input
           id="lastName"
@@ -58,9 +69,10 @@ const RegisterStep3Etudiant = ({ onPrev, onFinish }: RegisterStep3EtudiantProps)
           </button>
         </div>
       </form>
-      <RegisterProgress step={3} onStepClick={(s) => { if (s === 1) onPrev(); if (s === 2) onPrev(); }} />
+      <RegisterProgress step={3} onStepClick={(s) => { if (s === 1) setStep(1); if (s === 2) setStep(2); }} />
     </div>
   );
 };
+
 
 export default RegisterStep3Etudiant; 

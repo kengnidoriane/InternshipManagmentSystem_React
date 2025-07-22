@@ -4,14 +4,12 @@ import { FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import RegisterProgress from './RegisterProgress';
 
-interface RegisterStep1Props {
-  data: { email: string; password: string };
-  onNext: (data: { email: string; password: string }) => void;
-}
+import { useRegistrationStore } from '../store/registrationStore';
 
-const RegisterStep1 = ({ data, onNext }: RegisterStep1Props) => {
+const RegisterStep1 = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { formData, setFormData, setStep } = useRegistrationStore();
   const { register, handleSubmit, watch, formState: { errors, isValid } } = useForm<{
     email: string;
     password: string;
@@ -19,19 +17,21 @@ const RegisterStep1 = ({ data, onNext }: RegisterStep1Props) => {
   }>({
     mode: 'onChange',
     defaultValues: {
-      email: data.email,
-      password: data.password,
+      email: formData.email || '',
+      password: formData.password || '',
       confirmPassword: '',
     },
   });
 
-  const onSubmit = (formData: { email: string; password: string; confirmPassword: string }) => {
-    onNext({ email: formData.email, password: formData.password });
+  const onSubmit = (formDataStep1: { email: string; password: string; confirmPassword: string }) => {
+    setFormData({ email: formDataStep1.email, password: formDataStep1.password });
+    setStep(2);
   };
+
 
   return (
     <div>
-      <form className="w-full bg-white bg-opacity-90 rounded-xl shadow-lg p-8 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+      <form className="w-full flex flex-col" onSubmit={handleSubmit(onSubmit)}>
         {/* Email */}
         {/* <label htmlFor="email" className="text-gray-700 font-medium mb-1 flex items-center gap-2">
           <FiMail className="text-xl text-gray-400" />
@@ -73,7 +73,7 @@ const RegisterStep1 = ({ data, onNext }: RegisterStep1Props) => {
           id="password"
           type="password"
           autoComplete="new-password"
-          placeholder="Votre mot de passe"
+          placeholder="-"
           className="w-full mb-2 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
           {...register('password', {
             required: 'Le mot de passe est requis.',
@@ -87,7 +87,7 @@ const RegisterStep1 = ({ data, onNext }: RegisterStep1Props) => {
 
         {/* Confirmation du mot de passe */}
         <label htmlFor="confirmPassword" className="flex justify-between items-center text-[#e2e2e2] mb-1">
-          <span>Confirmer le mot de passe</span>
+          <span>Confirmation du mot de passe</span>
           <button
               type="button"
               tabIndex={-1}
@@ -101,7 +101,7 @@ const RegisterStep1 = ({ data, onNext }: RegisterStep1Props) => {
           id="confirmPassword"
           type="password"
           autoComplete="new-password"
-          placeholder="Confirmez votre mot de passe"
+          placeholder="-"
           className="w-full mb-2 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
           {...register('confirmPassword', {
             required: 'La confirmation du mot de passe est requise.',
@@ -112,7 +112,7 @@ const RegisterStep1 = ({ data, onNext }: RegisterStep1Props) => {
 
         <button
           type="submit"
-          className="w-full bg-[#58693e] cursor-pointer text-white font-semibold py-1 mt-5 rounded transition-colors disabled:opacity-50"
+          className="w-full bg-[#58693E] cursor-pointer text-white font-semibold py-1 mt-8 rounded transition-colors disabled:opacity-50"
           disabled={!isValid}
         >
           Suivant

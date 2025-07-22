@@ -1,21 +1,32 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface RegisterStep4CodeProps {
-  email: string;
-  onSuccess: () => void;
-  onCancel: () => void;
-}
+import { verifyStudentEmail, verifyEnterpriseEmail, verifyTeacherEmail } from '../api/auth';
+import { useAuth } from '../context/useAuth';
+import { useRegistrationStore } from '../store/registrationStore';
 
 const CODE_LENGTH = 5;
 
-const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProps) => {
+interface RegisterStep4CodeProps {
+  email?: string;
+  accountType?: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: RegisterStep4CodeProps) => {
+  const { setStep, reset } = useRegistrationStore();
+
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const navigate = useNavigate();
+  // Remplacer useAuth par le store zustand authStore
+  // import { useAuthStore } from '../store/authStore';
+  // const { login } = useAuthStore();
+  // Pour l'instant, on garde loginContext pour la cohérence, mais il faut migrer ce call aussi si ce n'est pas déjà fait.
+  const { login: loginContext } = useAuth();
 
   const handleChange = (value: string, idx: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -53,22 +64,37 @@ const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProp
     e.preventDefault();
     setError('');
     setLoading(true);
-    // Simulation API : code correct = 12345
-    await new Promise((res) => setTimeout(res, 1000));
-    if (code.join('') === '12345') {
+    try {
+      let userData;
+      if ((accountType ?? '') === 'etudiant') {
+        userData = await verifyStudentEmail({ email: email ?? '', token: code.join('') });
+      } else if ((accountType ?? '') === 'entreprise') {
+        userData = await verifyEnterpriseEmail({ email: email ?? '', token: code.join('') });
+      } else if ((accountType ?? '') === 'enseignant') {
+        userData = await verifyTeacherEmail({ email: email ?? '', token: code.join('') });
+      } else {
+        throw new Error('Type de compte inconnu');
+      }
+      // Connecter l'utilisateur automatiquement si le backend retourne un token
+      // TODO: remplacer loginContext par le login du store zustand authStore si ce n'est pas déjà fait
+      if (userData && userData.token && userData.role) {
+        loginContext(userData.token, userData.role);
+      }
       setSubmitted(true);
       setTimeout(() => {
-        onSuccess();
+        reset();
+        setStep(1);
         navigate('/');
       }, 1200);
-    } else {
-      setError('Le code est incorrect');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Le code est incorrect');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <form className="w-ful text-white rounded-xl shadow-lg py-6 px-8 flex flex-col items-start" onSubmit={handleSubmit}>
+    <form className="w-ful text-white flex flex-col items-start" onSubmit={handleSubmit}>
       <p className="text-white">Un code a été envoyé à l'adresse suivante&nbsp;</p>
       <p className="font-semibold">{email}</p>
       <p>Veuillez l'insérer ci-dessous.</p><br/><br/>
@@ -97,7 +123,7 @@ const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProp
         <button
           type="button"
           className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1.5 px-6 rounded transition-colors"
-          onClick={onCancel}
+          onClick={() => { reset(); setStep(1); }}
           disabled={loading}
         >
           Annuler

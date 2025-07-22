@@ -4,12 +4,15 @@ import { FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { create } from 'zustand';
 import logo from '../assets/logo.png';
 import { login } from '../api/auth';
+import { useAuth } from '../context/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginState {
   error: string;
   setError: (msg: string) => void;
   clearError: () => void;
 }
+
 const useLoginStore = create<LoginState>((set) => ({
   error: '',
   setError: (msg: string) => set((state) => ({ ...state, error: msg })),
@@ -22,16 +25,27 @@ interface LoginFormInputs {
 }
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const { register, handleSubmit } = useForm<LoginFormInputs>();
   const [showPassword, setShowPassword] = useState(false);
   const { error, setError, clearError } = useLoginStore();
+  const { login: loginContext } = useAuth(); // useAuth utilise désormais zustand
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
       const result = await login(data.email, data.password);
-      localStorage.setItem('token', result.token);
+      loginContext(result.token, result.role); // Stocke dans le contexte et localStorage
       clearError();
-      // TODO: Rediriger vers le dashboard ou une page protégée
+      // Redirection automatique selon le rôle
+      if (result.role === 'etudiant') {
+        navigate('/dashboard-etudiant');
+      } else if (result.role === 'enseignant') {
+        navigate('/dashboard-enseignant');
+      } else if (result.role === 'entreprise') {
+        navigate('/dashboard-entreprise');
+      } else {
+        navigate('/profil');
+      }
     } catch {
       setError('Identifiants incorrects');
     }

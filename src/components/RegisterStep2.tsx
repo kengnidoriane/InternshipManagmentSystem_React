@@ -3,12 +3,7 @@ import RegisterProgress from './RegisterProgress';
 
 export type AccountType = 'entreprise' | 'etudiant' | 'enseignant' | null;
 
-interface RegisterStep2Props {
-  selectedType: AccountType;
-  onSelectType: (type: AccountType) => void;
-  onNext: () => void;
-  onPrev: () => void;
-}
+import { useRegistrationStore } from '../store/registrationStore';
 
 const cardData = [
   {
@@ -28,19 +23,34 @@ const cardData = [
   },
 ] as const;
 
-const RegisterStep2 = ({ selectedType, onSelectType, onNext, onPrev }: RegisterStep2Props) => {
+const RegisterStep2 = () => {
+  const { formData, setFormData, setStep } = useRegistrationStore();
+  const selectedType = formData.type || null;
+
+  const handleSelectType = (type: string) => {
+    setFormData({ type });
+  };
+
+  const handleNext = () => {
+    if (selectedType) setStep(3);
+  };
+
+  const handlePrev = () => {
+    setStep(1);
+  };
+
   return (
     <div>
-      <div className="w-full border border-[#e1d3c1] rounded-xl shadow-lg p-2 flex flex-col items-center">
-        <h2 className="text-lg font-semibold text-white mb-4 text-center">Veuillez choisir le type de compte</h2>
-        <div className="flex flex-row justify-center gap-4 mb-6 w-full">
+      <div className="w-full p-2 flex flex-col">
+        <h2 className="text-[16px] font-semibold text-white mb-4">Veuillez choisir le type de compte</h2>
+        <div className="flex flex-row justify-between gap-1 mb-6 w-full">
           {cardData.map((card) => (
             <button
               key={card.type}
               type="button"
-              className={`flex flex-col items-center border border-white rounded-lg px-2 py-2 w-32 transition-colors
-              ${selectedType === card.type ? 'bg-[#112799] shadow-md text-black' : 'bg-none text-white'}`}
-              onClick={() => onSelectType(card.type)}
+              className={`flex flex-col px-2 py-4 items-center border cursor-pointer border-white hover:border-[#70ADF0] rounded-[5px] w-28 transition-colors
+              ${selectedType === card.type ? 'bg-[#70ADF0] shadow-md text-black border-none' : 'bg-none text-white'}`}
+              onClick={() => handleSelectType(card.type)}
             >
               {card.icon}
               <span className="font-medium">{card.label}</span>
@@ -50,24 +60,25 @@ const RegisterStep2 = ({ selectedType, onSelectType, onNext, onPrev }: RegisterS
         <div className="flex w-full justify-between mt-4">
           <button
             type="button"
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded transition-colors"
-            onClick={onPrev}
+            className=" hover:bg-gray-300 border border- text-white font-semibold py-1 px-4 rounded transition-colors"
+            onClick={handlePrev}
           >
             Précédent
           </button>
           <button
             type="button"
             className="bg-[#58693e] hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
-            onClick={onNext}
+            onClick={handleNext}
             disabled={!selectedType}
           >
             Suivant
           </button>
         </div>
       </div>
-      <RegisterProgress step={2} onStepClick={(s) => s === 1 && onPrev()} />
+      <RegisterProgress step={2} onStepClick={(s) => s === 1 && handlePrev()} />
     </div>
   );
 };
+
 
 export default RegisterStep2; 

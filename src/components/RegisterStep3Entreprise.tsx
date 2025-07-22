@@ -1,44 +1,46 @@
 import { useForm } from 'react-hook-form';
 import RegisterProgress from './RegisterProgress';
 
-interface RegisterStep3EntrepriseProps {
-  onPrev: () => void;
-  onFinish: (data: EntrepriseFormData) => void;
-}
+import { useRegistrationStore } from '../store/registrationStore';
 
 export interface EntrepriseFormData {
-  companyName: string;
   contactEmail: string;
-  phone: string;
-  address: string;
+  companyName: string;
+  activite: string;
 }
 
-const RegisterStep3Entreprise = ({ onPrev, onFinish }: RegisterStep3EntrepriseProps) => {
-  const { register, handleSubmit, formState: { errors, isValid } } = useForm<EntrepriseFormData>({ mode: 'onChange' });
+type Props = {
+  onPrev: () => void;
+  onFinish: (data: EntrepriseFormData) => void;
+};
+
+const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
+  const { formData, setFormData, setStep } = useRegistrationStore();
+  const { register, handleSubmit, formState: { errors, isValid } } = useForm<EntrepriseFormData>({
+    mode: 'onChange',
+    defaultValues: {
+      contactEmail: formData.contactEmail || '',
+      companyName: formData.companyName || '',
+      activite: formData.activite || '',
+    },
+  });
 
   const onSubmit = (data: EntrepriseFormData) => {
     onFinish(data);
   };
 
+  // Plus besoin de handlePrev, on utilise onPrev directement du parent
+
   return (
     <div>
-      <form className="w-full bg-white bg-opacity-90 rounded-xl shadow-lg p-8 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="companyName" className="text-gray-700 font-medium mb-1">Nom de l'entreprise</label>
-        <input
-          id="companyName"
-          type="text"
-          placeholder="Nom de l'entreprise"
-          className="w-full px-4 py-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          {...register('companyName', { required: 'Le nom de l\'entreprise est requis.' })}
-        />
-        {errors.companyName && <span className="text-xs text-red-600 mb-2">{errors.companyName.message}</span>}
-
-        <label htmlFor="contactEmail" className="text-gray-700 font-medium mb-1">Adresse email de contact</label>
+      <form className="w-full flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+        <p className='my-3 text-[#e2e2e2]'>Informations de l'entreprise</p>
+      <label htmlFor="contactEmail" className="text-[#e2e2e2] text-2xl font-light mb-1">Email</label>
         <input
           id="contactEmail"
           type="email"
-          placeholder="contact@entreprise.com"
-          className="w-full px-4 py-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="-"
+          className="w-full mb-4 text-center rounded bg-[#e1d3c1]"
           {...register('contactEmail', {
             required: 'L\'adresse email est requise.',
             pattern: {
@@ -49,26 +51,28 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: RegisterStep3EntreprisePr
         />
         {errors.contactEmail && <span className="text-xs text-red-600 mb-2">{errors.contactEmail.message}</span>}
 
-        <label htmlFor="phone" className="text-gray-700 font-medium mb-1">Téléphone</label>
+        <label htmlFor="companyName" className="text-[#e2e2e2] text-2xl font-light mb-1">Nom entreprise</label>
         <input
-          id="phone"
-          type="tel"
-          placeholder="Numéro de téléphone"
-          className="w-full px-4 py-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          {...register('phone', { required: 'Le numéro de téléphone est requis.' })}
-        />
-        {errors.phone && <span className="text-xs text-red-600 mb-2">{errors.phone.message}</span>}
-
-        <label htmlFor="address" className="text-gray-700 font-medium mb-1">Adresse</label>
-        <input
-          id="address"
+          id="companyName"
           type="text"
-          placeholder="Adresse de l'entreprise"
-          className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-          {...register('address', { required: 'L\'adresse est requise.' })}
+          placeholder="Nom de l'entreprise"
+          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] focus:outline-none"
+          {...register('companyName', { required: 'Le nom de l\'entreprise est requis.' })}
         />
-        {errors.address && <span className="text-xs text-red-600 mb-2">{errors.address.message}</span>}
+        {errors.companyName && <span className="text-xs text-red-600 mb-2">{errors.companyName.message}</span>}
 
+       
+        <label htmlFor="activite" className="text-[#e2e2e2] text-2xl font-light mb-1">Secteur d'activite</label>
+        <input
+          id="activite"
+          type="text"
+          placeholder="-"
+          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
+          {...register('activite', { required: 'Le numéro de téléphone est requis.' })}
+        />
+        {errors.activite && <span className="text-xs text-red-600 mb-2">{errors.activite.message}</span>}
+
+      
         <div className="flex w-full justify-between mt-4">
           <button
             type="button"
@@ -79,14 +83,14 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: RegisterStep3EntreprisePr
           </button>
           <button
             type="submit"
-            className="bg-[#58693e] hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
+            className="bg-[#58693e] text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
             disabled={!isValid}
           >
-            Terminer
+            Finish
           </button>
         </div>
       </form>
-      <RegisterProgress step={3} onStepClick={(s) => { if (s === 1) onPrev(); if (s === 2) onPrev(); }} />
+      <RegisterProgress step={3} onStepClick={(s) => { if (s === 1) setStep(1); if (s === 2) setStep(2); }} />
     </div>
   );
 };
