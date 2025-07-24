@@ -126,6 +126,7 @@ const RegisterStepper = () => {
         <img src={logo} alt="Logo" className="max-w-[350px] mx-auto " />
         {/* <p className='text-[#e1d3c1] text-center mx-auto space'>ELITE</p> */}
       </div>
+      <h1 className="text-[#b79056] mt-4 text-center mx-auto text-2xl">INSCRIPTION</h1><br/>
       <div className="w-full max-w-[380px] border border-[3px] p-4 border-[#B79056]">
         {registerLoading && <div className="text-center py-2 text-gray-700">Inscription en cours...</div>}
         {stepContent}

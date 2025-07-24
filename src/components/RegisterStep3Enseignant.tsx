@@ -33,48 +33,57 @@ const RegisterStep3Enseignant = ({ onPrev, onFinish }: Props) => {
 
   return (
     <div>
-      <form className="w-full p-8 flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="lastName" className="text-gray-700 font-medium mb-1">Nom</label>
+      <form className="w-full flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+        <p className="text-[#e2e2e2] text-xs mb-4">Informations de l'enseignant</p>
+        <label htmlFor="lastName" className="text-[#e2e2e2] mb-1">Nom</label>
         <input
           id="lastName"
           type="text"
-          placeholder="Nom"
-          className="w-full px-4 py-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
           {...register('lastName', { required: 'Le nom est requis.' })}
         />
         {errors.lastName && <span className="text-xs text-red-600 mb-2">{errors.lastName.message}</span>}
 
-        <label htmlFor="firstName" className="text-gray-700 font-medium mb-1">Prénom</label>
+        <label htmlFor="firstName" className="text-[#e2e2e2] mb-1">Prénom</label>
         <input
           id="firstName"
           type="text"
-          placeholder="Prénom"
-          className="w-full px-4 py-2 mb-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full mb-4 border text-center border-gray-300 focus:outline-none bg-[#e1d3c1] rounded"
           {...register('firstName', { required: 'Le prénom est requis.' })}
         />
         {errors.firstName && <span className="text-xs text-red-600 mb-2">{errors.firstName.message}</span>}
 
-        <label htmlFor="department" className="text-gray-700 font-medium mb-1">Département</label>
-        <input
+        <label htmlFor="department" className="text-[#e2e2e2] mb-1">Département</label>
+        <select
           id="department"
-          type="text"
-          placeholder="Département"
-          className="w-full px-4 py-2 mb-4 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
           {...register('department', { required: 'Le département est requis.' })}
-        />
+        >
+          <option value="">-- Sélectionnez un département --</option>
+          <option value="Informatique">Informatique</option>
+          <option value="Génie mécanique">Génie mécanique</option>
+          <option value="Administration des affaires">Administration des affaires</option>
+          <option value="Psychologie">Psychologie</option>
+          <option value="Biologie">Biologie</option>
+          <option value="Droit">Droit</option>
+          <option value="Économie">Économie</option>
+          <option value="Architecture">Architecture</option>
+          <option value="Sciences politiques">Sciences politiques</option>
+          <option value="Sciences environnementales">Sciences environnementales</option>
+        </select>
         {errors.department && <span className="text-xs text-red-600 mb-2">{errors.department.message}</span>}
 
-        <div className="flex w-full justify-between mt-4">
+        <div className="flex gap-2 w-full justify-between mt-4">
           <button
             type="button"
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded transition-colors"
+            className=" border w-full border-[#58693e] text-[#e1d3c1] py-1 px-6 rounded transition-colors cursor-pointer"
             onClick={onPrev}
           >
             Précédent
           </button>
           <button
             type="submit"
-            className="bg-[#58693e] hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
+            className="bg-[#58693e] w-full text-[#e1d3c1] py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer"
             disabled={!isValid}
           >
             Terminer

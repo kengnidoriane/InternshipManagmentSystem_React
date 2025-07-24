@@ -39,8 +39,7 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
         <input
           id="contactEmail"
           type="email"
-          placeholder="-"
-          className="w-full mb-4 text-center rounded bg-[#e1d3c1]"
+          className="w-full mb-4 text-center rounded bg-[#e1d3c1] focus:outline-none"
           {...register('contactEmail', {
             required: 'L\'adresse email est requise.',
             pattern: {
@@ -55,7 +54,6 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
         <input
           id="companyName"
           type="text"
-          placeholder="Nom de l'entreprise"
           className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] focus:outline-none"
           {...register('companyName', { required: 'Le nom de l\'entreprise est requis.' })}
         />
@@ -66,24 +64,23 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
         <input
           id="activite"
           type="text"
-          placeholder="-"
           className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
           {...register('activite', { required: 'Le numéro de téléphone est requis.' })}
         />
         {errors.activite && <span className="text-xs text-red-600 mb-2">{errors.activite.message}</span>}
 
       
-        <div className="flex w-full justify-between mt-4">
+        <div className="flex gap-2 w-full justify-between mt-4">
           <button
             type="button"
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded transition-colors"
+            className="border border-[#58693e] text-[#e1d3c1] py-1 px-6 rounded transition-colors w-full cursor-pointer"
             onClick={onPrev}
           >
             Précédent
           </button>
           <button
             type="submit"
-            className="bg-[#58693e] text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
+            className="bg-[#58693e] text-[#e1d3c1] py-1 px-6 rounded transition-colors w-full cursor-pointer"
             disabled={!isValid}
           >
             Finish

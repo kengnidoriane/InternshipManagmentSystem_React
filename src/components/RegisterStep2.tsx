@@ -57,17 +57,17 @@ const RegisterStep2 = () => {
             </button>
           ))}
         </div>
-        <div className="flex w-full justify-between mt-4">
+        <div className="flex gap-2 w-full justify-between mt-4">
           <button
             type="button"
-            className=" hover:bg-gray-300 border border- text-white font-semibold py-1 px-4 rounded transition-colors"
+            className="w-full hover:bg-gray-300 border border- text-white font-semibold py-1 px-4 rounded transition-colors"
             onClick={handlePrev}
           >
             Précédent
           </button>
           <button
             type="button"
-            className="bg-[#58693e] hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
+            className="w-full bg-[#58693e] hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
             onClick={handleNext}
             disabled={!selectedType}
           >

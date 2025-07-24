@@ -96,8 +96,8 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
   return (
     <form className="w-ful text-white flex flex-col items-start" onSubmit={handleSubmit}>
       <p className="text-white">Un code a été envoyé à l'adresse suivante&nbsp;</p>
-      <p className="font-semibold">{email}</p>
-      <p>Veuillez l'insérer ci-dessous.</p><br/><br/>
+      <p className="font-semibold">{email}</p><br/>
+      <p>Veuillez l'insérer ci-dessous.</p><br/>
       <div className="w-full flex justify-between mb-2">
         {code.map((value, idx) => (
           <input
@@ -106,7 +106,6 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
             type="text"
             inputMode="numeric"
             maxLength={1}
-            placeholder="-"
             className="w-14 h-10 text-center text-black text-2xl border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
             value={value}
             onChange={e => handleChange(e.target.value, idx)}
@@ -115,14 +114,14 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
             onPaste={handlePaste}
           />
         ))}
-      </div>
+      </div><br/><br/>
       {error && (
         <p className="text-xs text-red-600 mb-2 w-full">{error}</p>
       )}
-      <div className="flex w-full justify-between mt-4">
+      <div className="flex w-full justify-between gap-2 mt-4">
         <button
           type="button"
-          className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1.5 px-6 rounded transition-colors"
+          className=" border border-[#58693e] text-[#e1d3c1] w-full py-1 px-6 rounded transition-colors"
           onClick={() => { reset(); setStep(1); }}
           disabled={loading}
         >
@@ -130,7 +129,7 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
         </button>
         <button
           type="submit"
-          className="bg-[#58693e] text-white font-semibold py-1.5 px-6 rounded transition-colors disabled:opacity-50"
+          className="bg-[#58693e] text-[#e1d3c1] w-full py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer "
           disabled={!isComplete || loading}
         >
           {loading ? 'Vérification...' : 'Valider'}
