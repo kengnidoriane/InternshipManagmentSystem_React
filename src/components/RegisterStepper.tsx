@@ -8,7 +8,7 @@ import { useState } from 'react';
 import RegisterSuccess from './RegisterSuccess';
 import { AnimatePresence, motion } from 'framer-motion';
 import logo from '../assets/logo.png';
-import { registerStudent, registerEnterprise, registerTeacher } from '../api/auth';
+import { registerStudent, registerEnterprise, registerTeacher } from '../api/registrationApi';
 import { useRegistrationStore } from '../store/registrationStore';
 import { useNavigate } from 'react-router-dom';
 

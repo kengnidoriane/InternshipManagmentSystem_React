@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { create } from 'zustand';
 import logo from '../assets/logo.png';
-import { login } from '../api/auth';
+import { login } from '../api/authApi';
 import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
 

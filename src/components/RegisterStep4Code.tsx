@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyStudentEmail, verifyEnterpriseEmail, verifyTeacherEmail } from '../api/auth';
+import { verifyEmail } from '../api/registrationApi';
 import { useAuth } from '../context/useAuth';
 import { useRegistrationStore } from '../store/registrationStore';
 
