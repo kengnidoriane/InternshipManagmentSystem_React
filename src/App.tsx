@@ -8,15 +8,18 @@ import ProtectedRoute from './components/ProtectedRoute';
 import DashboardEtudiant from './components/DashboardEtudiant';
 import DashboardEnseignant from './components/DashboardEnseignant';
 import DashboardEntreprise from './components/DashboardEntreprise';
-import RoleRedirector from './components/RoleRedirector';
-const ProfilePage = () => <div>Profil utilisateur</div>;
+// import RoleRedirector from './components/RoleRedirector';
+import ListStagesEtudiant from './components/ListStagesEtudiant';
+import MonStageEtudiant from './components/MonStageEtudiant';
+import Felicitations from './components/Felicitations';
+
 
 const App = () => {
   return (
     <Router>
       <Routes>
         {/* Route racine : redirection automatique selon le rôle */}
-        <Route path="/" element={<RoleRedirector />} />
+        <Route path="/" element={<MonStageEtudiant />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterStepper />} />
 
@@ -24,7 +27,12 @@ const App = () => {
         <Route element={<ProtectedRoute allowedRoles={['etudiant']} />}> 
           <Route path="/dashboard-etudiant" element={<DashboardEtudiant />} />
           <Route path="/etudiant" element={<Navigate to="/dashboard-etudiant" replace />} />
+          <Route path="/etudiant/stages" element={<ListStagesEtudiant />} />
+          <Route path="/etudiant/monstage" element={<MonStageEtudiant />} />
         </Route>
+
+        {/* Page de félicitations après création de compte */}
+        <Route path="/felicitations" element={<Felicitations />} />
 
         {/* Route protégée pour les enseignants */}
         <Route element={<ProtectedRoute allowedRoles={['enseignant']} />}> 
@@ -38,10 +46,6 @@ const App = () => {
           <Route path="/entreprise" element={<Navigate to="/dashboard-entreprise" replace />} />
         </Route>
 
-        {/* Route accessible à tout utilisateur connecté */}
-        <Route element={<ProtectedRoute />}> 
-          <Route path="/profil" element={<ProfilePage />} />
-        </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

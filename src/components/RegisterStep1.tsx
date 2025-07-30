@@ -112,7 +112,7 @@ const RegisterStep1 = () => {
 
         <button
           type="submit"
-          className="w-full bg-[#58693E] cursor-pointer text-white font-semibold py-1 mt-8 rounded transition-colors disabled:opacity-50"
+          className="w-full bg-[var(--color-vert)] cursor-pointer text-white font-semibold py-1 mt-8 rounded transition-colors disabled:opacity-50"
           disabled={!isValid}
         >
           Suivant

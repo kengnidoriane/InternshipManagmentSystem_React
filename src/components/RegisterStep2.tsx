@@ -67,7 +67,7 @@ const RegisterStep2 = () => {
           </button>
           <button
             type="button"
-            className="w-full bg-[#58693e] hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
+            className="w-full bg-[var(--color-vert)] hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded transition-colors disabled:opacity-50"
             onClick={handleNext}
             disabled={!selectedType}
           >

@@ -84,7 +84,7 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
       setTimeout(() => {
         reset();
         setStep(1);
-        navigate('/');
+        navigate('/felicitations');
       }, 1200);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Le code est incorrect');
@@ -121,7 +121,7 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
       <div className="flex w-full justify-between gap-2 mt-4">
         <button
           type="button"
-          className=" border border-[#58693e] text-[#e1d3c1] w-full py-1 px-6 rounded transition-colors"
+          className=" border border-[#58693e] text-[var(--color-light)] w-full py-1 px-6 rounded transition-colors"
           onClick={() => { reset(); setStep(1); }}
           disabled={loading}
         >
@@ -129,7 +129,7 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
         </button>
         <button
           type="submit"
-          className="bg-[#58693e] text-[#e1d3c1] w-full py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer "
+          className="bg-[var(--color-vert)] text-[var(--color-light)] w-full py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer "
           disabled={!isComplete || loading}
         >
           {loading ? 'Vérification...' : 'Valider'}

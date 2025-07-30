@@ -1,0 +1,26 @@
+:root {
+  /* Dark / Background */
+  --color-dark: #1E111F;
+  --color-bg-gradient: linear-gradient(135deg, #1E111F 0%, #58693E 100%);
+
+  /* Accent Colors */
+  --color-rouge: #CF0900;
+  --color-jaune: #B79056;
+  --color-blue: #70ADF0;
+
+
+  /* Light / Success / Green */
+  --color-light: #E1D3C1;
+  --color-vert: #58693E;
+  --color-emeraude: #669087;
+
+  /* neutre */
+  --color-neutre0: #000000;
+  --color-neutre2-paragraphe: #333333;
+  --color-neutre4-paragraphe-gras: #666666;
+  --color-neutre6-placeholder: #999999;
+  --color-neutre8-bouton: #cccccc;
+  --color-neutre9: #e2e2e2;
+  --color-neutre10: #ffffff
+  --font-family-poiret: 'Poiret One';
+}

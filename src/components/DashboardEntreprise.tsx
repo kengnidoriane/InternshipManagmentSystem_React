@@ -4,9 +4,9 @@ const DashboardEntreprise: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-login-gradient">
       <div className="bg-white bg-opacity-80 shadow-lg rounded-lg p-8 max-w-lg w-full mt-10">
-        <h1 className="text-3xl font-bold text-[#B79056] mb-6 text-center">Bienvenue, entreprise !</h1>
+        <h1 className="text-3xl font-bold text-[var(--color-jaune)] mb-6 text-center">Bienvenue, entreprise !</h1>
         <div className="mb-6 text-center">
-          <p className="text-lg text-[#58693e] font-semibold">Résumé de l'entreprise</p>
+          <p className="text-lg text-[var(--color-vert)] font-semibold">Résumé de l'entreprise</p>
           <ul className="text-gray-700 text-sm mt-2">
             <li><b>Nom :</b> [Nom entreprise]</li>
             <li><b>Email :</b> [Email entreprise]</li>
@@ -14,7 +14,7 @@ const DashboardEntreprise: React.FC = () => {
           </ul>
         </div>
         <div className="mb-6">
-          <p className="text-lg font-semibold text-[#B79056] mb-2">Mes offres récentes</p>
+          <p className="text-lg font-semibold text-[var(--color-jaune)] mb-2">Mes offres récentes</p>
           <table className="w-full text-left text-sm border">
             <thead>
               <tr className="bg-[#e1d3c1]">
@@ -38,9 +38,9 @@ const DashboardEntreprise: React.FC = () => {
           </table>
         </div>
         <div className="flex flex-col gap-4 mt-8">
-          <button className="bg-[#B79056] text-white font-semibold py-2 px-6 rounded hover:bg-[#a07b3d] transition-colors">Créer une nouvelle offre</button>
-          <button className="bg-[#58693e] text-white font-semibold py-2 px-6 rounded hover:bg-[#40512d] transition-colors">Voir toutes les candidatures</button>
-          <button className="bg-gray-200 text-[#B79056] font-semibold py-2 px-6 rounded hover:bg-gray-300 transition-colors">Mettre à jour le profil</button>
+          <button className="bg-[var(--color-jaune)] text-white font-semibold py-2 px-6 rounded hover:bg-[#a07b3d] transition-colors">Créer une nouvelle offre</button>
+          <button className="bg-[var(--color-vert)] text-white font-semibold py-2 px-6 rounded hover:bg-[#40512d] transition-colors">Voir toutes les candidatures</button>
+          <button className="bg-gray-200 text-[var(--color-jaune)] font-semibold py-2 px-6 rounded hover:bg-gray-300 transition-colors">Mettre à jour le profil</button>
         </div>
       </div>
     </div>

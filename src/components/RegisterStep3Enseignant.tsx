@@ -76,14 +76,14 @@ const RegisterStep3Enseignant = ({ onPrev, onFinish }: Props) => {
         <div className="flex gap-2 w-full justify-between mt-4">
           <button
             type="button"
-            className=" border w-full border-[#58693e] text-[#e1d3c1] py-1 px-6 rounded transition-colors cursor-pointer"
+            className=" border w-full border-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors cursor-pointer"
             onClick={onPrev}
           >
             Précédent
           </button>
           <button
             type="submit"
-            className="bg-[#58693e] w-full text-[#e1d3c1] py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer"
+            className="bg-[var(--color-vert)] w-full text-[var(--color-light)] py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer"
             disabled={!isValid}
           >
             Terminer
