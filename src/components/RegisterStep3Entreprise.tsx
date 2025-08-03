@@ -22,7 +22,7 @@ type Props = {
 };
 
 const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
-  const { formData, setFormData, setStep } = useRegistrationStore();
+  const { formData, setStep } = useRegistrationStore();
   const { register, handleSubmit, setValue, formState: { errors, isValid } } = useForm<EntrepriseFormData>({
     mode: 'onChange',
     defaultValues: {

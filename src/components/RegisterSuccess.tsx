@@ -1,22 +1,51 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import styles from './RegisterSuccess.module.css';
 
 const RegisterSuccess = () => {
   const navigate = useNavigate();
+  const role = useAuthStore((state) => state.role);
+  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/');
+    const showMsgTimer = setTimeout(() => setShowMessage(true), 400);
+    const redirectTimer = setTimeout(() => {
+      if (role === 'ETUDIANT') {
+        navigate('/etudiant/stages');
+      } else if (role === 'ENSEIGNANT') {
+        navigate('/dashboard-enseignant');
+      } else if (role === 'ENTREPRISE') {
+        navigate('/dashboard-entreprise');
+      } else {
+        navigate('/');
+      }
     }, 2500);
-    return () => clearTimeout(timer);
-  }, [navigate]);
+    return () => {
+      clearTimeout(showMsgTimer);
+      clearTimeout(redirectTimer);
+    };
+  }, [navigate, role]);
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-[var(--color-dark)] via-[var(--color-dark)] to-[#5E1E63]">
-      <h1 className="text-4xl font-light text-[var(--color-jaune)] mb-12">Félicitations</h1>
-      <div className="border-2 border-[var(--color-jaune)] rounded-lg px-12 py-8">
-        <p className="text-white text-lg mb-2">Votre compte a été créé avec succès</p>
-        <p className="text-white text-lg">Vous allez être redirigé vers la page d’accueil.</p>
+    <div className={styles.container}>
+      <h1 className={styles.felicitations}>Félicitations</h1>
+      <div className={styles.dot}></div>
+      <div className={styles.box + (showMessage ? ' ' + styles.show : '')}>
+        {showMessage && (
+          <>
+            <p className={styles.text}>Votre compte a été créé avec succès</p>
+            <p className={styles.text}>
+              {role === 'ETUDIANT'
+                ? 'Vous allez être redirigé vers la liste des stages.'
+                : role === 'ENSEIGNANT'
+                ? 'Vous allez être redirigé vers votre dashboard enseignant.'
+                : role === 'ENTREPRISE'
+                ? 'Vous allez être redirigé vers votre dashboard entreprise.'
+                : 'Vous allez être redirigé vers la page d’accueil.'}
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

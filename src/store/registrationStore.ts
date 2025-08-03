@@ -5,11 +5,21 @@ export interface RegistrationFormData {
   email?: string;
   password?: string;
   confirmPassword?: string;
-  nom?: string;
-  prenom?: string;
+  name?: string;
+  firstName?: string;
+  sector?: string;
+  languages?: string[];
+  githubLink?: string;
+  linkedinLink?: string;
   entrepriseName?: string;
-  // Ajoute ici tous les champs nécessaires pour chaque step
-  [key: string]: any;
+  contact?: string;
+  location?: string;
+  country?: string;
+  remote?: boolean;
+  paying?: boolean;
+  logo?: File;
+  matriculation?: string;
+  department?: string;
 }
 
 interface RegistrationState {

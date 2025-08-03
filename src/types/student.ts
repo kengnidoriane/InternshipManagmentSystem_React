@@ -12,6 +12,7 @@ export interface StudentRegistrationRequestDto {
   password: string;
   sector: string;
   languages: string[];
+  department: string;
   githubLink?: string;
   linkedinLink?: string;
 }

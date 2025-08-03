@@ -4,7 +4,7 @@ import { FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { create } from 'zustand';
 import logo from '../assets/logo.png';
 import { login } from '../api/authApi';
-import { useAuth } from '../context/useAuth';
+import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 
 interface LoginState {
@@ -29,22 +29,25 @@ const LoginPage = () => {
   const { register, handleSubmit } = useForm<LoginFormInputs>();
   const [showPassword, setShowPassword] = useState(false);
   const { error, setError, clearError } = useLoginStore();
-  const { login: loginContext } = useAuth(); // useAuth utilise désormais zustand
+  const setAuth = useAuthStore((state) => state.login);
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
-      const result = await login(data.email, data.password);
-      loginContext(result.token, result.role); // Stocke dans le contexte et localStorage
-      clearError();
-      // Redirection automatique selon le rôle
-      if (result.role === 'etudiant') {
-        navigate('/dashboard-etudiant');
-      } else if (result.role === 'enseignant') {
-        navigate('/dashboard-enseignant');
-      } else if (result.role === 'entreprise') {
-        navigate('/dashboard-entreprise');
-      } else {
-        navigate('/profil');
+      const response = await login(data); // login de l'api
+      const { token, role } = response.data;
+      if (token && role) {
+        setAuth(token, role); // Stocke dans Zustand et localStorage
+        clearError();
+        // Redirection automatique selon le rôle
+        if (role === 'ETUDIANT') {
+          navigate('/dashboard-etudiant');
+        } else if (role === 'ENSEIGNANT') {
+          navigate('/dashboard-enseignant');
+        } else if (role === 'ENTREPRISE') {
+          navigate('/dashboard-entreprise');
+        } else {
+          navigate('/profil');
+        }
       }
     } catch {
       setError('Identifiants incorrects');

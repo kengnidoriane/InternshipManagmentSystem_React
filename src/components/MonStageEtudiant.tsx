@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
 import { Link } from 'react-router-dom';

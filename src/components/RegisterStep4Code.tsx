@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { verifyEmail } from '../api/registrationApi';
-import { useAuth } from '../context/useAuth';
+import { useAuthStore } from '../store/authStore';
 import { useRegistrationStore } from '../store/registrationStore';
 
 const CODE_LENGTH = 5;
@@ -22,11 +22,11 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
   const [loading, setLoading] = useState(false);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const navigate = useNavigate();
-  // Remplacer useAuth par le store zustand authStore
-  // import { useAuthStore } from '../store/authStore';
-  // const { login } = useAuthStore();
+
+
+
   // Pour l'instant, on garde loginContext pour la cohérence, mais il faut migrer ce call aussi si ce n'est pas déjà fait.
-  const { login: loginContext } = useAuth();
+  const { login } = useAuthStore();
 
   const handleChange = (value: string, idx: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -65,26 +65,17 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
     setError('');
     setLoading(true);
     try {
-      let userData;
-      if ((accountType ?? '') === 'etudiant') {
-        userData = await verifyStudentEmail({ email: email ?? '', token: code.join('') });
-      } else if ((accountType ?? '') === 'entreprise') {
-        userData = await verifyEnterpriseEmail({ email: email ?? '', token: code.join('') });
-      } else if ((accountType ?? '') === 'enseignant') {
-        userData = await verifyTeacherEmail({ email: email ?? '', token: code.join('') });
-      } else {
-        throw new Error('Type de compte inconnu');
-      }
-      // Connecter l'utilisateur automatiquement si le backend retourne un token
-      // TODO: remplacer loginContext par le login du store zustand authStore si ce n'est pas déjà fait
-      if (userData && userData.token && userData.role) {
-        loginContext(userData.token, userData.role);
+      const response = await verifyEmail({ email: email ?? '', token: code.join('') });
+      const userData = response.data;
+      // Connecter l'utilisateur automatiquement si le backend retourne un role
+      if (userData && userData.role) {
+        login(userData.id?.toString() || '', userData.role); // Utilise l'id comme token si besoin
       }
       setSubmitted(true);
       setTimeout(() => {
         reset();
         setStep(1);
-        navigate('/felicitations');
+        navigate('/register-success');
       }, 1200);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Le code est incorrect');

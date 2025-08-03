@@ -1,9 +1,10 @@
-import axios from 'axios';
+import { api } from './api';
 
 // Authentification
-export const login = (loginData) =>
-  axios.post('/login', loginData);
+import type { LoginRequest, ResetPasswordRequestDto } from '../types/auth';
+export const login = (loginData: LoginRequest) =>
+  api.post('/login', loginData);
 
 // Réinitialisation du mot de passe
-export const resetPassword = (resetData) =>
-  axios.patch('/resetPassword', resetData);
+export const resetPassword = (resetData: ResetPasswordRequestDto) =>
+  api.patch('/resetPassword', resetData);

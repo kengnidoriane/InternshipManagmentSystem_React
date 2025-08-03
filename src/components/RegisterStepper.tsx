@@ -54,11 +54,16 @@ const RegisterStepper = () => {
           // Mapping explicite pour correspondre au DTO backend
           const entrepriseData = data as Record<string, unknown>;
           await registerEnterprise({
-            name: entrepriseData.companyName,
-            email: entrepriseData.contactEmail,
-            sector: entrepriseData.activite,
-            matriculation: entrepriseData.matriculation ?? '', // à ajuster selon le formulaire
+            name: entrepriseData.name,
+            email: entrepriseData.email,
+            matriculation: entrepriseData.matriculation,
             password: formData.password,
+            contact: entrepriseData.contact,
+            location: entrepriseData.location,
+            country: entrepriseData.country,
+            remote: entrepriseData.remote,
+            paying: entrepriseData.paying,
+            logo: entrepriseData.logo,
           });
         } else if (formData.type === 'etudiant') {
           // Mapping explicite pour correspondre au DTO backend
@@ -68,6 +73,11 @@ const RegisterStepper = () => {
             firstName: etudiantData.firstName,
             email: formData.email,
             password: formData.password,
+            sector: etudiantData.sector,
+            languages: etudiantData.languages,
+            department: etudiantData.department,
+            githubLink: etudiantData.githubLink,
+            linkedinLink: etudiantData.linkedinLink,
           });
         } else if (formData.type === 'enseignant') {
           // Mapping explicite pour correspondre au DTO backend
@@ -127,7 +137,7 @@ const RegisterStepper = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-login-gradient">
       <div className='flex flex-col justify-center py-4 '>
-        <img src={logo} alt="Logo" className="max-w-[350px] mx-auto " />
+        <img src={logo} alt="Logo" className="max-w-[300px] mx-auto " />
         {/* <p className='text-[#e1d3c1] text-center mx-auto space'>ELITE</p> */}
       </div>
       <h1 className="text-[#b79056] mt-4 text-center mx-auto text-2xl">INSCRIPTION</h1><br/>

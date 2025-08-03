@@ -1,17 +1,18 @@
 
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import DashboardEntreprise from './components/DashboardEntreprise';
+import CreerOffreEntreprise from './components/CreerOffreEntreprise';
 import LoginPage from './components/LoginPage';
 import RegisterStepper from './components/RegisterStepper';
+import RegisterSuccess from './components/RegisterSuccess';
 import ProtectedRoute from './components/ProtectedRoute';
+import StageDetail from './components/StageDetail';
 
-import DashboardEtudiant from './components/DashboardEtudiant';
-import DashboardEnseignant from './components/DashboardEnseignant';
-import DashboardEntreprise from './components/DashboardEntreprise';
-// import RoleRedirector from './components/RoleRedirector';
 import ListStagesEtudiant from './components/ListStagesEtudiant';
 import MonStageEtudiant from './components/MonStageEtudiant';
 import Felicitations from './components/Felicitations';
+// Les dashboards spécifiques n'existent pas, routes simplifiées
 
 
 const App = () => {
@@ -19,33 +20,26 @@ const App = () => {
     <Router>
       <Routes>
         {/* Route racine : redirection automatique selon le rôle */}
-        <Route path="/" element={<MonStageEtudiant />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterStepper />} />
+        <Route path="/register-success" element={<RegisterSuccess />} />
+        <Route path="/stage/:id" element={<StageDetail />} />
 
         {/* Route protégée pour les étudiants */}
-        <Route element={<ProtectedRoute allowedRoles={['etudiant']} />}> 
-          <Route path="/dashboard-etudiant" element={<DashboardEtudiant />} />
-          <Route path="/etudiant" element={<Navigate to="/dashboard-etudiant" replace />} />
+        <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}> 
           <Route path="/etudiant/stages" element={<ListStagesEtudiant />} />
-          <Route path="/etudiant/monstage" element={<MonStageEtudiant />} />
+          <Route path="/dashboard-etudiant" element={<MonStageEtudiant />} />
         </Route>
 
         {/* Page de félicitations après création de compte */}
         <Route path="/felicitations" element={<Felicitations />} />
 
-        {/* Route protégée pour les enseignants */}
-        <Route element={<ProtectedRoute allowedRoles={['enseignant']} />}> 
-          <Route path="/dashboard-enseignant" element={<DashboardEnseignant />} />
-          <Route path="/enseignant" element={<Navigate to="/dashboard-enseignant" replace />} />
+        {/* Routes enseignants et entreprises */}
+        <Route element={<ProtectedRoute allowedRoles={['ENTERPRISE']} />}>
+          <Route path="/entreprise/dashboard" element={<DashboardEntreprise />} />
+          <Route path="/entreprise/creer-offre" element={<CreerOffreEntreprise />} />
         </Route>
-
-        {/* Route protégée pour les entreprises */}
-        <Route element={<ProtectedRoute allowedRoles={['entreprise']} />}>
-          <Route path="/dashboard-entreprise" element={<DashboardEntreprise />} />
-          <Route path="/entreprise" element={<Navigate to="/dashboard-entreprise" replace />} />
-        </Route>
-
 
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

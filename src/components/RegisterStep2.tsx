@@ -1,7 +1,7 @@
 import { FiBriefcase, FiUser, FiBook } from 'react-icons/fi';
 import RegisterProgress from './RegisterProgress';
 
-export type AccountType = 'entreprise' | 'etudiant' | 'enseignant' | null;
+export type AccountType = 'entreprise' | 'etudiant' | 'enseignant' | undefined;
 
 import { useRegistrationStore } from '../store/registrationStore';
 
@@ -25,9 +25,9 @@ const cardData = [
 
 const RegisterStep2 = () => {
   const { formData, setFormData, setStep } = useRegistrationStore();
-  const selectedType = formData.type || null;
+  const selectedType: AccountType = formData.type || undefined;
 
-  const handleSelectType = (type: string) => {
+  const handleSelectType = (type: AccountType) => {
     setFormData({ type });
   };
 

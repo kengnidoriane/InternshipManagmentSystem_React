@@ -1,24 +1,69 @@
 import { create } from 'zustand';
 
+
+const roleMap: { [key: string]: string } = {
+  'ETUDIANT': 'STUDENT',
+  'ENSEIGNANT': 'TEACHER',
+  'ENTREPRISE': 'ENTERPRISE',
+  'STUDENT': 'STUDENT',
+  'TEACHER': 'TEACHER',
+  'ENTERPRISE': 'ENTERPRISE',
+};
+
 interface AuthState {
   token: string | null;
   role: string | null;
   login: (token: string, role: string) => void;
   logout: () => void;
+  sync: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   token: localStorage.getItem('token'),
-  role: localStorage.getItem('role'),
+  role: (() => {
+    const role = localStorage.getItem('role');
+    if (!role) return null;
+    const roleMap = {
+      'ETUDIANT': 'STUDENT',
+      'ENSEIGNANT': 'TEACHER',
+      'ENTREPRISE': 'ENTERPRISE',
+      'STUDENT': 'STUDENT',
+      'TEACHER': 'TEACHER',
+      'ENTERPRISE': 'ENTERPRISE',
+    };
+    return roleMap[role.toUpperCase()] || role.toUpperCase();
+  })(),
   login: (token, role) => {
+    const roleMap = {
+      'ETUDIANT': 'STUDENT',
+      'ENSEIGNANT': 'TEACHER',
+      'ENTREPRISE': 'ENTERPRISE',
+      'STUDENT': 'STUDENT',
+      'TEACHER': 'TEACHER',
+      'ENTERPRISE': 'ENTERPRISE',
+    };
+    const roleUpper = role ? roleMap[role.toUpperCase()] || role.toUpperCase() : '';
     localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
-    set({ token, role });
+    localStorage.setItem('role', roleUpper);
+    set({ token, role: roleUpper });
   },
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     set({ token: null, role: null });
+  },
+  sync: () => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const roleMap = {
+      'ETUDIANT': 'STUDENT',
+      'ENSEIGNANT': 'TEACHER',
+      'ENTREPRISE': 'ENTERPRISE',
+      'STUDENT': 'STUDENT',
+      'TEACHER': 'TEACHER',
+      'ENTERPRISE': 'ENTERPRISE',
+    };
+    set({ token, role: role ? roleMap[role.toUpperCase()] || role.toUpperCase() : null });
   }
 }));
 

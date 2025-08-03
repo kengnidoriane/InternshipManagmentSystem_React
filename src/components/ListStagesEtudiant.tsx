@@ -1,126 +1,172 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
 import egLogo from '../assets/eg-logo.jpg'; // à remplacer par tes assets réels
-import lzLogo from '../assets/lz-logo.jpg';
 
-const stages = [
+import { getOffersByApprovedStatus } from '../api/studentApi';
+import type { OfferResponseDto } from '../types/offer';
+
+// Mock data au format backend (fallback si API vide)
+const mockOffers: OfferResponseDto[] = [
   {
     id: 1,
-    titre: 'Implémentation du paiement en ligne',
-    entreprise: 'EG store',
-    entrepriseLogo: egLogo,
-    pays: 'Nigeria',
-    ville: 'Lagos',
-    dateLimite: '2 mars 2025',
-    niveau: 'Perfectionnement',
-    payant: true,
-    periode: '10 juin - 10 septembre 2025',
-    places: 5,
-    postulants: 5,
-    domaine: 'web dev',
-    tags: ['cisco', 'Équipement réseau', 'Réseau', 'IoT', 'Configurateur routeur', 'Cloud computing'],
-    mode: 'remote',
+    title: 'Implémentation du paiement en ligne',
+    description: 'Développement d’une solution de paiement en ligne pour EG store.',
+    domain: 'web dev',
+    startDate: '2025-06-10',
+    endDate: '2025-09-10',
     status: 'Ouvert',
-    badges: ['En remote', 'Après interview'],
-  },
-  {
-    id: 2,
-    titre: 'Dev Three.js Canvas 3D (WebGL) SVG',
-    entreprise: 'LZ customs',
-    entrepriseLogo: lzLogo,
-    pays: 'Cameroun',
-    ville: 'Yaoundé',
-    dateLimite: '2 juin 2025',
-    niveau: 'Perfectionnement',
-    payant: false,
-    periode: '15 juin - 10 décembre 2025',
-    places: 4,
-    postulants: 8,
-    domaine: 'Développeur web',
-    tags: ['webgl', 'svg', 'front end', 'canvas 3D', 'Three.js'],
-    mode: 'presentiel',
-    status: 'Ouvert',
-    badges: ['En présentiel', 'Après interview'],
+    enterprise: {
+      id: 1,
+      name: 'EG store',
+      email: 'eg@store.com',
+      sector: 'Vente d’appareils',
+      matriculation: 'EG12345',
+    },
+    convention: undefined,
   },
 ];
 
+
+
 export default function ListStagesEtudiant() {
+  const [offers, setOffers] = useState<OfferResponseDto[]>([]);
   const [search, setSearch] = useState('');
-  const filteredStages = stages.filter(stage =>
-    stage.titre.toLowerCase().includes(search.toLowerCase()) ||
-    stage.entreprise.toLowerCase().includes(search.toLowerCase())
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getOffersByApprovedStatus()
+      .then(res => {
+        const apiOffers = res?.data as OfferResponseDto[] | undefined;
+        if (apiOffers && apiOffers.length > 0) {
+          setOffers(apiOffers);
+        } else {
+          setOffers(mockOffers);
+        }
+      })
+      .catch(() => setOffers(mockOffers))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Recherche sur le titre ou l'entreprise
+  const filteredOffers = offers.filter(offer =>
+    offer.title.toLowerCase().includes(search.toLowerCase()) ||
+    offer.enterprise.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-login-gradient flex flex-col">
       <EtudiantHeader />
-      <main className="flex flex-col items-center flex-1 px-4 pb-12">
-        <motion.div
-          className="w-full max-w-4xl mt-8"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <input
-            type="text"
-            placeholder="Recherchez un stage"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full mb-8 px-5 py-4 rounded-lg border-none bg-[#e1d3c1] text-[#58693e] text-lg shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[#b79056]"
-            style={{ fontFamily: 'inherit', letterSpacing: '0.01em' }}
-          />
-          <div className="flex flex-col gap-7">
-            {filteredStages.length === 0 ? (
-              <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre trouvée.</div>
-            ) : (
-              filteredStages.map((stage) => (
-                <motion.div
-                  key={stage.id}
-                  className="flex flex-row items-stretch bg-[#f9f1e2]/80 rounded-xl shadow-lg border border-[#e1d3c1] overflow-hidden hover:bg-[#f7e9d2] transition-colors"
-                  whileHover={{ scale: 1.01 }}
-                >
-                  {/* Logo et colonne gauche */}
-                  <div className="flex flex-col items-center justify-center w-32 min-w-[96px] bg-[#f9f1e2] border-r border-[#e1d3c1] p-3">
-                    <img src={stage.entrepriseLogo} alt={stage.entreprise} className="h-12 w-12 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
-                    <div className="text-xs text-[var(--color-jaune)] font-semibold text-center">{stage.entreprise}</div>
-                    <div className="text-[10px] text-[var(--color-jaune)] mt-1">{stage.pays} · {stage.ville}</div>
+      <main className="flex flex-row items-start justify-center flex-1 px-4 pb-12 gap-8">
+        {/* Sidebar de filtres */}
+        <aside className="hidden md:flex flex-col items-start min-w-[210px] max-w-[260px] mt-12 mr-4 rounded-xl shadow-lg px-7 py-8 gap-6">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[var(--color-neutre9)] text-base">Filter</span>
+            <label className="inline-flex relative items-center cursor-pointer ml-2">
+              <input type="checkbox" className="sr-only peer" disabled />
+              <div className="w-7 h-3 bg-gray-200 rounded-full peer peer-focus:ring-1 peer-focus:ring-[#b79056] dark:bg-gray-700 peer-checked:bg-[#b79056] after:content-[''] after:absolute after:top-0.8 after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-[#b79056]" />
+            </label>
+          </div>
+          <div className="mb-4">
+            <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Location</div>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />En remote</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Sur site</label>
+            </div>
+          </div>
+          <div className="mb-4">
+            <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Payant</div>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Non</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Oui</label>
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Type de stage</div>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Initiation</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Perfectionnement</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Pré-emploi</label>
+            </div>
+          </div>
+        </aside>
+        {/* Section recherche + offres */}
+        <section className="flex-1 w-full max-w-[800px] mt-8">
+          <motion.div
+            className="w-full"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <input
+              type="text"
+              placeholder="Saisir ici pour rechercher un stage"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full mb-5 px-4 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)]"
+              style={{ fontFamily: 'inherit', letterSpacing: '0.01em' }}
+            />
+            <div className="flex flex-col gap-7">
+              {loading ? (
+                <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement des offres...</div>
+              ) : filteredOffers.length === 0 ? (
+                <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre trouvée.</div>
+              ) : (
+                filteredOffers.map((offer) => (
+                  <motion.div
+                    key={offer.id}
+                    className="flex flex-row items-stretch bg-[var(--color-light)] rounded-xl shadow-lg border border-[#e1d3c1] overflow-hidden hover:bg-[var(--color-light)] transition-colors cursor-pointer"
+                    whileHover={{ scale: 1.01 }}
+                    onClick={() => navigate(`/stage/${offer.id}`)}
+                  >
+                  {/* Colonne gauche : logo, entreprise, pays, ville, secteur */}
+                  <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
+                    <img src={egLogo} alt={offer.enterprise.name} className="h-12 w-12 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
+                    <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise.name}</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">Nigeria · Lagos</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.sector}</div>
                   </div>
-                  {/* Centre */}
-                  <div className="flex-1 flex flex-col justify-between px-6 py-4">
-                    <div className="flex flex-row items-center gap-3">
-                      <div className="font-semibold text-[#58693e] text-lg md:text-xl">{stage.titre}</div>
-                      <span className="ml-2 text-xs text-[var(--color-jaune)] whitespace-nowrap">Délai de candidature <b>{stage.dateLimite}</b></span>
+                  {/* Centre : titre, deadline, type, période, badges */}
+                  <div className="flex-1 flex flex-col justify-between py-4">
+                    <div className="flex flex-col pb-2">
+                      <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
+                      <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span>
                     </div>
-                    <div className="flex flex-row gap-6 mt-2 mb-2 flex-wrap">
-                      <div className="text-xs text-[var(--color-jaune)]">Type de stage : <b>{stage.niveau}</b></div>
-                      <div className="text-xs text-[var(--color-jaune)]">Stage payant : <b>{stage.payant ? 'OUI' : 'NON'}</b></div>
-                      <div className="text-xs text-[var(--color-jaune)]">Période du stage : <b>{stage.periode}</b></div>
+                    <div className="flex flex-col mt-2 mb-2 flex-wrap">
+                      <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>Perfectionnement</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>OUI</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
                     </div>
-                    <div className="flex flex-row flex-wrap gap-2 mt-1">
-                      {stage.badges.map((badge, i) => (
-                        <span key={i} className={`px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[#669087] border border-[#d3bc99]`}>{badge}</span>
-                      ))}
-                    </div>
-                    <div className="flex flex-row flex-wrap gap-2 mt-3">
-                      {stage.tags.map((tag, i) => (
-                        <span key={i} className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">{tag}</span>
-                      ))}
+                    <div className="flex flex-row flex-wrap gap-2 mt-1 ">
+                      {/* Badges (mockés, car pas dans le backend) */}
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">. En remote</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">.Après interview</span>
                     </div>
                   </div>
-                  {/* Colonne droite */}
-                  <div className="flex flex-col justify-between items-end min-w-[170px] bg-[#f9f1e2] border-l border-[#e1d3c1] p-4">
+                  {/* Colonne droite : places, postulants, domaine, tags */}
+                  <div className="flex flex-col justify-between items-end max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
                     <div className="mb-2">
-                      <div className="text-xs text-[var(--color-jaune)]">Nombre de place <b>{stage.places}</b></div>
-                      <div className="text-xs text-[var(--color-jaune)]">Nombre de postulants <b>{stage.postulants}</b></div>
-                      <div className="text-xs text-[var(--color-jaune)]">Domaine <b>{stage.domaine}</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Nombre de place <b>2</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Nombre de postulants <b>5</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Domaine <b>{offer.domain}</b></div>
                     </div>
+                    {/* <div className="flex flex-row flex-wrap gap-2 mt-3">
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Cisco</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Équipement réseau</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Réseau</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">IoT</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Configuration routeur</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Cloud computing</span>
+                    </div> */}
                   </div>
                 </motion.div>
-              ))
-            )}
-          </div>
-        </motion.div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        </section>
       </main>
     </div>
   );
