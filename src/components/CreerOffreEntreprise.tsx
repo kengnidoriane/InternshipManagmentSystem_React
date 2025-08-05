@@ -36,22 +36,39 @@ const CreerOffreEntreprise: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setSuccess(false);
+
+    // Validation stricte : tous les champs doivent être remplis
+    if (
+      !form.title.trim() ||
+      !form.description.trim() ||
+      !form.domain.trim() ||
+      !form.job.trim() ||
+      !form.requirements.trim() ||
+      !form.typeOfInternship.trim() ||
+      !form.startDate.trim() ||
+      !form.endDate.trim() ||
+      !pdfConvention
+    ) {
+      setError('Tous les champs sont obligatoires, y compris la convention PDF.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      await createOffer({ ...form, pdfConvention: pdfConvention || undefined });
+      await createOffer({ ...form, pdfConvention });
       setSuccess(true);
       setTimeout(() => navigate('/entreprise/dashboard'), 1500);
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Erreur lors de la création de l\'offre');
+      setError(err?.response?.data?.message || "Erreur lors de la création de l'offre");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-[var(--color-bg-gradient)]">
+    <div className="min-h-screen w-full bg-login-gradient text-light">
       <EnterpriseHeader />
       <div className="w-full flex justify-center items-center py-12">
   <div className="bg-white/90 rounded-2xl shadow-2xl p-8 max-w-xl w-full border border-[var(--color-jaune)]">

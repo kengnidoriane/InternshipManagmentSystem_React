@@ -36,4 +36,4 @@ export const deleteEnterpriseAccount = () =>
 // Récupérer la liste des offres de l'entreprise connectée
 import type { OfferResponseDto } from '../types/offer';
 export const getMyOffers = () =>
-  api.get<OfferResponseDto[]>('/api/enterprise/myOffers');
+  api.get<OfferResponseDto[]>('/api/enterprise/listOfOffers');

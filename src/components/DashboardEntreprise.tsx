@@ -19,7 +19,7 @@ const DashboardEntreprise: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen w-full bg-[var(--color-bg-gradient)]"
+      className="min-h-screen w-full bg-login-gradient"
     >
       <EnterpriseHeader />
       <main className="">
