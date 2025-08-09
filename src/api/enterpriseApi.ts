@@ -1,39 +1,52 @@
 import { api } from './api';
+import type { OfferResponseDto } from '../types/offer';
 
-// Récupérer toutes les candidatures reçues par l'entreprise
-export const getApplications = () =>
-  api.get('/api/enterprise/Applications');
+// Récupère toutes les offres de l'entreprise connectée
+export async function getEnterpriseOffers(): Promise<OfferResponseDto[]> {
+  const { data } = await api.get<OfferResponseDto[]>('/enterprise/offers');
+  return data;
+}
 
-// Récupérer les notifications non lues
-export const getEnterpriseNotifications = () =>
-  api.get('/api/enterprise/enterpriseNotifications');
+// Supprime une offre
+export async function deleteOffer(offerId: number): Promise<void> {
+  await api.delete(`/enterprise/offers/${offerId}`);
+}
 
-// Créer une nouvelle offre de stage
+// Met à jour le statut d'une offre
+export async function updateOfferStatus(offerId: number, status: string): Promise<void> {
+  await api.patch(`/enterprise/offers/${offerId}/status`, { status });
+}
+
+// Crée une nouvelle offre de stage (avec PDF)
 import type { OfferRequestDto } from '../types/offer';
 
-export const createOffer = (offerData: OfferRequestDto) => {
+// Récupère les candidatures pour une offre (pour la page candidatures entreprise)
+export async function getOfferApplications(offerId: number): Promise<any[]> {
+  const { data } = await api.get(`/enterprise/offers/${offerId}/applications`);
+  return data;
+}
+
+// Récupère les infos de l'entreprise connectée
+export async function getEnterpriseInfo(): Promise<any> {
+  const { data } = await api.get('/enterprise/me');
+  return data;
+}
+
+export async function createOffer(offer: OfferRequestDto & { pdfConvention?: File | null }): Promise<any> {
   const formData = new FormData();
-  formData.append('title', offerData.title);
-  formData.append('description', offerData.description);
-  formData.append('domain', offerData.domain);
-  formData.append('job', offerData.job);
-  formData.append('requirements', offerData.requirements);
-  formData.append('typeOfInternship', offerData.typeOfInternship);
-  formData.append('startDate', offerData.startDate);
-  formData.append('endDate', offerData.endDate);
-  if (offerData.pdfConvention) {
-    formData.append('pdfConvention', offerData.pdfConvention);
+  formData.append('title', offer.title);
+  formData.append('description', offer.description);
+  formData.append('domain', offer.domain);
+  formData.append('job', offer.job);
+  formData.append('requirements', offer.requirements);
+  formData.append('typeOfInternship', offer.typeOfInternship);
+  formData.append('startDate', offer.startDate);
+  formData.append('endDate', offer.endDate);
+  if (offer.pdfConvention) {
+    formData.append('pdfConvention', offer.pdfConvention);
   }
-  return api.post('/api/enterprise/createOffer', formData, {
+  const { data } = await api.post('/enterprise/offers', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-};
-
-// Supprimer le compte entreprise
-export const deleteEnterpriseAccount = () =>
-  api.delete('/api/enterprise/deleteEnterpriseAccount');
-
-// Récupérer la liste des offres de l'entreprise connectée
-import type { OfferResponseDto } from '../types/offer';
-export const getMyOffers = () =>
-  api.get<OfferResponseDto[]>('/api/enterprise/listOfOffers');
+  return data;
+}

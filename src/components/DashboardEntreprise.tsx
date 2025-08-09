@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyOffers } from '../api/enterpriseApi';
+import { getEnterpriseOffers } from '../api/enterpriseApi';
 import type { OfferResponseDto } from '../types/offer';
 import EnterpriseHeader from './EnterpriseHeader';
 
@@ -11,8 +11,8 @@ const DashboardEntreprise: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getMyOffers()
-      .then((res) => setOffers(res.data))
+    getEnterpriseOffers()
+      .then((res) => setOffers(res))
       .catch(() => setError('Erreur lors du chargement des offres'))
       .finally(() => setLoading(false));
   }, []);
