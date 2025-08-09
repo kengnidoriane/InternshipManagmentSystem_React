@@ -3,6 +3,8 @@ import './App.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import DashboardEntreprise from './components/DashboardEntreprise';
 import DashboardEnseignant from './components/DashboardEnseignant';
+import OffersList from './components/teacher/OffersList';
+import OfferDetail from './components/teacher/OfferDetail';
 import CreerOffreEntreprise from './components/CreerOffreEntreprise';
 import ListeOffresEntreprise from './components/ListeOffresEntreprise';
 import LoginPage from './components/LoginPage';
@@ -40,6 +42,8 @@ const App = () => {
         {/* Routes enseignant (protégées) */}
         <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
           <Route path="/enseignant/offres" element={<DashboardEnseignant />} />
+          <Route path="/teacher/offers" element={<OffersList />} />
+          <Route path="/teacher/offers/:id" element={<OfferDetail />} />
           {/* Ajoute ici d'autres routes enseignant si besoin */}
         </Route>
 
