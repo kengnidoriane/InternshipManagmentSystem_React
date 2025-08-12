@@ -1,293 +1,177 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import TeacherHeader from '../TeacherHeader';
+import { useTeacherOffersStore } from '../../store/teacherOffersStore';
+import egLogo from '../assets/eg-logo.jpg'; // à remplacer par tes assets réels
 
-// Types (à adapter selon vos types existants)
-interface Offer {
-  id: number;
-  title: string;
-  description: string;
-  domain: string;
-  job: string;
-  typeOfInternship: string;
-  startDate: string;
-  endDate: string;
-  numberOfPlaces: string;
-  durationOfInternship: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  enterprise: {
-    id: number;
-    name: string;
-    companyName?: string;
-  };
-}
-
-// Mock data - remplacez par votre API
-const mockOffers: Offer[] = [
-  {
-    id: 1,
-    title: "Implémentation du paiement en ligne",
-    description: "Développement d'une solution de paiement en ligne innovante.",
-    domain: "web dev",
-    job: "Développeur Full-Stack",
-    typeOfInternship: "Stage rémunéré",
-    startDate: "2025-06-15",
-    endDate: "2025-12-10",
-    numberOfPlaces: "2",
-    durationOfInternship: 6,
-    status: "PENDING",
-    enterprise: {
-      id: 1,
-      name: "TechCorp",
-      companyName: "TechCorp Solutions"
-    }
-  },
-  {
-    id: 2,
-    title: "Développement d'application mobile",
-    description: "Création d'une application mobile pour la gestion des commandes.",
-    domain: "mobile dev",
-    job: "Développeur Mobile",
-    typeOfInternship: "Stage non rémunéré",
-    startDate: "2025-07-01",
-    endDate: "2025-12-31",
-    numberOfPlaces: "1",
-    durationOfInternship: 6,
-    status: "APPROVED",
-    enterprise: {
-      id: 2,
-      name: "MobileTech",
-      companyName: "MobileTech Innovation"
-    }
-  },
-  {
-    id: 3,
-    title: "Assistant marketing digital",
-    description: "Support dans la stratégie marketing digital et réseaux sociaux.",
-    domain: "marketing",
-    job: "Assistant Marketing",
-    typeOfInternship: "Stage conventionné",
-    startDate: "2025-08-01",
-    endDate: "2025-11-30",
-    numberOfPlaces: "3",
-    durationOfInternship: 4,
-    status: "REJECTED",
-    enterprise: {
-      id: 3,
-      name: "DigitalCorp",
-      companyName: "Digital Marketing Solutions"
-    }
-  }
-];
-
-const OffersList: React.FC = () => {
+export default function OffersList() {
   const navigate = useNavigate();
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+
+  // Utilisation du store Zustand
+  const {
+    loading,
+    searchTerm,
+    statusFilter,
+    fetchOffers,
+    setSearchTerm,
+    setStatusFilter,
+    getFilteredOffers
+  } = useTeacherOffersStore();
+
+  const filteredOffers = getFilteredOffers();
 
   useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        setLoading(true);
-        // TODO: Remplacer par votre API
-        // const offersData = await getAllOffers();
-        // setOffers(offersData);
-        
-        // Mock data pour l'instant
-        setTimeout(() => {
-          setOffers(mockOffers);
-          setLoading(false);
-        }, 500);
-      } catch (error) {
-        console.error('Erreur lors du chargement des offres:', error);
-        setOffers(mockOffers);
-        setLoading(false);
-      }
-    };
-
+    // Charger les offres au montage du composant
     fetchOffers();
-  }, []);
+  }, [fetchOffers]);
 
-  const filteredOffers = offers.filter(offer => {
-    if (filter === 'ALL') return true;
-    return offer.status === filter;
-  });
-
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'bg-blue-500';
-      case 'APPROVED': return 'bg-green-500';
-      case 'REJECTED': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'PENDING':
+        return 'px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200';
+      case 'APPROVED':
+        return 'px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200';
+      case 'REJECTED':
+        return 'px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200';
+      default:
+        return 'px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case 'PENDING': return 'En attente';
-      case 'APPROVED': return 'Approuvée';
-      case 'REJECTED': return 'Refusée';
+      case 'APPROVED': return 'Approuvé';
+      case 'REJECTED': return 'Refusé';
       default: return status;
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR');
-  };
-
-  const getFilterCount = (status: 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED') => {
-    if (status === 'ALL') return offers.length;
-    return offers.filter(o => o.status === status).length;
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-primary">
-        <TeacherHeader />
-        <div className="flex items-center justify-center h-96">
-          <div className="text-white text-xl">Chargement des offres...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-primary">
+    <div className="min-h-screen bg-login-gradient flex flex-col">
       <TeacherHeader />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-4xl font-bold text-white mb-6">Offres de stage</h1>
-          
-          {/* Filtres */}
-          <div className="flex justify-center gap-4 flex-wrap">
-            {[
-              { key: 'ALL', label: 'Toutes' },
-              { key: 'PENDING', label: 'En attente' },
-              { key: 'APPROVED', label: 'Approuvées' },
-              { key: 'REJECTED', label: 'Refusées' }
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setFilter(key as any)}
-                className={`px-6 py-3 rounded-full font-medium transition-all ${
-                  filter === key
-                    ? 'bg-white text-primary-600 shadow-lg'
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
-              >
-                {label} ({getFilterCount(key as any)})
-              </button>
-            ))}
+      <main className="flex flex-row items-start justify-center flex-1 px-4 pb-12 gap-8">
+        {/* Sidebar de filtres */}
+        <aside className="hidden md:flex flex-col items-start min-w-[210px] max-w-[260px] mt-12 mr-4 rounded-xl shadow-lg px-7 py-8 gap-6">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[var(--color-neutre9)] text-base">Filter</span>
+            <label className="inline-flex relative items-center cursor-pointer ml-2">
+              <input type="checkbox" className="sr-only peer" disabled />
+              <div className="w-7 h-3 bg-gray-200 rounded-full peer peer-focus:ring-1 peer-focus:ring-[#b79056] dark:bg-gray-700 peer-checked:bg-[#b79056] after:content-[''] after:absolute after:top-0.8 after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-[#b79056]" />
+            </label>
           </div>
-        </motion.div>
+          
+          {/* Filtre par statut */}
+          <div className="mb-4">
+            <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Statut</div>
+            <div className="flex flex-col gap-1">
+              {[
+                { key: 'ALL', label: 'Toutes' },
+                { key: 'PENDING', label: 'En attente' },
+                { key: 'APPROVED', label: 'Approuvées' },
+                { key: 'REJECTED', label: 'Refusées' }
+              ].map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]">
+                  <input 
+                    type="radio" 
+                    name="status" 
+                    checked={statusFilter === key}
+                    onChange={() => setStatusFilter(key as any)}
+                    className="accent-[#b79056]" 
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
 
-        {/* Grille des offres */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredOffers.map((offer, index) => (
-            <motion.div
-              key={offer.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              onClick={() => navigate(`/teacher/offers/${offer.id}`)}
-              className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer"
-            >
-              {/* Header de la card */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white text-lg font-bold">
-                  {offer.enterprise.companyName?.charAt(0) || offer.enterprise.name.charAt(0)}
-                </div>
-                <span className={`px-3 py-1 rounded-full text-white text-xs font-medium ${getStatusColor(offer.status)}`}>
-                  {getStatusText(offer.status)}
-                </span>
-              </div>
+          <div className="mb-4">
+            <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Location</div>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />En remote</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Sur site</label>
+            </div>
+          </div>
+          <div className="mb-4">
+            <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Payant</div>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Non</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Oui</label>
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Type de stage</div>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Initiation</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Perfectionnement</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Pré-emploi</label>
+            </div>
+          </div>
+        </aside>
 
-              {/* Titre et entreprise */}
-              <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                {offer.title}
-              </h3>
-              <p className="text-gray-600 font-medium mb-4">
-                {offer.enterprise.companyName || offer.enterprise.name}
-              </p>
-
-              {/* Détails */}
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6" />
-                    </svg>
-                    Domaine:
-                  </span>
-                  <span className="text-gray-900 font-medium">{offer.domain}</span>
+        {/* Section recherche + offres */}
+        <section className="flex-1 w-full max-w-[800px] mt-8">
+          <input
+            type="text"
+            placeholder="Saisir ici pour rechercher une offre"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full mb-5 px-4 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)]"
+            style={{ fontFamily: 'inherit', letterSpacing: '0.01em' }}
+          />
+          <div className="flex flex-col gap-7">
+            {loading ? (
+              <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement des offres...</div>
+            ) : filteredOffers.length === 0 ? (
+              <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre trouvée.</div>
+            ) : (
+              filteredOffers.map((offer) => (
+                <div
+                  key={offer.id}
+                  className="flex flex-row items-stretch bg-[var(--color-light)] rounded-xl shadow-lg border border-[#e1d3c1] overflow-hidden hover:bg-[var(--color-light)] transition-colors cursor-pointer"
+                  onClick={() => navigate(`/teacher/offers/${offer.id}`)}
+                >
+                  {/* Colonne gauche : logo, entreprise, pays, ville, secteur */}
+                  <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
+                    <img src={egLogo} alt={offer.enterprise.name} className="h-12 w-12 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
+                    <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise.name}</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">Nigeria · Lagos</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.sector}</div>
+                  </div>
+                  {/* Centre : titre, deadline, type, période, badges */}
+                  <div className="flex-1 flex flex-col justify-between py-4">
+                    <div className="flex flex-col pb-2">
+                      <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
+                      <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span>
+                    </div>
+                    <div className="flex flex-col mt-2 mb-2 flex-wrap">
+                      <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship}</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>OUI</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
+                    </div>
+                    <div className="flex flex-row flex-wrap gap-2 mt-1 ">
+                      {/* Badge de statut spécifique aux enseignants */}
+                      <span className={getStatusBadge(offer.status)}>
+                        {getStatusText(offer.status)}
+                      </span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">. En remote</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">.Après interview</span>
+                    </div>
+                  </div>
+                  {/* Colonne droite : places, postulants, domaine, tags */}
+                  <div className="flex flex-col justify-between items-end max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
+                    <div className="mb-2">
+                      <div className="text-xs text-[var(--color-dark)]">Nombre de place <b>{offer.numberOfPlaces}</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Nombre de postulants <b>5</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Domaine <b>{offer.domain}</b></div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-2" />
-                    </svg>
-                    Durée:
-                  </span>
-                  <span className="text-gray-900 font-medium">{offer.durationOfInternship} mois</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Places:
-                  </span>
-                  <span className="text-gray-900 font-medium">{offer.numberOfPlaces}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-2" />
-                    </svg>
-                    Début:
-                  </span>
-                  <span className="text-gray-900 font-medium">{formatDate(offer.startDate)}</span>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div className="flex gap-2 flex-wrap">
-                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
-                  {offer.typeOfInternship}
-                </span>
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                  {offer.job}
-                </span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Message si aucune offre */}
-        {filteredOffers.length === 0 && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-white mt-12"
-          >
-            <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="text-xl">Aucune offre trouvée pour ce filtre.</p>
-          </motion.div>
-        )}
-      </div>
+                ))
+              )}
+            </div>
+        </section>
+      </main>
     </div>
   );
-};
-
-export default OffersList;
+}

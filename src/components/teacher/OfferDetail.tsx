@@ -1,355 +1,321 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import TeacherHeader from '../TeacherHeader';
+import { useTeacherOffersStore } from '../../store/teacherOffersStore';
 
-// Types (à adapter selon vos types existants)
-interface Offer {
-  id: number;
-  title: string;
-  description: string;
-  domain: string;
-  job: string;
-  typeOfInternship: string;
-  startDate: string;
-  endDate: string;
-  numberOfPlaces: string;
-  requirements: string;
-  durationOfInternship: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  enterprise: {
-    id: number;
-    name: string;
-    companyName?: string;
-    sector?: string;
-  };
-}
+// Types importés depuis le store
 
-// Mock data - remplacez par votre API
-const mockOffer: Offer = {
-  id: 1,
-  title: "Implémentation du paiement en ligne",
-  description: "Lorem ipsum dolor sit amet consectetur. Hendrerit molestie aliquam duis sagittis elit amet. Nous recherchons un stagiaire motivé pour rejoindre notre équipe de développement et participer à l'implémentation d'une solution de paiement en ligne innovante.",
-  domain: "web dev",
-  job: "Développeur Full-Stack",
-  typeOfInternship: "Stage rémunéré",
-  startDate: "2025-06-15",
-  endDate: "2025-12-10",
-  numberOfPlaces: "2",
-  requirements: "L'étudiant doit avoir son propre PC. Connaissances en JavaScript, React, Node.js souhaitées. Capacité d'adaptation et esprit d'équipe.",
-  durationOfInternship: 6,
-  status: "PENDING",
-  enterprise: {
-    id: 1,
-    name: "TechCorp",
-    companyName: "TechCorp Solutions",
-    sector: "Technologie"
-  }
-};
 
-const OfferDetail: React.FC = () => {
+
+const OfferDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [offer, setOffer] = useState<Offer | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [showApplications, setShowApplications] = useState(false);
+  const [processingAction, setProcessingAction] = useState(false);
+  
+  // Utilisation du store Zustand
+  const {
+    loading,
+    getOfferById,
+    fetchOffers,
+    fetchApplications,
+    getApplicationsByOfferId,
+    approveOffer,
+    rejectOffer,
+    acceptApplication,
+    rejectApplication
+  } = useTeacherOffersStore();
+  
+  const offer = id ? getOfferById(Number(id)) : null;
+  const applications = id ? getApplicationsByOfferId(Number(id)) : [];
 
   useEffect(() => {
-    const fetchOfferDetails = async () => {
-      try {
-        setLoading(true);
-        // TODO: Remplacer par votre API
-        // const offerData = await getOfferById(parseInt(id!));
-        // setOffer(offerData);
-        
-        // Mock data pour l'instant
-        setTimeout(() => {
-          setOffer(mockOffer);
-          setLoading(false);
-        }, 500);
-      } catch (error) {
-        console.error('Erreur lors du chargement de l\'offre:', error);
-        setOffer(mockOffer);
-        setLoading(false);
-      }
+    if (!id) return;
+    
+    // Charger les offres et les candidatures
+    const loadData = async () => {
+      await fetchOffers();
+      await fetchApplications(Number(id));
     };
-
-    if (id) {
-      fetchOfferDetails();
-    }
-  }, [id]);
+    
+    loadData();
+  }, [id, fetchOffers, fetchApplications]);
 
   const handleApprove = async () => {
-    if (!offer) return;
+    if (!id) return;
+    setProcessingAction(true);
     
     try {
-      // TODO: Appel API pour approuver
-      // await approveOffer(offer.id);
-      setOffer({ ...offer, status: 'APPROVED' });
-      alert('Offre approuvée avec succès !');
+      await approveOffer(Number(id));
+      setProcessingAction(false);
+      alert('Offre approuvée avec succès');
     } catch (error) {
       console.error('Erreur lors de l\'approbation:', error);
+      setProcessingAction(false);
     }
   };
 
   const handleReject = async () => {
-    if (!offer) return;
+    if (!id) return;
+    setProcessingAction(true);
     
     try {
-      // TODO: Appel API pour rejeter
-      // await rejectOffer(offer.id);
-      setOffer({ ...offer, status: 'REJECTED' });
-      alert('Offre refusée !');
+      await rejectOffer(Number(id));
+      setProcessingAction(false);
+      alert('Offre refusée');
     } catch (error) {
       console.error('Erreur lors du refus:', error);
+      setProcessingAction(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR');
+  const handleAcceptApplication = async (applicationId: number) => {
+    try {
+      await acceptApplication(applicationId);
+      alert('Candidature acceptée');
+    } catch (error) {
+      console.error('Erreur lors de l\'acceptation de la candidature:', error);
+    }
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'bg-blue-500';
-      case 'APPROVED': return 'bg-green-500';
-      case 'REJECTED': return 'bg-red-500';
-      default: return 'bg-gray-500';
+  
+  const handleRejectApplication = async (applicationId: number) => {
+    try {
+      await rejectApplication(applicationId);
+      alert('Candidature refusée');
+    } catch (error) {
+      console.error('Erreur lors du refus de la candidature:', error);
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'En attente';
-      case 'APPROVED': return 'Approuvée';
-      case 'REJECTED': return 'Refusée';
-      default: return status;
-    }
+  const handleToggleApplications = () => {
+    setShowApplications(!showApplications);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-primary">
+      <div className="min-h-screen bg-login-gradient flex flex-col">
         <TeacherHeader />
-        <div className="flex items-center justify-center h-96">
-          <div className="text-white text-xl">Chargement...</div>
-        </div>
+        <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement...</div>
       </div>
     );
   }
 
   if (!offer) {
     return (
-      <div className="min-h-screen bg-gradient-primary">
+      <div className="min-h-screen bg-login-gradient flex flex-col">
         <TeacherHeader />
-        <div className="flex items-center justify-center h-96">
-          <div className="text-white text-xl">Offre non trouvée</div>
-        </div>
+        <div className="py-16 text-center text-red-600 text-lg">Offre introuvable.</div>
       </div>
     );
   }
 
+  // Champs mockés
+  const postulants = applications.length;
+  const places = offer.numberOfPlaces;
+  const badges = ['En présentiel', 'Après interview'];
+  const tags = ['React', 'Node.js', 'Payment APIs', 'Security', 'E-commerce'];
+  const exigences = "L'étudiant doit avoir de bonnes connaissances en développement web et APIs REST";
+
+  // Déterminer les boutons à afficher selon le statut
+  const getStatusBadge = () => {
+    switch (offer.status) {
+      case 'PENDING':
+        return <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">En attente de validation</span>;
+      case 'APPROVED':
+        return <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Offre approuvée</span>;
+      case 'REJECTED':
+        return <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">Offre refusée</span>;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-primary">
+    <div className="min-h-screen bg-login-gradient flex flex-col">
       <TeacherHeader />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Header avec navigation et actions */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-8"
-        >
-          <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center text-white hover:text-gray-200 transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Retour
-          </button>
-          
-          <h1 className="text-white text-2xl font-bold">Détail de l'offre</h1>
-          
-          <div className="flex gap-3">
-            {offer.status === 'PENDING' && (
-              <>
-                <button 
-                  onClick={handleReject}
-                  className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
-                >
-                  Refuser
-                </button>
-                <button 
-                  onClick={handleApprove}
-                  className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
-                >
-                  Accepter
-                </button>
-              </>
-            )}
-            {offer.status === 'APPROVED' && (
-              <button className="px-6 py-2 bg-green-500 text-white rounded-lg font-medium">
-                Accepter l'offre
-              </button>
-            )}
-            {offer.status === 'REJECTED' && (
-              <button className="px-6 py-2 bg-green-500 text-white rounded-lg font-medium">
-                Accepter l'offre
-              </button>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Contenu principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Colonne principale */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-2"
-          >
-            <div className="bg-white/95 backdrop-blur-sm rounded-xl p-8 shadow-xl">
-              {/* Statut */}
-              <div className="flex items-center gap-3 mb-6">
-                <span className="text-gray-600">État de l'offre:</span>
-                <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${getStatusColor(offer.status)}`}>
-                  {getStatusText(offer.status)}
-                </span>
+      <div className="flex flex-col items-center w-full mt-8 mb-2 px-4">
+        <div className="w-full max-w-[950px]">
+          <div className={`w-full bg-[var(--color-light)] shadow-xl p-8 border border-[#e1d3c1] relative`} style={{ borderRadius: showApplications ? '5px 5px 0 0' : '5px' }}>
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div className="flex flex-row justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-[var(--color-dark)]">Détail de l'offre de stage</h1>
+                <div className="flex items-center gap-3">
+                  {getStatusBadge()}
+                  {offer.status === 'PENDING' ? (
+                    <>
+                      <button 
+                        onClick={handleReject}
+                        disabled={processingAction}
+                        className="bg-red-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-red-600 transition cursor-pointer disabled:opacity-50"
+                      >
+                        {processingAction ? 'Traitement...' : 'Refuser'}
+                      </button>
+                      <button 
+                        onClick={handleApprove}
+                        disabled={processingAction}
+                        className="bg-green-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-600 transition cursor-pointer disabled:opacity-50"
+                      >
+                        {processingAction ? 'Traitement...' : 'Approuver'}
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={handleToggleApplications}
+                      className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
+                    >
+                      {showApplications ? 'Masquer les candidatures' : `Voir les candidatures (${applications.length})`}
+                    </button>
+                  )}
+                </div>
               </div>
-
-              {/* Titre */}
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">{offer.title}</h2>
-
-              {/* Résumé */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2">
-                  Résumé
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-primary-500">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 font-medium">Type de stage:</span>
-                      <span className="text-gray-900 font-semibold">{offer.typeOfInternship}</span>
+              
+              <div className="flex flex-row gap-10">
+                <div className="flex-1 max-w-[60%]">
+                  <div className="text-2xl font-semibold text-[var(--color-dark)] mb-4">{offer.title}</div>
+                  
+                  <div className="mb-5">
+                    <div className="flex flex-row flex-wrap gap-8 items-center mb-2">
+                      <div className="text-base text-[var(--color-dark)]">Type de stage <b>{offer.typeOfInternship}</b></div>
+                      <div className="text-base text-[var(--color-dark)]">Stage payant <b>OUI</b></div>
+                      <div className="text-base text-[var(--color-dark)]">🗓️ Période du stage <b>{offer.startDate} - {offer.endDate}</b></div>
+                    </div>
+                    <div className="flex flex-row flex-wrap gap-2 mb-2">
+                      {badges.map(b => (
+                        <span key={b} className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">{b}</span>
+                      ))}
                     </div>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-primary-500">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 font-medium">Stage payé:</span>
-                      <span className="text-gray-900 font-semibold">
-                        {offer.typeOfInternship.includes('rémunéré') ? 'OUI' : 'NON'}
-                      </span>
-                    </div>
+                  
+                  <div className="mb-6">
+                    <div className="text-lg font-semibold text-[var(--color-dark)] mb-1">Description de la mission</div>
+                    <div className="text-base text-[var(--color-dark)] whitespace-pre-line">{offer.description}</div>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-primary-500 md:col-span-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 font-medium">Période du stage:</span>
-                      <span className="text-gray-900 font-semibold">
-                        {formatDate(offer.startDate)} - {formatDate(offer.endDate)}
-                      </span>
-                    </div>
+                  
+                  <div className="mb-6">
+                    <div className="text-lg font-semibold text-[var(--color-dark)] mb-1">Exigences</div>
+                    <div className="text-base text-[var(--color-dark)]">{exigences}</div>
+                  </div>
+                  
+                  <div className="flex flex-row gap-3 mt-6">
+                    <button 
+                      onClick={handleToggleApplications}
+                      className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
+                    >
+                      {showApplications ? 'Masquer les candidatures' : `Voir les candidatures (${postulants})`}
+                    </button>
+                    <button 
+                      onClick={() => navigate('/teacher/offers')}
+                      className="bg-white border border-[var(--color-jaune)] text-[var(--color-jaune)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] transition cursor-pointer"
+                    >
+                      Retour aux offres
+                    </button>
                   </div>
                 </div>
                 
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                    En présentiel
-                  </span>
-                  <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
-                    Après interview
-                  </span>
+                <div className="min-w-[260px] max-w-[320px] flex flex-col items-center p-5 mt-1">
+                  <img src={'/default-logo.png'} alt={offer.enterprise.name} className="h-20 w-20 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
+                  <div className="text-base font-bold text-[var(--color-dark)] text-center mb-1">{offer.enterprise.name}</div>
+                  <div className="flex flex-row gap-2 mb-1">
+                    <span role="img" aria-label="flag" className="text-xl">🇳🇬</span>
+                    <span className="text-xs text-[var(--color-dark)]">Nigeria • Lagos</span>
+                  </div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">{offer.enterprise.sector}</div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de places <b>{places}</b></div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de postulants <b>{postulants}</b></div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">Domaine <b>{offer.domain}</b></div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">Durée <b>{offer.durationOfInternship} mois</b></div>
+                  <div className="flex flex-wrap gap-2 mt-2 mb-1 justify-center">
+                    {tags.map(t => (
+                      <span key={t} className="bg-[var(--color-vert)] text-white px-2 py-0.5 rounded-full text-xs border border-[var(--color-vert)]">{t}</span>
+                    ))}
+                  </div>
                 </div>
               </div>
-
-              {/* Description */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2">
-                  Description de la mission
-                </h3>
-                <p className="text-gray-700 leading-relaxed">{offer.description}</p>
-              </div>
-
-              {/* Convention */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2">
-                  Convention de stage
-                </h3>
-                <p className="text-gray-700 mb-4">
-                  Lorem ipsum dolor sit amet consectetur. Hendrerit molestie aliquam duis sagittis elit amet.
-                </p>
-                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-lg transition-all">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Télécharger la convention de stage
-                </button>
-              </div>
-
-              {/* Requirements */}
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 border-b-2 border-gray-200 pb-2">
-                  Requirements
-                </h3>
-                <p className="text-gray-700 leading-relaxed">{offer.requirements}</p>
-              </div>
-
-
+              
+              <img src="/ornement.png" alt="ornement" className="pointer-events-none select-none absolute bottom-0 right-0 w-32 opacity-80 z-0" />
             </div>
-          </motion.div>
-
-          {/* Sidebar */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-1"
-          >
-            <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-xl">
-              {/* Logo entreprise */}
-              <div className="flex items-center mb-6">
-                <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center text-white text-2xl font-bold mr-4">
-                  {offer.enterprise.companyName?.charAt(0) || offer.enterprise.name.charAt(0)}
+          </div>
+          
+          <AnimatePresence>
+            {showApplications && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
+                className="bg-[#e1d3c1] shadow-xl p-8 border border-t-0 border-[#c4b5a0] overflow-hidden relative"
+                style={{ 
+                  width: '100%',
+                  maxWidth: '950px',
+                  borderRadius: '0 0 5px 5px',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <div className="relative">
+                  <img src="/ornement-1.png" alt="ornement" className="pointer-events-none select-none absolute top-0 right-0 w-32 opacity-80 z-0" />
+                  <h2 className="text-xl font-bold text-[var(--color-vert)] mb-6 text-center">Candidatures reçues</h2>
+                  
+                  {applications.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="text-[var(--color-dark)] text-lg">Aucune candidature reçue pour le moment</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {applications.map((app) => (
+                        <motion.div
+                          key={app.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="bg-white/80 p-4 rounded-lg flex justify-between items-center"
+                        >
+                          <div>
+                            <div className="font-semibold text-[var(--color-dark)]">{app.studentName}</div>
+                            <div className="text-sm text-gray-600">{app.studentEmail}</div>
+                            <div className="text-xs text-gray-500 mt-1">Soumis le {app.submittedAt}</div>
+                          </div>
+                          <div className="flex gap-2">
+                            {app.cvUrl && (
+                              <button className="text-sm bg-[var(--color-vert)] text-white px-3 py-1 rounded hover:bg-[#6b7d4b] transition">
+                                CV
+                              </button>
+                            )}
+                            {app.coverLetterUrl && (
+                              <button className="text-sm bg-[var(--color-vert)] text-white px-3 py-1 rounded hover:bg-[#6b7d4b] transition">
+                                Lettre
+                              </button>
+                            )}
+                            {app.status === 'PENDING' && (
+                              <>
+                                <button 
+                                  onClick={() => handleAcceptApplication(app.id)}
+                                  className="text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
+                                >
+                                  Accepter
+                                </button>
+                                <button 
+                                  onClick={() => handleRejectApplication(app.id)}
+                                  className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                                >
+                                  Refuser
+                                </button>
+                              </>
+                            )}
+                            {app.status === 'ACCEPTED' && (
+                              <span className="text-sm px-3 py-1 rounded bg-green-100 text-green-800">Accepté</span>
+                            )}
+                            {app.status === 'REJECTED' && (
+                              <span className="text-sm px-3 py-1 rounded bg-red-100 text-red-800">Refusé</span>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">LZ customs</h4>
-                  <p className="text-sm text-gray-600">Yaounde</p>
-                </div>
-              </div>
-
-              {/* Détails entreprise */}
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600 text-sm">Entreprise:</span>
-                  <span className="text-gray-900 font-medium text-sm">Yaounde</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600 text-sm">Entreprise de services:</span>
-                  <span className="text-gray-900 font-medium text-sm">Services</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600 text-sm">Nombre de places:</span>
-                  <span className="text-gray-900 font-medium text-sm">{offer.numberOfPlaces}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="text-gray-600 text-sm">Nombre de postulants:</span>
-                  <span className="text-gray-900 font-medium text-sm">5</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-gray-600 text-sm">Domaine:</span>
-                  <span className="text-gray-900 font-medium text-sm">{offer.domain}</span>
-                </div>
-              </div>
-
-              {/* Tags techniques */}
-              <div className="flex flex-wrap gap-2">
-                <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Java</span>
-                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Spring</span>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">JS</span>
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">React</span>
-                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">Configuration réseau</span>
-                <span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs font-medium">Cloud computing</span>
-              </div>
-            </div>
-          </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
