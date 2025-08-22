@@ -16,6 +16,14 @@ export const validateOfferAndConvention = (
 ) =>
   api.post(`/api/teacher/offers/${id}/validate`, validationData);
 
+// Récupérer la liste des étudiants par département
+export const getStudentsByDepartment = () =>
+  api.get('/api/teacher/listOfStudentByDepartment');
+
+// Télécharger le CV d'un étudiant
+export const downloadStudentCV = (studentId: string) =>
+  api.get(`/api/teacher/cv/${studentId}/download`, { responseType: 'blob' });
+
 // Supprimer le compte enseignant
 export const deleteTeacherAccount = () =>
   api.delete('/api/teacher/deleteTeacherAccount');

@@ -1,5 +1,6 @@
 import { api } from './api';
 import type { OfferResponseDto } from '../types/offer';
+import type { EnterpriseResponseDto } from '../types/enterprise';
 
 // Récupère toutes les offres de l'entreprise connectée
 export async function getEnterpriseOffers(): Promise<OfferResponseDto[]> {
@@ -48,5 +49,25 @@ export async function createOffer(offer: OfferRequestDto & { pdfConvention?: Fil
   const { data } = await api.post('/enterprise/offers', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+  return data;
+}
+
+// Récupère les entreprises en attente de validation (pour les enseignants)
+export async function getPendingEnterprises(): Promise<EnterpriseResponseDto[]> {
+  const { data } = await api.get<EnterpriseResponseDto[]>('/teacher/approvalPendingEnterprise');
+  return data;
+}
+
+// Récupère les entreprises partenaires (pour les enseignants)
+export async function getPartnerEnterprises(): Promise<EnterpriseResponseDto[]> {
+  // Cette API n'existe pas encore côté backend, on pourrait la créer
+  // Pour l'instant, on récupère toutes les entreprises et on filtre côté client
+  const { data } = await api.get<EnterpriseResponseDto[]>('/teacher/enterprises');
+  return data.filter(enterprise => enterprise.inPartnership);
+}
+
+// Approuve ou rejette une entreprise
+export async function approveEnterprise(enterpriseId: number, approved: boolean): Promise<EnterpriseResponseDto> {
+  const { data } = await api.put<EnterpriseResponseDto>(`/teacher/Enterprise/${enterpriseId}/approve?approved=${approved}`);
   return data;
 }

@@ -4,7 +4,7 @@ import logo from '../assets/logo.png'; // Adapter le chemin si besoin
 const navLinks = [
   { to: '/enseignant/entreprises', label: 'Entreprises' },
   { to: '/enseignant/offres', label: 'Offres' },
-  { to: '/enseignant/conversations', label: 'Conversations' },
+  { to: '/enseignant/etudiants', label: 'Etudiants' },
   { to: '/enseignant/parametres', label: 'Paramètres' },
 ];
 
@@ -25,8 +25,8 @@ export default function TeacherHeader() {
             className={({ isActive }) =>
               linkClass +
               (isActive
-                ? ' text-[var(--color-jaune)] border-b-2 border-[var(--color-jaune)]'
-                : ' text-[var(--color-light)] hover:text-[var(--color-jaune)]')
+                ? ' text-[var(--color-emeraude)] border-b-2 border-[var(--color-emeraude)]'
+                : ' text-[var(--color-light)] hover:text-[var(--color-emeraude)]')
             }
           >
             {link.label}
@@ -47,7 +47,7 @@ export default function TeacherHeader() {
               linkClass +
               (isActive
                 ? ' text-[var(--color-jaune)] border-b-2 border-[var(--color-jaune)]'
-                : ' text-[var(--color-light)] hover:text-[var(--color-jaune)]')
+                : ' text-[var(--color-light)] hover:text-[var(--color-emeraude)]')
             }
           >
             {link.label}

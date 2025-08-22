@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 
 const navLinks = [
   { to: '/etudiant/stages', label: 'Liste des stages' },
-  { to: '/etudiant/monstage', label: 'Mon stage' },
+  { to: '/etudiant/mon-stage', label: 'Mon stage' },
 ];
 
 const rightLinks = [
-  { to: '/profil', label: 'Mon profil' },
-  { to: '/parametres', label: 'Paramètres' },
+  { to: '/etudiant/profil', label: 'Mon profil' },
+  { to: '/etudiant/parametres', label: 'Paramètres' },
 ];
 
 export default function EtudiantHeader() {

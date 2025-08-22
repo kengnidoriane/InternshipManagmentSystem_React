@@ -39,14 +39,14 @@ const LoginPage = () => {
         setAuth(token, role); // Stocke dans Zustand et localStorage
         clearError();
         // Redirection automatique selon le rôle
-        if (role === 'ETUDIANT') {
+        if (role === 'STUDENT') {
           navigate('/dashboard-etudiant');
-        } else if (role === 'ENSEIGNANT') {
-          navigate('/dashboard-enseignant');
-        } else if (role === 'ENTREPRISE') {
-          navigate('/dashboard-entreprise');
+        } else if (role === 'TEACHER') {
+          navigate('/enseignant/offres');
+        } else if (role === 'ENTERPRISE') {
+          navigate('/entreprise/dashboard');
         } else {
-          navigate('/profil');
+          navigate('/');
         }
       }
     } catch {

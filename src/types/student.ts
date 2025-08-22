@@ -16,3 +16,13 @@ export interface StudentRegistrationRequestDto {
   githubLink?: string;
   linkedinLink?: string;
 }
+
+// Interface pour les données d'étudiant renvoyées par l'API
+export interface StudentResponseDto {
+  id: number;
+  name: string;
+  firstName: string;
+  email: string;
+  onInternship: boolean;
+  department: string;
+}

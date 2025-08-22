@@ -12,3 +12,18 @@ export interface EnterpriseRegistrationRequestDto {
   // Pour logo, on utilise File ou undefined côté front
   logo?: File;
 }
+
+// Interface pour les entreprises partenaires et en attente
+export interface EnterpriseResponseDto {
+  id: number;
+  name: string;
+  email: string;
+  sectorOfActivity: string;
+  inPartnership: boolean;
+  matriculation: string;
+  hasLogo: {
+    hasLogo: boolean;
+  };
+  country?: string;
+  city?: string;
+}

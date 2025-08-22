@@ -3,14 +3,13 @@ import logo from '../assets/logo.png';
 import { motion } from 'framer-motion';
 
 const navLinks = [
-  { to: '/entreprise/dashboard', label: 'Accueil' },
-  { to: '/entreprise/creer-offre', label: 'Créer une offre' },
-  // Ajoute d'autres liens spécifiques entreprise ici si besoin
+  { to: '/entreprise/offres', label: 'Liste des offres' },
+  { to: '/entreprise/candidatures', label: 'Candidatures' },
 ];
 
 const rightLinks = [
-  { to: '/profil', label: 'Mon profil' },
-  { to: '/parametres', label: 'Paramètres' },
+  { to: 'entreprise/profil', label: 'Profil entreprise' },
+  { to: 'entreprise/parametres', label: 'Paramètres' },
 ];
 
 export default function EnterpriseHeader() {
