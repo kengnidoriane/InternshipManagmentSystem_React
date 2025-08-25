@@ -4,13 +4,17 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import DashboardEntreprise from './components/DashboardEntreprise';
 import DashboardEnseignant from './components/DashboardEnseignant';
 import OffersList from './components/teacher/OffersList';
-import OfferDetail from './components/teacher/OfferDetail';
+// import OfferDetail from './components/teacher/OfferDetail';
 import EntreprisesList from './components/teacher/EntreprisesList';
 import EnterpriseDetail from './components/teacher/EnterpriseDetail';
 import StudentsList from './components/teacher/StudentsList';
 import StudentDetail from './components/teacher/StudentDetail';
 import CreerOffreEntreprise from './components/CreerOffreEntreprise';
 import ListeOffresEntreprise from './components/ListeOffresEntreprise';
+import CandidaturesEntreprise from './components/CandidaturesEntreprise';
+import DetailCandidature from './components/DetailCandidature';
+import ProfilEntreprise from './components/ProfilEntreprise';
+import OfferDetail from './components/OfferDetail';
 import LoginPage from './components/LoginPage';
 import RegisterStepper from './components/RegisterStepper';
 import RegisterSuccess from './components/RegisterSuccess';
@@ -60,9 +64,13 @@ const App = () => {
 
         {/* Routes entreprises (protégées) */}
         <Route element={<ProtectedRoute allowedRoles={['ENTERPRISE']} />}>
-          <Route path="/entreprise/candidatures" element={<DashboardEntreprise />} />
+          <Route path="/entreprise/candidatures" element={<CandidaturesEntreprise />} />
+          <Route path="/entreprise/candidatures/:applicationId" element={<DetailCandidature />} />
           <Route path="/entreprise/offres" element={<ListeOffresEntreprise />} />
-          {/* <Route path="/entreprise/creer-offre" element={<CreerOffreEntreprise />} /> */}
+          <Route path="/entreprise/offres/:id" element={<OfferDetail />} />
+          <Route path="/entreprise/creer-offre" element={<CreerOffreEntreprise />} />
+          <Route path="/entreprise/offres/:id/edit" element={<CreerOffreEntreprise />} />
+          <Route path="/entreprise/profil" element={<ProfilEntreprise />} />
           <Route path="/entreprise/parametres" element={<UserSettings />} />
         </Route>
 

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
 import { useTeacherOffersStore } from '../../store/teacherOffersStore';
-import egLogo from '../assets/eg-logo.jpg'; // à remplacer par tes assets réels
+// import egLogo from '../assets/eg-logo.jpg';
 
 export default function OffersList() {
   const navigate = useNavigate();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { getPendingEnterprises, getPartnerEnterprises, approveEnterprise } from '../../api/enterpriseApi';
+import { getPendingEnterprises, approveEnterprise } from '../../api/enterpriseApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
@@ -179,22 +179,12 @@ const EntreprisesList: React.FC = () => {
     const fetchEnterprises = async () => {
       try {
         setLoading(true);
-        // Essayer de récupérer les données réelles
-        try {
-          const pendingData = await getPendingEnterprises();
-          setPendingEnterprises(pendingData);
-        } catch (err) {
-          console.warn('Utilisation des données fictives pour les entreprises en attente');
-          setPendingEnterprises(mockPendingEnterprises);
-        }
-
-        try {
-          const partnerData = await getPartnerEnterprises();
-          setPartnerEnterprises(partnerData);
-        } catch (err) {
-          console.warn('Utilisation des données fictives pour les entreprises partenaires');
-          setPartnerEnterprises(mockPartnerEnterprises);
-        }
+        const pendingResponse = await getPendingEnterprises();
+        const allEnterprises = pendingResponse.data || [];
+        const partners = allEnterprises.filter(e => e.inPartnership === true);
+        const pending = allEnterprises.filter(e => e.inPartnership === false);
+        setPendingEnterprises(pending);
+        setPartnerEnterprises(partners);
       } catch (err) {
         setError('Erreur lors du chargement des entreprises');
         console.error(err);
@@ -209,16 +199,18 @@ const EntreprisesList: React.FC = () => {
   const handleApprove = async (enterpriseId: number, approved: boolean) => {
     try {
       await approveEnterprise(enterpriseId, approved);
-      // Mettre à jour les listes après approbation
-      const updatedPending = pendingEnterprises.filter(e => e.id !== enterpriseId);
-      setPendingEnterprises(updatedPending);
-
+      
       if (approved) {
+        // Déplacer l'entreprise de pending vers partners
         const approvedEnterprise = pendingEnterprises.find(e => e.id === enterpriseId);
         if (approvedEnterprise) {
           const updatedEnterprise = { ...approvedEnterprise, inPartnership: true };
-          setPartnerEnterprises([...partnerEnterprises, updatedEnterprise]);
+          setPendingEnterprises(prev => prev.filter(e => e.id !== enterpriseId));
+          setPartnerEnterprises(prev => [...prev, updatedEnterprise]);
         }
+      } else {
+        // Supprimer l'entreprise rejetée
+        setPendingEnterprises(prev => prev.filter(e => e.id !== enterpriseId));
       }
     } catch (err) {
       setError('Erreur lors de l\'approbation de l\'entreprise');
@@ -300,13 +292,33 @@ const EntreprisesList: React.FC = () => {
                           <div className="w-20 h-20 bg-blue-500 text-white rounded-md flex items-center justify-center text-2xl mr-4">
                             {enterprise.name.substring(0, 2)}
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <h3 className="font-medium">{enterprise.name}</h3>
                             <div className="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs my-1">
                               En attente
                             </div>
                             <p className="text-xs text-gray-600">{enterprise.country} • {enterprise.city}</p>
                             <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleApprove(enterprise.id, true);
+                                }}
+                                className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 cursor-pointer"
+                              >
+                                Approuver
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleApprove(enterprise.id, false);
+                                }}
+                                className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 cursor-pointer"
+                              >
+                                Rejeter
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>

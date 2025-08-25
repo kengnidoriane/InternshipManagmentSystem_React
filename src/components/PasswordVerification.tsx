@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {FiEye, FiEyeOff } from 'react-icons/fi';
+import { verifyCurrentPassword } from '../api/authApi';
 
 
 interface PasswordVerificationProps {
-  onVerified: () => void;
+  onVerified: (password: string) => void;
   onCancel: () => void;
 }
 
@@ -11,20 +12,28 @@ const PasswordVerification: React.FC<PasswordVerificationProps> = ({ onVerified,
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Ici, vous devriez normalement vérifier le mot de passe avec l'API
-    // Pour l'exemple, nous allons simplement accepter n'importe quel mot de passe
     if (password.trim() === '') {
       setError('Veuillez entrer votre mot de passe');
       return;
     }
     
-    // Simuler une vérification réussie
-    onVerified();
+    setLoading(true);
+    setError('');
+    
+    try {
+      await verifyCurrentPassword(password);
+      onVerified(password);
+    } catch (error: any) {
+      setError(error?.response?.data?.message || 'Mot de passe incorrect');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,10 +59,13 @@ const PasswordVerification: React.FC<PasswordVerificationProps> = ({ onVerified,
         </label>
         <input
           id="password"
-          type="password"
-          autoComplete="new-password"
-          placeholder="-"
-          className="w-full mb-2 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          placeholder="Entrez votre mot de passe"
+          className="w-full mb-2 border text-center border-gray-300 bg-[#e1d3c1] rounded outline-none"
+          disabled={loading}
         />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
           </div>
@@ -68,9 +80,10 @@ const PasswordVerification: React.FC<PasswordVerificationProps> = ({ onVerified,
             </button>
             <button
               type="submit"
+              disabled={loading}
               className="bg-[var(--color-vert)] w-full text-[var(--color-light)] py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer"
             >
-              Valider
+              {loading ? 'Vérification...' : 'Valider'}
             </button>
           </div>
         </form>

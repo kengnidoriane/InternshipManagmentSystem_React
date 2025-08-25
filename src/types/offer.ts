@@ -3,20 +3,29 @@ export interface EnterpriseOfferResponseDto {
   id: number;
   name: string;
   email: string;
-  sector: string;
+  sectorOfActivity: string;
+  inPartnership: boolean;
   matriculation: string;
+  country: string;
+  city: string;
+  hasLogo: {
+    hasLogo: boolean;
+  };
 }
 
 export interface OfferRequestDto {
   title: string;
   description: string;
   domain: string;
+  typeOfInternship: string;
   job: string;
   requirements: string;
-  typeOfInternship: string;
   pdfConvention?: File; // Fichier PDF de convention (optionnel)
   startDate: string; // ISO string
   endDate: string;   // ISO string
+  numberOfPlaces: string;
+  paying: boolean;
+  remote: boolean;
 }
 
 export interface OfferResponseDto {
@@ -24,10 +33,16 @@ export interface OfferResponseDto {
   title: string;
   description: string;
   domain: string;
+  typeOfInternship: string;
+  job: string;
+  requirements: string;
+  numberOfPlaces: string;
+  durationOfInternship: number;
   startDate: string; // ISO string from backend
   endDate: string;   // ISO string from backend
   status: string;
+  paying: boolean;
+  remote: boolean;
   enterprise: EnterpriseOfferResponseDto;
   convention?: any;
-  // Ajoute ici d'autres champs si besoin (ex: places, postulants, etc.)
 }

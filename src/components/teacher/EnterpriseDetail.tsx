@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { getPendingEnterprises, getPartnerEnterprises, approveEnterprise } from '../../api/enterpriseApi';
+import { getPendingEnterprises, approveEnterprise } from '../../api/enterpriseApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 
 const EnterpriseDetail: React.FC = () => {
@@ -79,22 +79,13 @@ const EnterpriseDetail: React.FC = () => {
         
         // Essayer de récupérer les données réelles
         try {
-          // Rechercher dans les entreprises en attente
-          const pendingData = await getPendingEnterprises();
-          const pendingEnterprise = pendingData.find(e => e.id === parseInt(id));
+          // Rechercher dans toutes les entreprises
+          const response = await getPendingEnterprises();
+          const allEnterprises = response.data || [];
+          const foundEnterprise = allEnterprises.find(e => e.id === parseInt(id));
           
-          if (pendingEnterprise) {
-            setEnterprise(pendingEnterprise);
-            setLoading(false);
-            return;
-          }
-          
-          // Rechercher dans les entreprises partenaires
-          const partnerData = await getPartnerEnterprises();
-          const partnerEnterprise = partnerData.find(e => e.id === parseInt(id));
-          
-          if (partnerEnterprise) {
-            setEnterprise(partnerEnterprise);
+          if (foundEnterprise) {
+            setEnterprise(foundEnterprise);
             setLoading(false);
             return;
           }

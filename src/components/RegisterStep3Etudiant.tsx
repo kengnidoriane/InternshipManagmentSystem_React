@@ -86,12 +86,23 @@ const RegisterStep3Etudiant = ({ onPrev, onFinish }: Props) => {
         {errors.sector && <span className="text-xs text-red-600 mb-2">{errors.sector.message}</span>}
 
         <label htmlFor="department" className="text-[#e2e2e2] mb-1">Département</label>
-        <input
+        <select
           id="department"
-          type="text"
-          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
+          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded outline-none"
           {...register('department', { required: 'Le département est requis.' })}
-        />
+        >
+          <option value="">-- Sélectionnez un département --</option>
+          <option value="Informatique">Informatique</option>
+          <option value="Génie mécanique">Génie mécanique</option>
+          <option value="Administration des affaires">Administration des affaires</option>
+          <option value="Psychologie">Psychologie</option>
+          <option value="Biologie">Biologie</option>
+          <option value="Droit">Droit</option>
+          <option value="Économie">Économie</option>
+          <option value="Architecture">Architecture</option>
+          <option value="Sciences politiques">Sciences politiques</option>
+          <option value="Sciences environnementales">Sciences environnementales</option>
+        </select>
         {errors.department && <span className="text-xs text-red-600 mb-2">{errors.department.message}</span>}
 
         <label htmlFor="languages" className="text-[#e2e2e2] mb-1">Langues (Ctrl+clic pour plusieurs)</label>

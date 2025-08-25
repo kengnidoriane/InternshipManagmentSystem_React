@@ -25,8 +25,7 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
 
 
 
-  // Pour l'instant, on garde loginContext pour la cohérence, mais il faut migrer ce call aussi si ce n'est pas déjà fait.
-  const { login } = useAuthStore();
+
 
   const handleChange = (value: string, idx: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -65,12 +64,7 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
     setError('');
     setLoading(true);
     try {
-      const response = await verifyEmail({ email: email ?? '', token: code.join('') });
-      const userData = response.data;
-      // Connecter l'utilisateur automatiquement si le backend retourne un role
-      if (userData && userData.role) {
-        login(userData.id?.toString() || '', userData.role); // Utilise l'id comme token si besoin
-      }
+      await verifyEmail({ email: email ?? '', token: code.join('') });
       setSubmitted(true);
       setTimeout(() => {
         reset();

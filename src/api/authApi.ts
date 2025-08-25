@@ -8,3 +8,19 @@ export const login = (loginData: LoginRequest) =>
 // Réinitialisation du mot de passe
 export const resetPassword = (resetData: ResetPasswordRequestDto) =>
   api.patch('/resetPassword', resetData);
+
+// Récupérer l'utilisateur connecté
+export const getCurrentUser = () =>
+  api.get('/auth/me');
+
+// Vérifier le mot de passe actuel
+export const verifyCurrentPassword = (password: string) =>
+  api.post('/auth/verifyPassword', { password });
+
+// Modifier l'email
+export const updateEmail = (newEmail: string, currentPassword: string) =>
+  api.put('/auth/updateEmail', { newEmail, currentPassword });
+
+// Modifier le mot de passe
+export const updatePassword = (currentPassword: string, newPassword: string) =>
+  api.put('/auth/updatePassword', { currentPassword, newPassword });

@@ -11,8 +11,8 @@ export interface EntrepriseFormData {
   contact: string;
   location: string;
   country: string;
-  remote: boolean;
-  paying: boolean;
+  city: string;
+  sectorOfActivity: string;
   logo?: File;
 }
 
@@ -33,8 +33,8 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
       contact: formData.contact || '',
       location: formData.location || '',
       country: formData.country || '',
-      remote: formData.remote || false,
-      paying: formData.paying || false,
+      city: formData.city || '',
+      sectorOfActivity: formData.sectorOfActivity || '',
       logo: undefined,
     },
   });
@@ -116,14 +116,34 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
         />
         {errors.country && <span className="text-xs text-red-600 mb-2">{errors.country.message}</span>}
 
-        <div className="flex flex-row gap-4 mb-4">
-          <label className="flex items-center gap-2 text-[#e2e2e2]">
-            <input type="checkbox" {...register('remote')} /> Télétravail possible
-          </label>
-          <label className="flex items-center gap-2 text-[#e2e2e2]">
-            <input type="checkbox" {...register('paying')} /> Stage rémunéré
-          </label>
-        </div>
+        <label htmlFor="city" className="text-[#e2e2e2] text-2xl font-light mb-1">Ville</label>
+        <input
+          id="city"
+          type="text"
+          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] focus:outline-none"
+          {...register('city', { required: 'La ville est requise.' })}
+        />
+        {errors.city && <span className="text-xs text-red-600 mb-2">{errors.city.message}</span>}
+
+        <label htmlFor="sectorOfActivity" className="text-[#e2e2e2] text-2xl font-light mb-1">Secteur d'activité</label>
+        <select
+          id="sectorOfActivity"
+          className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] focus:outline-none"
+          {...register('sectorOfActivity', { required: 'Le secteur d\'activité est requis.' })}
+        >
+          <option value="">-- Sélectionnez un secteur --</option>
+          <option value="Informatique">Informatique</option>
+          <option value="Génie mécanique">Génie mécanique</option>
+          <option value="Administration des affaires">Administration des affaires</option>
+          <option value="Psychologie">Psychologie</option>
+          <option value="Biologie">Biologie</option>
+          <option value="Droit">Droit</option>
+          <option value="Économie">Économie</option>
+          <option value="Architecture">Architecture</option>
+          <option value="Sciences politiques">Sciences politiques</option>
+          <option value="Sciences environnementales">Sciences environnementales</option>
+        </select>
+        {errors.sectorOfActivity && <span className="text-xs text-red-600 mb-2">{errors.sectorOfActivity.message}</span>}
 
         <label htmlFor="logo" className="text-[#e2e2e2] text-2xl font-light mb-1">Logo (facultatif)</label>
         <input

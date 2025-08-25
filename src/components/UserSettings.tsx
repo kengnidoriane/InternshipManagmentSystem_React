@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { getCurrentUser } from '../api/authApi';
 import TeacherHeader from './TeacherHeader';
 import EnterpriseHeader from './EnterpriseHeader';
 import EtudiantHeader from './EtudiantHeader';
@@ -15,15 +16,34 @@ const UserSettings: React.FC = () => {
   const [showModification, setShowModification] = useState(false);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
-  // Récupérer l'email de l'utilisateur depuis le localStorage ou utiliser une valeur par défaut
-  const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail') || 'utilisateur@example.com');
+  const [userEmail, setUserEmail] = useState('');
+  const [loading, setLoading] = useState(true);
   const maskedPassword = '••••••••';
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await getCurrentUser();
+        setUserEmail(response.data.email);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des infos utilisateur:', error);
+        setUserEmail('Email non disponible');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const handleModifyClick = () => {
     setShowPasswordVerification(true);
   };
 
-  const handlePasswordVerified = () => {
+  const [verifiedPassword, setVerifiedPassword] = useState('');
+
+  const handlePasswordVerified = (password: string) => {
+    setVerifiedPassword(password);
     setShowPasswordVerification(false);
     setShowModification(true);
   };
@@ -54,40 +74,48 @@ const UserSettings: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-login-gradient">
       {renderHeader()}
-      <main className="container mx-auto px-4 py-8 flex flex-col items-center">
-        <h2 className="text-2xl font-thin mb-6 text-[var(--color-jaune)] text-center">Vos paramètres</h2>
-        
-        <div className="border rounded-lg border-[var(--color-jaune)] border-[2px] p-6 mb-10 shadow-lg w-full max-w-3xl">
-          <div className="mb-4">
-            <span className="text-[var(--color-light)] font-medium mb-2">Email: </span>
-            <span className="text-[var(--color-light)] p-2 rounded">{userEmail}</span>
-          </div>
-        
-          <div className="mb-6">
-            <span className="text-[var(--color-light)] font-medium mb-2">Mot de passe: </span>
-            <span className="text-[var(--color-light)] p-2 rounded">{maskedPassword}</span>
-          </div>
+      {!showModification && (
+        <main className="container mx-auto px-4 py-8 flex flex-col items-center">
+          <h2 className="text-2xl font-thin mb-6 text-[var(--color-jaune)] text-center">Vos paramètres</h2>
           
-          <div className="flex justify-end">
+          <div className="border rounded-lg border-[var(--color-jaune)] border-[2px] p-6 mb-10 shadow-lg w-full max-w-3xl">
+            {loading ? (
+              <div className="text-[var(--color-light)] text-center">Chargement...</div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <span className="text-[var(--color-light)] font-medium mb-2">Email: </span>
+                  <span className="text-[var(--color-light)] p-2 rounded">{userEmail}</span>
+                </div>
+              
+                <div className="mb-6">
+                  <span className="text-[var(--color-light)] font-medium mb-2">Mot de passe: </span>
+                  <span className="text-[var(--color-light)] p-2 rounded">{maskedPassword}</span>
+                </div>
+              </>
+            )}
+            
+            <div className="flex justify-end">
 
+              <button 
+                onClick={handleModifyClick}
+                className="bg-[var(--color-vert)] text-[var(--color-light)] px-2 py-1 rounded cursor-pointer transition-colors"
+              >
+                Modifier les paramètres
+              </button>
+            </div>
+          </div>
+          <h2 className="text-2xl font-thin text-[var(--color-jaune)] text-center">Deconnexion</h2>
+          <div className="mt-8 w-full max-w-3xl">
             <button 
-              onClick={handleModifyClick}
-              className="bg-[var(--color-vert)] text-[var(--color-light)] px-2 py-1 rounded cursor-pointer transition-colors"
+              onClick={handleLogoutClick}
+              className="bg-[var(--color-vert)] text-white px-4 py-2 rounded cursor-pointer w-full"
             >
-              Modifier les paramètres
+              Déconnexion
             </button>
           </div>
-        </div>
-        <h2 className="text-2xl font-thin text-[var(--color-jaune)] text-center">Deconnexion</h2>
-        <div className="mt-8 w-full max-w-3xl">
-          <button 
-            onClick={handleLogoutClick}
-            className="bg-[var(--color-vert)] text-white px-4 py-2 rounded cursor-pointer w-full"
-          >
-            Déconnexion
-          </button>
-        </div>
-      </main>
+        </main>
+      )}
 
       {showPasswordVerification && (
         <PasswordVerification 
@@ -98,7 +126,8 @@ const UserSettings: React.FC = () => {
 
       {showModification && (
         <UserSettingsModification 
-          currentEmail={userEmail} 
+          currentEmail={userEmail}
+          verifiedPassword={verifiedPassword}
           onCancel={handleCancelModification} 
         />
       )}

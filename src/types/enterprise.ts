@@ -6,9 +6,9 @@ export interface EnterpriseRegistrationRequestDto {
   password: string;
   contact: string;
   location: string;
+  sectorOfActivity: string;
   country: string;
-  remote: boolean;
-  paying: boolean;
+  city: string;
   // Pour logo, on utilise File ou undefined côté front
   logo?: File;
 }
