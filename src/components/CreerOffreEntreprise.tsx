@@ -144,11 +144,11 @@ const CreerOffreEntreprise: React.FC = () => {
       console.log('============================');
       
       if (isEditing && id) {
-        await updateOffer(parseInt(id), { ...form, pdfConvention });
+        await updateOffer(parseInt(id), { ...form, pdfConvention: pdfConvention || undefined });
         setSuccess(true);
         setTimeout(() => navigate(`/entreprise/offres/${id}`), 2000);
       } else {
-        await createOffer({ ...form, pdfConvention });
+        await createOffer({ ...form, pdfConvention: pdfConvention || undefined });
         setSuccess(true);
         setTimeout(() => navigate('/entreprise/offres'), 2000);
       }

@@ -1,5 +1,5 @@
-import { api } from './api';
-import type { OfferResponseDto, OfferRequestDto } from '../types/offer';
+import { api, getAuthHeaders } from './api';
+import type { OfferRequestDto } from '../types/offer';
 import type { EnterpriseResponseDto } from '../types/enterprise';
 
 // Créer une nouvelle offre
@@ -20,25 +20,28 @@ export const createOffer = (offer: OfferRequestDto & { pdfConvention?: File | nu
     formData.append('pdfConvention', offer.pdfConvention);
   }
   return api.post('/api/enterprise/createOffer', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    headers: getAuthHeaders()
   });
 };
 
 // Récupérer toutes les candidatures de l'entreprise
 export const getEnterpriseApplications = () =>
-  api.get('/api/enterprise/Applications');
+  api.get('/api/enterprise/Applications', { headers: getAuthHeaders() });
 
 // Récupérer les notifications de l'entreprise
 export const getEnterpriseNotifications = () =>
-  api.get('/api/enterprise/enterpriseNotifications');
+  api.get('/api/enterprise/enterpriseNotifications', { headers: getAuthHeaders() });
 
 // Récupérer la liste des offres de l'entreprise
 export const getEnterpriseOffers = () =>
-  api.get('/api/enterprise/listOfOffers');
+  api.get('/api/enterprise/listOfOffers', { headers: getAuthHeaders() });
 
 // Récupérer le logo de l'entreprise
 export const getEnterpriseLogo = () =>
-  api.get('/api/enterprise/getEnterpriseLogo', { responseType: 'blob' });
+  api.get('/api/enterprise/getEnterpriseLogo', { 
+    responseType: 'blob',
+    headers: getAuthHeaders()
+  });
 
 // Télécharger le CV d'un candidat
 export const downloadCandidateCV = (applicationId: number) =>
@@ -50,23 +53,43 @@ export const downloadCandidateCoverLetter = (applicationId: number) =>
 
 // Valider ou rejeter une candidature
 export const validateApplication = (applicationId: number, approved: boolean) =>
-  api.put(`/api/enterprise/application/${applicationId}/validate?approved=${approved}`);
+  api.put(`/api/enterprise/application/${applicationId}/validate?approved=${approved}`, {}, {
+    headers: getAuthHeaders()
+  });
 
 // Mettre à jour le mot de passe
 export const updateEnterprisePassword = (passwordData: { password: string }) =>
-  api.patch('/api/enterprise/updatePassword', passwordData);
+  api.patch('/api/enterprise/updatePassword', passwordData, {
+    headers: getAuthHeaders()
+  });
 
 // Mettre à jour l'email
 export const updateEnterpriseEmail = (emailData: { email: string }) =>
-  api.patch('/api/enterprise/updateEmail', emailData);
+  api.patch('/api/enterprise/updateEmail', emailData, {
+    headers: getAuthHeaders()
+  });
 
 // Supprimer le compte entreprise
 export const deleteEnterpriseAccount = () =>
-  api.delete('/api/enterprise/deleteEnterpriseAccount');
+  api.delete('/api/enterprise/deleteEnterpriseAccount', {
+    headers: getAuthHeaders()
+  });
 
 // Récupère les entreprises en attente de validation (pour les enseignants)
 export const getPendingEnterprises = () =>
   api.get<EnterpriseResponseDto[]>('/api/teacher/approvalPendingEnterprise');
+
+// Récupère toutes les entreprises (en attente et partenaires)
+export const getAllEnterprises = () =>
+  api.get<EnterpriseResponseDto[]>('/api/teacher/allEnterprises');
+
+// Récupère le logo d'une entreprise par son ID
+export const getEnterpriseLogoById = (enterpriseId: number) =>
+  api.get(`/api/teacher/enterprise/${enterpriseId}/logo`, { responseType: 'blob' });
+
+// Récupère les détails d'une entreprise par son ID
+export const getEnterpriseById = (enterpriseId: number) =>
+  api.get<EnterpriseResponseDto>(`/api/teacher/enterprise/${enterpriseId}`);
 
 // Récupère les infos de l'entreprise connectée
 export const getEnterpriseInfo = () =>

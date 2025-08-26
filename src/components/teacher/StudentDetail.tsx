@@ -86,7 +86,7 @@ export default function StudentDetail() {
   return (
     <div className="min-h-screen bg-login-gradient">
       <TeacherHeader />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container max-w-4xl mx-auto px-4 py-8">
         <div className="bg-[#e8e0d0] rounded-lg p-6 shadow-lg">
           {/* Bouton retour */}
           <div className="flex items-center mb-6">

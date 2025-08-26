@@ -167,15 +167,19 @@ export const useTeacherOffersStore = create<TeacherOffersState>((set, get) => ({
   fetchOffers: async () => {
     set({ loading: true, error: null });
     try {
-      // Simulation d'appel API
-      // const response = await getOffersForTeacherReview();
-      // set({ offers: response.data, loading: false });
+      const response = await fetch('/api/teacher/offerToReview', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      // Mock pour l'instant
-      setTimeout(() => {
-        set({ offers: mockTeacherOffers, loading: false });
-      }, 500);
+      if (!response.ok) throw new Error('Erreur API');
+      
+      const offers = await response.json();
+      set({ offers, loading: false });
     } catch (error) {
+      console.error('Erreur lors du chargement des offres:', error);
       set({ error: 'Erreur lors du chargement des offres', loading: false });
       // Fallback sur les données mock
       set({ offers: mockTeacherOffers });
@@ -189,14 +193,19 @@ export const useTeacherOffersStore = create<TeacherOffersState>((set, get) => ({
   approveOffer: async (id: number) => {
     set({ loading: true, error: null });
     try {
-      // Simulation d'appel API
-      // await approveOfferAPI(id);
+      const response = await fetch(`/api/teacher/offers/${id}/validate`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ offerApproved: true, conventionApproved: true })
+      });
       
-      // Mise à jour locale
-      setTimeout(() => {
-        get().updateOfferStatus(id, 'APPROVED');
-        set({ loading: false });
-      }, 1000);
+      if (!response.ok) throw new Error('Erreur API');
+      
+      get().updateOfferStatus(id, 'APPROVED');
+      set({ loading: false });
     } catch (error) {
       set({ error: 'Erreur lors de l\'approbation de l\'offre', loading: false });
     }
@@ -205,14 +214,19 @@ export const useTeacherOffersStore = create<TeacherOffersState>((set, get) => ({
   rejectOffer: async (id: number) => {
     set({ loading: true, error: null });
     try {
-      // Simulation d'appel API
-      // await rejectOfferAPI(id);
+      const response = await fetch(`/api/teacher/offers/${id}/validate`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ offerApproved: false, conventionApproved: false })
+      });
       
-      // Mise à jour locale
-      setTimeout(() => {
-        get().updateOfferStatus(id, 'REJECTED');
-        set({ loading: false });
-      }, 1000);
+      if (!response.ok) throw new Error('Erreur API');
+      
+      get().updateOfferStatus(id, 'REJECTED');
+      set({ loading: false });
     } catch (error) {
       set({ error: 'Erreur lors du refus de l\'offre', loading: false });
     }

@@ -1,29 +1,64 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { useTeacherOffersStore } from '../../store/teacherOffersStore';
-// import egLogo from '../assets/eg-logo.jpg';
+import { api } from '../../api/api';
+
+interface Offer {
+  id: number;
+  title: string;
+  description: string;
+  domain: string;
+  job: string;
+  typeOfInternship: string;
+  startDate: string;
+  endDate: string;
+  numberOfPlaces: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  enterprise: {
+    id: number;
+    name: string;
+  };
+}
 
 export default function OffersList() {
   const navigate = useNavigate();
-
-  // Utilisation du store Zustand
-  const {
-    loading,
-    searchTerm,
-    statusFilter,
-    fetchOffers,
-    setSearchTerm,
-    setStatusFilter,
-    getFilteredOffers
-  } = useTeacherOffersStore();
-
-  const filteredOffers = getFilteredOffers();
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
 
   useEffect(() => {
-    // Charger les offres au montage du composant
+    const fetchOffers = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/api/teacher/offerToReview');
+        console.log('=== OFFERS RESPONSE ===');
+        console.log('Response:', response);
+        console.log('Data:', response.data);
+        setOffers(response.data || []);
+      } catch (error) {
+        console.error('Erreur lors du chargement des offres:', error);
+        setOffers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchOffers();
-  }, [fetchOffers]);
+    
+    // Recharger les offres quand on revient sur la page
+    const handleFocus = () => fetchOffers();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  const filteredOffers = offers.filter(offer => {
+    const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      offer.enterprise.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || offer.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -129,11 +164,15 @@ export default function OffersList() {
                 <div
                   key={offer.id}
                   className="flex flex-row items-stretch bg-[var(--color-light)] rounded-xl shadow-lg border border-[#e1d3c1] overflow-hidden hover:bg-[var(--color-light)] transition-colors cursor-pointer"
-                  onClick={() => navigate(`/teacher/offers/${offer.id}`)}
+                  onClick={() => navigate(`/enseignant/offres/${offer.id}`)}
                 >
                   {/* Colonne gauche : logo, entreprise, pays, ville, secteur */}
                   <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
-                    <img src={egLogo} alt={offer.enterprise.name} className="h-12 w-12 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
+                    <div className="h-12 w-12 rounded-full mb-2 border border-[#e1d3c1] bg-white flex items-center justify-center">
+                      <span className="text-xs font-bold text-[var(--color-dark)]">
+                        {offer.enterprise.name.substring(0, 2).toUpperCase()}
+                      </span>
+                    </div>
                     <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise.name}</div>
                     <div className="text-[10px] text-[var(--color-dark)] mt-1">Nigeria · Lagos</div>
                     <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.sector}</div>

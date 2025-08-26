@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, getAuthHeaders } from './api';
 
 // API générique pour la mise à jour des profils selon le rôle
 export const updatePassword = (role: 'student' | 'teacher' | 'enterprise', passwordData: { password: string }) => {
@@ -8,7 +8,7 @@ export const updatePassword = (role: 'student' | 'teacher' | 'enterprise', passw
     enterprise: '/api/enterprise/updatePassword'
   };
   
-  return api.patch(endpoints[role], passwordData);
+  return api.patch(endpoints[role], passwordData, { headers: getAuthHeaders() });
 };
 
 export const updateEmail = (role: 'student' | 'teacher' | 'enterprise', emailData: { email: string }) => {
@@ -18,7 +18,7 @@ export const updateEmail = (role: 'student' | 'teacher' | 'enterprise', emailDat
     enterprise: '/api/enterprise/updateEmail'
   };
   
-  return api.patch(endpoints[role], emailData);
+  return api.patch(endpoints[role], emailData, { headers: getAuthHeaders() });
 };
 
 export const deleteAccount = (role: 'student' | 'teacher' | 'enterprise' | 'admin') => {
@@ -29,5 +29,5 @@ export const deleteAccount = (role: 'student' | 'teacher' | 'enterprise' | 'admi
     admin: '/api/admin/deleteAdminAccount'
   };
   
-  return api.delete(endpoints[role]);
+  return api.delete(endpoints[role], { headers: getAuthHeaders() });
 };

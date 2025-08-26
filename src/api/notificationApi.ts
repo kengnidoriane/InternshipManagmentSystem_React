@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, getAuthHeaders } from './api';
 
 // API générique pour les notifications selon le rôle
 export const getNotificationsByRole = (role: 'student' | 'teacher' | 'enterprise') => {
@@ -8,9 +8,11 @@ export const getNotificationsByRole = (role: 'student' | 'teacher' | 'enterprise
     enterprise: '/api/enterprise/enterpriseNotifications'
   };
   
-  return api.get(endpoints[role]);
+  return api.get(endpoints[role], { headers: getAuthHeaders() });
 };
 
 // Marquer une notification comme lue (si cette fonctionnalité existe)
 export const markNotificationAsRead = (notificationId: number) =>
-  api.patch(`/api/notifications/${notificationId}/read`);
+  api.patch(`/api/notifications/${notificationId}/read`, {}, {
+    headers: getAuthHeaders()
+  });

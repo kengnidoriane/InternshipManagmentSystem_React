@@ -2,71 +2,117 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import TeacherHeader from '../TeacherHeader';
-import { useTeacherOffersStore } from '../../store/teacherOffersStore';
+import { api } from '../../api/api';
 
-// Types importés depuis le store
+interface Offer {
+  id: number;
+  title: string;
+  description: string;
+  domain: string;
+  job: string;
+  typeOfInternship: string;
+  startDate: string;
+  endDate: string;
+  numberOfPlaces: string;
+  durationOfInternship: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  enterprise: {
+    id: number;
+    name: string;
+    sector?: string;
+  };
+}
 
-
-
-const OfferDetail = () => {
+const TeacherOfferDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [offer, setOffer] = useState<Offer | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showApplications, setShowApplications] = useState(false);
   const [processingAction, setProcessingAction] = useState(false);
-  
-  // Utilisation du store Zustand
-  const {
-    loading,
-    getOfferById,
-    fetchOffers,
-    fetchApplications,
-    getApplicationsByOfferId,
-    approveOffer,
-    rejectOffer,
-    acceptApplication,
-    rejectApplication
-  } = useTeacherOffersStore();
-  
-  const offer = id ? getOfferById(Number(id)) : null;
-  const applications = id ? getApplicationsByOfferId(Number(id)) : [];
+  const applications: any[] = [];
 
   useEffect(() => {
     if (!id) return;
     
-    // Charger les offres et les candidatures
-    const loadData = async () => {
-      await fetchOffers();
-      await fetchApplications(Number(id));
+    const fetchOffer = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/api/teacher/offerToReview');
+        const offers = response.data || [];
+        const foundOffer = offers.find((o: Offer) => o.id === Number(id));
+        setOffer(foundOffer || null);
+      } catch (error) {
+        console.error('Erreur:', error);
+        setOffer(null);
+      } finally {
+        setLoading(false);
+      }
     };
     
-    loadData();
-  }, [id, fetchOffers, fetchApplications]);
+    fetchOffer();
+  }, [id]);
 
   const handleApprove = async () => {
-    if (!id) return;
+    if (!id || !offer) return;
     setProcessingAction(true);
     
     try {
-      await approveOffer(Number(id));
-      setProcessingAction(false);
+      await api.put(`/api/teacher/offers/${id}/validate`, {
+        offerApproved: true,
+        conventionApproved: true
+      });
+      setOffer({ ...offer, status: 'APPROVED' });
       alert('Offre approuvée avec succès');
+      // Rediriger vers la liste pour voir le changement
+      setTimeout(() => navigate('/enseignant/offres'), 1000);
     } catch (error) {
-      console.error('Erreur lors de l\'approbation:', error);
+      console.error('Erreur:', error);
+    } finally {
       setProcessingAction(false);
     }
   };
 
   const handleReject = async () => {
-    if (!id) return;
+    if (!id || !offer) return;
     setProcessingAction(true);
     
     try {
-      await rejectOffer(Number(id));
-      setProcessingAction(false);
+      await api.put(`/api/teacher/offers/${id}/validate`, {
+        offerApproved: false,
+        conventionApproved: false
+      });
+      setOffer({ ...offer, status: 'REJECTED' });
       alert('Offre refusée');
+      // Rediriger vers la liste pour voir le changement
+      setTimeout(() => navigate('/enseignant/offres'), 1000);
     } catch (error) {
-      console.error('Erreur lors du refus:', error);
+      console.error('Erreur:', error);
+    } finally {
       setProcessingAction(false);
+    }
+  };
+
+  const handleDownloadConvention = async () => {
+    if (!id) return;
+    
+    try {
+      const response = await api.get(`/api/teacher/downloadConvention/${id}`, {
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `convention_${offer?.title || 'offre'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      alert('Erreur lors du téléchargement de la convention');
     }
   };
 
@@ -195,6 +241,13 @@ const OfferDetail = () => {
                   <div className="mb-6">
                     <div className="text-lg font-semibold text-[var(--color-dark)] mb-1">Exigences</div>
                     <div className="text-base text-[var(--color-dark)]">{exigences}</div>
+                    
+                    <button 
+                      onClick={() => handleDownloadConvention()}
+                      className="mt-4 bg-[var(--color-jaune)] text-[var(--color-dark)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-vert)] hover:text-white transition cursor-pointer"
+                    >
+                      Télécharger la convention
+                    </button>
                   </div>
                   
                   <div className="flex flex-row gap-3 mt-6">
@@ -205,7 +258,7 @@ const OfferDetail = () => {
                       {showApplications ? 'Masquer les candidatures' : `Voir les candidatures (${postulants})`}
                     </button>
                     <button 
-                      onClick={() => navigate('/teacher/offers')}
+                      onClick={() => navigate('/enseignant/offres')}
                       className="bg-white border border-[var(--color-jaune)] text-[var(--color-jaune)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] transition cursor-pointer"
                     >
                       Retour aux offres
@@ -214,7 +267,11 @@ const OfferDetail = () => {
                 </div>
                 
                 <div className="min-w-[260px] max-w-[320px] flex flex-col items-center p-5 mt-1">
-                  <img src={'/default-logo.png'} alt={offer.enterprise.name} className="h-20 w-20 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
+                  <div className="h-20 w-20 rounded-full mb-2 border border-[#e1d3c1] bg-white flex items-center justify-center">
+                    <span className="text-lg font-bold text-[var(--color-dark)]">
+                      {offer.enterprise.name.substring(0, 2).toUpperCase()}
+                    </span>
+                  </div>
                   <div className="text-base font-bold text-[var(--color-dark)] text-center mb-1">{offer.enterprise.name}</div>
                   <div className="flex flex-row gap-2 mb-1">
                     <span role="img" aria-label="flag" className="text-xl">🇳🇬</span>
@@ -322,4 +379,4 @@ const OfferDetail = () => {
   );
 };
 
-export default OfferDetail;
+export default TeacherOfferDetail;

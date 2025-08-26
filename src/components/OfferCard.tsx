@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useApplicationsStore } from '../store/applicationsStore';
-import { getEnterpriseLogo } from '../api/enterpriseApi';
+// import { getEnterpriseLogoById } from '../api/enterpriseApi';
 import type { OfferResponseDto } from '../types/offer';
 
 interface OfferCardProps {
@@ -16,16 +16,19 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onClick }) => {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (offer.enterprise?.hasLogo?.hasLogo) {
-      getEnterpriseLogo()
-        .then(response => {
-          if (response.data && response.data.size > 0) {
-            const logoBlob = new Blob([response.data]);
-            const logoObjectUrl = URL.createObjectURL(logoBlob);
-            setLogoUrl(logoObjectUrl);
-          }
-        })
-        .catch(() => setLogoUrl(null));
+    if (offer.enterprise?.hasLogo?.hasLogo && offer.enterprise?.id) {
+      // Pour les entreprises, utiliser leur propre logo
+      import('../api/enterpriseApi').then(({ getEnterpriseLogoById }) => {
+        getEnterpriseLogoById(offer.enterprise.id)
+          .then(response => {
+            if (response.data && response.data.size > 0) {
+              const logoBlob = new Blob([response.data]);
+              const logoObjectUrl = URL.createObjectURL(logoBlob);
+              setLogoUrl(logoObjectUrl);
+            }
+          })
+          .catch(() => setLogoUrl(null));
+      });
     }
     
     return () => {
@@ -33,7 +36,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onClick }) => {
         URL.revokeObjectURL(logoUrl);
       }
     };
-  }, [offer.enterprise?.hasLogo?.hasLogo]);
+  }, [offer.enterprise?.hasLogo?.hasLogo, offer.enterprise?.id]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

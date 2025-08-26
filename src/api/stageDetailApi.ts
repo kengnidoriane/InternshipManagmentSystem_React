@@ -1,9 +1,11 @@
-import { api } from './api';
+import { api, getAuthHeaders } from './api';
 import type { OfferResponseDto } from '../types/offer';
 
 // Récupère le détail d'une offre
 export async function getOfferDetail(id: number): Promise<OfferResponseDto> {
-  const { data } = await api.get<OfferResponseDto>(`/offers/${id}`);
+  const { data } = await api.get<OfferResponseDto>(`/offers/${id}`, {
+    headers: getAuthHeaders()
+  });
   return data;
 }
 
@@ -11,7 +13,10 @@ export async function getOfferDetail(id: number): Promise<OfferResponseDto> {
 export async function getConventionText(id: number): Promise<{ text: string; isPdf: boolean; downloadUrl?: string }> {
   // On suppose que l'API retourne soit un texte (markdown ou plain), soit un PDF à télécharger
   try {
-    const { data, headers } = await api.get(`/offers/${id}/convention`, { responseType: 'arraybuffer' });
+    const { data, headers } = await api.get(`/offers/${id}/convention`, { 
+      responseType: 'arraybuffer',
+      headers: getAuthHeaders()
+    });
     const contentType = headers['content-type'];
     if (contentType && contentType.includes('application/pdf')) {
       // Génère une URL blob pour le PDF

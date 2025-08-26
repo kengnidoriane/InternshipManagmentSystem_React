@@ -50,7 +50,7 @@ export default function StudentsList() {
   return (
     <div className="min-h-screen bg-login-gradient">
       <TeacherHeader />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container max-w-4xl mx-auto px-4 py-8">
         <div className="bg-[#e8e0d0] rounded-lg p-6 shadow-lg">
           <h1 className="text-2xl font-semibold text-[var(--color-dark)] mb-6">Voir la liste de vos étudiants ({students.length})</h1>
           

@@ -1,16 +1,19 @@
-import { api } from './api';
+import { api, getAuthHeaders } from './api';
 import type { OfferResponseDto } from '../types/offer';
 
 // Récupère le détail d'une offre de stage
 export async function getStageDetail(id: number): Promise<OfferResponseDto> {
-  const { data } = await api.get<OfferResponseDto>(`/offers/${id}`);
+  const { data } = await api.get<OfferResponseDto>(`/offers/${id}`, {
+    headers: getAuthHeaders()
+  });
   return data;
 }
 
 // Télécharge la convention de stage (PDF)
 export async function downloadConvention(offerId: string): Promise<Blob> {
   const { data } = await api.get(`/offers/${offerId}/convention`, {
-    responseType: 'blob'
+    responseType: 'blob',
+    headers: getAuthHeaders()
   });
   return data;
 }
@@ -24,6 +27,7 @@ export async function submitApplication(offerId: string, cvFile: File, coverLett
   await api.post(`/student/${offerId}/createApplication`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      ...getAuthHeaders()
     },
   });
 }

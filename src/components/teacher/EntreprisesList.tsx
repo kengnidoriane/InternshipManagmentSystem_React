@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { getPendingEnterprises, approveEnterprise } from '../../api/enterpriseApi';
+import { getAllEnterprises, approveEnterprise, getEnterpriseLogoById } from '../../api/enterpriseApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
@@ -13,178 +13,58 @@ const EntreprisesList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [logoUrls, setLogoUrls] = useState<Record<number, string>>({});
 
-  // Données fictives pour les tests
-  const mockPendingEnterprises: EnterpriseResponseDto[] = [
-    {
-      id: 1,
-      name: "L'Z customs",
-      email: "lz@example.com",
-      sectorOfActivity: "Informatique & Réseaux",
-      inPartnership: false,
-      matriculation: "LZ123",
-      hasLogo: { hasLogo: true },
-      country: "Cameroun",
-      city: "Douala"
-    },
-    {
-      id: 2,
-      name: "EG Share",
-      email: "egshare@example.com",
-      sectorOfActivity: "Vente d' appareils",
-      inPartnership: false,
-      matriculation: "EG456",
-      hasLogo: { hasLogo: true },
-      country: "Nigeria",
-      city: "Lagos"
-    },
-    {
-      id: 3,
-      name: "Cisco",
-      email: "cisco@example.com",
-      sectorOfActivity: "CCNA & Cybersécurité",
-      inPartnership: false,
-      matriculation: "CS789",
-      hasLogo: { hasLogo: true },
-      country: "USA",
-      city: "San Francisco"
-    }
-  ];
-
-  const mockPartnerEnterprises: EnterpriseResponseDto[] = [
-    {
-      id: 4,
-      name: "Cisco",
-      email: "cisco@example.com",
-      sectorOfActivity: "Réseaux de données",
-      inPartnership: true,
-      matriculation: "CS001",
-      hasLogo: { hasLogo: true },
-      country: "USA",
-      city: "San Jose"
-    },
-    {
-      id: 5,
-      name: "L'Z customs",
-      email: "lz@example.com",
-      sectorOfActivity: "Informatique & Réseaux",
-      inPartnership: true,
-      matriculation: "LZ002",
-      hasLogo: { hasLogo: true },
-      country: "Cameroun",
-      city: "Yaoundé"
-    },
-    {
-      id: 6,
-      name: "Figma",
-      email: "figma@example.com",
-      sectorOfActivity: "Design & UX/UI",
-      inPartnership: true,
-      matriculation: "FG003",
-      hasLogo: { hasLogo: true },
-      country: "USA",
-      city: "San Francisco"
-    },
-    {
-      id: 7,
-      name: "Cisco",
-      email: "cisco2@example.com",
-      sectorOfActivity: "Réseaux & Sécurité",
-      inPartnership: true,
-      matriculation: "CS004",
-      hasLogo: { hasLogo: true },
-      country: "USA",
-      city: "San Jose"
-    },
-    {
-      id: 8,
-      name: "5G",
-      email: "5g@example.com",
-      sectorOfActivity: "Télécommunications",
-      inPartnership: true,
-      matriculation: "5G005",
-      hasLogo: { hasLogo: true },
-      country: "France",
-      city: "Paris"
-    },
-    {
-      id: 9,
-      name: "L'Z customs",
-      email: "lz2@example.com",
-      sectorOfActivity: "Développement & DevOps",
-      inPartnership: true,
-      matriculation: "LZ006",
-      hasLogo: { hasLogo: true },
-      country: "Cameroun",
-      city: "Douala"
-    },
-    {
-      id: 10,
-      name: "Partenaire",
-      email: "partner@example.com",
-      sectorOfActivity: "Réseaux & Cyber",
-      inPartnership: true,
-      matriculation: "PT007",
-      hasLogo: { hasLogo: true },
-      country: "Sénégal",
-      city: "Dakar"
-    },
-    {
-      id: 11,
-      name: "EG Share",
-      email: "egshare@example.com",
-      sectorOfActivity: "Réseaux & Cyber",
-      inPartnership: true,
-      matriculation: "EG008",
-      hasLogo: { hasLogo: true },
-      country: "Nigeria",
-      city: "Lagos"
-    },
-    {
-      id: 12,
-      name: "Visual Studio",
-      email: "vs@example.com",
-      sectorOfActivity: "Développement & IDE",
-      inPartnership: true,
-      matriculation: "VS009",
-      hasLogo: { hasLogo: true },
-      country: "USA",
-      city: "Redmond"
-    },
-    {
-      id: 13,
-      name: "React",
-      email: "react@example.com",
-      sectorOfActivity: "Développement Frontend",
-      inPartnership: true,
-      matriculation: "RE010",
-      hasLogo: { hasLogo: true },
-      country: "USA",
-      city: "Menlo Park"
-    },
-    {
-      id: 14,
-      name: "Cisco",
-      email: "cisco3@example.com",
-      sectorOfActivity: "Certification & Formation",
-      inPartnership: true,
-      matriculation: "CS011",
-      hasLogo: { hasLogo: true },
-      country: "USA",
-      city: "San Jose"
-    }
-  ];
+  // Nettoyage des URLs de logos lors du démontage du composant
+  useEffect(() => {
+    return () => {
+      Object.values(logoUrls).forEach(url => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   useEffect(() => {
     const fetchEnterprises = async () => {
       try {
         setLoading(true);
-        const pendingResponse = await getPendingEnterprises();
-        const allEnterprises = pendingResponse.data || [];
+        const response = await getAllEnterprises();
+        const allEnterprises = response.data || [];
         const partners = allEnterprises.filter(e => e.inPartnership === true);
         const pending = allEnterprises.filter(e => e.inPartnership === false);
         setPendingEnterprises(pending);
         setPartnerEnterprises(partners);
+        
+        // Charger les logos pour toutes les entreprises
+        console.log('=== LOADING LOGOS ===');
+        console.log('All enterprises:', allEnterprises);
+        
+        const logoPromises = allEnterprises.map(async (enterprise) => {
+          console.log(`Enterprise ${enterprise.id} hasLogo:`, enterprise.hasLogo);
+          if (enterprise.hasLogo?.hasLogo) {
+            console.log(`Fetching logo for enterprise ${enterprise.id}`);
+            try {
+              const logoResponse = await getEnterpriseLogoById(enterprise.id);
+              console.log(`Logo response:`, logoResponse);
+              const logoUrl = URL.createObjectURL(logoResponse.data);
+              return { id: enterprise.id, url: logoUrl };
+            } catch (err) {
+              console.error(`Error loading logo for ${enterprise.id}:`, err);
+              return null;
+            }
+          }
+          return null;
+        });
+        
+        const logoResults = await Promise.all(logoPromises);
+        const logoMap: Record<number, string> = {};
+        logoResults.forEach(result => {
+          if (result) {
+            logoMap[result.id] = result.url;
+          }
+        });
+        setLogoUrls(logoMap);
+        
       } catch (err) {
         setError('Erreur lors du chargement des entreprises');
         console.error(err);
@@ -196,27 +76,7 @@ const EntreprisesList: React.FC = () => {
     fetchEnterprises();
   }, []);
 
-  const handleApprove = async (enterpriseId: number, approved: boolean) => {
-    try {
-      await approveEnterprise(enterpriseId, approved);
-      
-      if (approved) {
-        // Déplacer l'entreprise de pending vers partners
-        const approvedEnterprise = pendingEnterprises.find(e => e.id === enterpriseId);
-        if (approvedEnterprise) {
-          const updatedEnterprise = { ...approvedEnterprise, inPartnership: true };
-          setPendingEnterprises(prev => prev.filter(e => e.id !== enterpriseId));
-          setPartnerEnterprises(prev => [...prev, updatedEnterprise]);
-        }
-      } else {
-        // Supprimer l'entreprise rejetée
-        setPendingEnterprises(prev => prev.filter(e => e.id !== enterpriseId));
-      }
-    } catch (err) {
-      setError('Erreur lors de l\'approbation de l\'entreprise');
-      console.error(err);
-    }
-  };
+
 
   // Gestion du carrousel
   const nextSlide = () => {
@@ -236,11 +96,7 @@ const EntreprisesList: React.FC = () => {
   // Afficher 3 entreprises à la fois dans le carrousel
   const visiblePendingEnterprises = pendingEnterprises.slice(currentIndex, currentIndex + 3);
 
-  // Fonction pour générer une couleur aléatoire pour les étoiles
-  const getStarColor = () => {
-    const colors = ['#FFD700', '#FFA500', '#FF8C00'];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
+
 
   return (
     <div className="min-h-screen w-full bg-login-gradient">
@@ -288,9 +144,19 @@ const EntreprisesList: React.FC = () => {
                         onClick={() => navigate(`/enseignant/entreprises/${enterprise.id}`)}
                       >
                         <div className="flex">
-                          {/* Logo placeholder */}
-                          <div className="w-20 h-20 bg-blue-500 text-white rounded-md flex items-center justify-center text-2xl mr-4">
-                            {enterprise.name.substring(0, 2)}
+                          {/* Logo de l'entreprise */}
+                          <div className="w-20 h-20 rounded-md flex items-center justify-center mr-4 overflow-hidden">
+                            {logoUrls[enterprise.id] ? (
+                              <img 
+                                src={logoUrls[enterprise.id]} 
+                                alt={`Logo ${enterprise.name}`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-2xl">
+                                {enterprise.name.substring(0, 2)}
+                              </div>
+                            )}
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium">{enterprise.name}</h3>
@@ -299,26 +165,6 @@ const EntreprisesList: React.FC = () => {
                             </div>
                             <p className="text-xs text-gray-600">{enterprise.country} • {enterprise.city}</p>
                             <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
-                            <div className="flex gap-2 mt-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleApprove(enterprise.id, true);
-                                }}
-                                className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 cursor-pointer"
-                              >
-                                Approuver
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleApprove(enterprise.id, false);
-                                }}
-                                className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 cursor-pointer"
-                              >
-                                Rejeter
-                              </button>
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -356,9 +202,19 @@ const EntreprisesList: React.FC = () => {
                     onClick={() => navigate(`/enseignant/entreprises/${enterprise.id}`)}
                   >
                     <div className="flex">
-                      {/* Logo placeholder */}
-                      <div className="w-16 h-16 bg-blue-500 text-white rounded-md flex items-center justify-center text-xl mr-3">
-                        {enterprise.name.substring(0, 2)}
+                      {/* Logo de l'entreprise */}
+                      <div className="w-16 h-16 rounded-md flex items-center justify-center mr-3 overflow-hidden">
+                        {logoUrls[enterprise.id] ? (
+                          <img 
+                            src={logoUrls[enterprise.id]} 
+                            alt={`Logo ${enterprise.name}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-xl">
+                            {enterprise.name.substring(0, 2)}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h3 className="font-medium">{enterprise.name}</h3>

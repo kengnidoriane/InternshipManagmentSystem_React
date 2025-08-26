@@ -1,20 +1,18 @@
 
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import DashboardEntreprise from './components/DashboardEntreprise';
-import DashboardEnseignant from './components/DashboardEnseignant';
 import OffersList from './components/teacher/OffersList';
-// import OfferDetail from './components/teacher/OfferDetail';
 import EntreprisesList from './components/teacher/EntreprisesList';
 import EnterpriseDetail from './components/teacher/EnterpriseDetail';
 import StudentsList from './components/teacher/StudentsList';
 import StudentDetail from './components/teacher/StudentDetail';
 import CreerOffreEntreprise from './components/CreerOffreEntreprise';
 import ListeOffresEntreprise from './components/ListeOffresEntreprise';
+import OfferDetail from './components/OfferDetail';
 import CandidaturesEntreprise from './components/CandidaturesEntreprise';
 import DetailCandidature from './components/DetailCandidature';
 import ProfilEntreprise from './components/ProfilEntreprise';
-import OfferDetail from './components/OfferDetail';
+import TeacherOfferDetail from './components/teacher/OfferDetail';
 import LoginPage from './components/LoginPage';
 import RegisterStepper from './components/RegisterStepper';
 import RegisterSuccess from './components/RegisterSuccess';
@@ -22,6 +20,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import StageDetail from './components/StageDetail';
 import RoleRedirector from './components/RoleRedirector';
 import UserSettings from './components/UserSettings';
+import AdminDashboard from './components/admin/AdminDashboard';
+import AdminEnterprisesList from './components/admin/EnterprisesList';
+import AdminEnterpriseDetail from './components/admin/EnterpriseDetail';
+import AdminTeachersList from './components/admin/TeachersList';
+import AdminTeacherDetail from './components/admin/TeacherDetail';
 
 import ListStagesEtudiant from './components/ListStagesEtudiant';
 import MonStageEtudiant from './components/MonStageEtudiant';
@@ -53,8 +56,8 @@ const App = () => {
         {/* Routes enseignant (protégées) */}
         <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
           {/* <Route path="/enseignant/offres" element={<DashboardEnseignant />} /> */}
-          <Route path="/teacher/offers" element={<OffersList />} />
-          <Route path="/teacher/offers/:id" element={<OfferDetail />} />
+          <Route path="/enseignant/offres" element={<OffersList />} />
+          <Route path="/enseignant/offres/:id" element={<TeacherOfferDetail />} />
           <Route path="/enseignant/entreprises" element={<EntreprisesList />} />
           <Route path="/enseignant/entreprises/:id" element={<EnterpriseDetail />} />
           <Route path="/enseignant/etudiants" element={<StudentsList />} />
@@ -72,6 +75,17 @@ const App = () => {
           <Route path="/entreprise/offres/:id/edit" element={<CreerOffreEntreprise />} />
           <Route path="/entreprise/profil" element={<ProfilEntreprise />} />
           <Route path="/entreprise/parametres" element={<UserSettings />} />
+        </Route>
+
+        {/* Routes admin (protégées) */}
+        <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/enterprises" element={<AdminEnterprisesList />} />
+          <Route path="/admin/enterprises/:id" element={<AdminEnterpriseDetail />} />
+          <Route path="/admin/teachers" element={<AdminTeachersList />} />
+          <Route path="/admin/teachers/:id" element={<AdminTeacherDetail />} />
+          <Route path="/admin/students" element={<AdminDashboard />} />
+          <Route path="/admin/settings" element={<UserSettings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
