@@ -122,12 +122,13 @@ export const downloadConvention = async (offerId: number) => {
 // Utiliser getPendingEnterprises ou getEnterpriseOffers selon le contexte
 
 // Fonction utilitaire pour récupérer une entreprise par ID (via les offres)
-export const getEnterpriseById = async (enterpriseId: number) => {
+export const getEnterpriseById = async (enterpriseId: number): Promise<{ data: EnterpriseResponseDto }> => {
   if (!enterpriseId || enterpriseId <= 0) {
     throw new Error('ID d\'entreprise invalide');
   }
   // Cette fonction n'est pas disponible dans le backend
-  // Retourner des données par défaut ou rediriger vers une autre méthode
+  // On tape volontairement une réponse typée pour ne pas casser le code appelant,
+  // mais on lance une erreur pour indiquer l'absence d'endpoint.
   throw new Error('Endpoint non disponible - utiliser les endpoints spécifiques');
 };
 

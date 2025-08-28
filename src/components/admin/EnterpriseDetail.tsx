@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
 import { approveEnterprise } from '../../api/adminApi';
 import { getEnterpriseById } from '../../api/enterpriseApi';
@@ -7,37 +7,54 @@ import type { EnterpriseResponseDto } from '../../types/enterprise';
 
 const EnterpriseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const [enterprise, setEnterprise] = useState<EnterpriseResponseDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  // Logo non utilisé pour l'instant
 
-  useEffect(() => {
-    return () => {
-      if (logoUrl) {
-        URL.revokeObjectURL(logoUrl);
-      }
-    };
-  }, []);
+  // Pas de ressource à nettoyer pour le moment
 
   useEffect(() => {
     const fetchEnterpriseDetails = async () => {
       if (!id) return;
-      
+
       try {
         setLoading(true);
-        
+
+        // 1) Premier essai: récupérer depuis le state de navigation
+        const stateAny = location.state as unknown as { enterprise?: EnterpriseResponseDto } | undefined;
+        if (stateAny && stateAny.enterprise) {
+          setEnterprise(stateAny.enterprise);
+          return;
+        }
+
+        // 2) Deuxième essai: récupérer depuis le cache (sessionStorage) des pending
+        try {
+          const cached = sessionStorage.getItem('pendingEnterprises');
+          if (cached) {
+            const list = JSON.parse(cached) as EnterpriseResponseDto[];
+            const found = list.find(e => Number(e.id) === Number(id));
+            if (found) {
+              setEnterprise(found);
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Lecture du cache pendingEnterprises échouée', e);
+        }
+
+        // 3) Fallback: tenter un appel backend si disponible
         const enterpriseId = Number(id);
         if (isNaN(enterpriseId) || enterpriseId <= 0) {
           setError('ID d\'entreprise invalide');
           return;
         }
-        
+
         const response = await getEnterpriseById(enterpriseId);
         const enterpriseData = response.data;
         setEnterprise(enterpriseData);
-        
       } catch (err) {
         setError('Erreur lors du chargement des détails de l\'entreprise');
         console.error(err);
@@ -47,7 +64,7 @@ const EnterpriseDetail: React.FC = () => {
     };
 
     fetchEnterpriseDetails();
-  }, [id]);
+  }, [id, location.state]);
 
   const handleApprove = async (approved: boolean) => {
     if (!enterprise) return;
@@ -118,6 +135,17 @@ const EnterpriseDetail: React.FC = () => {
                       <h2 className="text-lg font-semibold mb-2">Informations de contact</h2>
                       <p className="text-gray-700">Email: {enterprise.email}</p>
                       <p className="text-gray-700">Matriculation: {enterprise.matriculation}</p>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="bg-white/60 rounded-md p-4">
+                        <h3 className="text-sm font-medium text-gray-600">Pays</h3>
+                        <p className="text-gray-800">{enterprise.country || '—'}</p>
+                      </div>
+                      <div className="bg-white/60 rounded-md p-4">
+                        <h3 className="text-sm font-medium text-gray-600">Ville</h3>
+                        <p className="text-gray-800">{enterprise.city || '—'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>

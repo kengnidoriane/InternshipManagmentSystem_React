@@ -32,6 +32,11 @@ const EnterprisesList: React.FC = () => {
         console.log('Admin - pending enterprises data:', response?.data);
         const pendingEnts = response.data || [];
         setPendingEnterprises(pendingEnts);
+        try {
+          sessionStorage.setItem('pendingEnterprises', JSON.stringify(pendingEnts));
+        } catch (e) {
+          console.warn('Impossible de mettre en cache les entreprises en attente', e);
+        }
         
         // Note: Pas d'endpoint pour récupérer les entreprises partenaires
         // On peut les simuler ou les laisser vides
@@ -104,7 +109,7 @@ const EnterprisesList: React.FC = () => {
                       <div 
                         key={enterprise.id} 
                         className="p-4 mx-2 w-1/3 cursor-pointer"
-                        onClick={() => navigate(`/admin/enterprises/${enterprise.id}`)}
+                        onClick={() => navigate(`/admin/enterprises/${enterprise.id}`, { state: { enterprise } })}
                       >
                         <div className="flex">
                           <div className="w-20 h-20 rounded-md flex items-center justify-center mr-4 overflow-hidden">
