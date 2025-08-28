@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
 import egLogo from '../assets/eg-logo.jpg'; // à remplacer par tes assets réels
 
-import { getApprovedOffers, filterOffers } from '../api/studentApi';
+import { getApprovedOffers } from '../api/studentApi';
 import type { OfferResponseDto } from '../types/offer';
 
 // Mock data au format backend (fallback si API vide)
@@ -21,10 +21,21 @@ const mockOffers: OfferResponseDto[] = [
       id: 1,
       name: 'EG store',
       email: 'eg@store.com',
-      sector: 'Vente d’appareils',
+      sectorOfActivity: 'Vente d’appareils',
       matriculation: 'EG12345',
+      country: 'Nigeria',
+      city: 'Lagos',
+      hasLogo: { hasLogo: false },
+      inPartnership: true,
     },
     convention: undefined,
+    typeOfInternship: 'Perfectionnement',
+    job: 'Développeur',
+    requirements: 'Avoir un PC',
+    numberOfPlaces: '2',
+    durationOfInternship: 3,
+    paying: true,
+    remote: false,
   },
 ];
 
@@ -65,7 +76,7 @@ export default function ListStagesEtudiant() {
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[var(--color-neutre9)] text-base">Filter</span>
             <label className="inline-flex relative items-center cursor-pointer ml-2">
-              <input type="checkbox" className="sr-only peer" disabled />
+              <input type="checkbox" className="sr-only peer" disabled aria-label="Activer le filtre" />
               <div className="w-7 h-3 bg-gray-200 rounded-full peer peer-focus:ring-1 peer-focus:ring-[#b79056] dark:bg-gray-700 peer-checked:bg-[#b79056] after:content-[''] after:absolute after:top-0.8 after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-[#b79056]" />
             </label>
           </div>
@@ -125,8 +136,8 @@ export default function ListStagesEtudiant() {
                   <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
                     <img src={egLogo} alt={offer.enterprise.name} className="h-12 w-12 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
                     <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise.name}</div>
-                    <div className="text-[10px] text-[var(--color-dark)] mt-1">Nigeria · Lagos</div>
-                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.sector}</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.country || 'Nigeria'} · {offer.enterprise.city || 'Lagos'}</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.sectorOfActivity}</div>
                   </div>
                   {/* Centre : titre, deadline, type, période, badges */}
                   <div className="flex-1 flex flex-col justify-between py-4">
@@ -135,8 +146,8 @@ export default function ListStagesEtudiant() {
                       <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span>
                     </div>
                     <div className="flex flex-col mt-2 mb-2 flex-wrap">
-                      <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>Perfectionnement</b></div>
-                      <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>OUI</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship || 'Perfectionnement'}</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
                       <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
                     </div>
                     <div className="flex flex-row flex-wrap gap-2 mt-1 ">
@@ -152,14 +163,6 @@ export default function ListStagesEtudiant() {
                       <div className="text-xs text-[var(--color-dark)]">Nombre de postulants <b>5</b></div>
                       <div className="text-xs text-[var(--color-dark)]">Domaine <b>{offer.domain}</b></div>
                     </div>
-                    {/* <div className="flex flex-row flex-wrap gap-2 mt-3">
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Cisco</span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Équipement réseau</span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Réseau</span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">IoT</span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Configuration routeur</span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">Cloud computing</span>
-                    </div> */}
                   </div>
                 </motion.div>
                 ))

@@ -22,6 +22,13 @@ export const login = async (loginData: LoginRequest) => {
     throw new Error(error.response?.data?.message || 'Erreur de connexion');
   }
 };
+export const verifyCurrentPassword = async (password: string) => {
+  try {
+    return await api.post('/verifyPassword', { password });
+  }catch(error: any){
+    throw new Error('mot de passe incorrect');
+  }
+};
 
 // Réinitialisation du mot de passe
 export const resetPassword = async (resetData: ResetPasswordRequestDto) => {

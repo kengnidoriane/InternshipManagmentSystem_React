@@ -15,6 +15,8 @@ export interface RegistrationFormData {
   contact?: string;
   location?: string;
   country?: string;
+  city?: string;
+  sectorOfActivity?: string;
   remote?: boolean;
   paying?: boolean;
   logo?: File;

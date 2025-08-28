@@ -12,7 +12,7 @@ const EnterprisesList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [logoUrls, setLogoUrls] = useState<Record<number, string>>({});
+  const [logoUrls] = useState<Record<number, string>>({});
 
   useEffect(() => {
     return () => {
@@ -28,6 +28,8 @@ const EnterprisesList: React.FC = () => {
         setLoading(true);
         // Récupérer seulement les entreprises en attente de validation
         const response = await getPendingEnterprises();
+        console.log('Admin - pending enterprises response:', response);
+        console.log('Admin - pending enterprises data:', response?.data);
         const pendingEnts = response.data || [];
         setPendingEnterprises(pendingEnts);
         

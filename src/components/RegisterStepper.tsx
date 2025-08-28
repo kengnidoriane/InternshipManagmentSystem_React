@@ -60,6 +60,8 @@ const RegisterStepper = () => {
             password: formData.password,
             contact: entrepriseData.contact,
             location: entrepriseData.location,
+            city: entrepriseData.city, 
+            sectorOfActivity: entrepriseData.sectorOfActivity,
             country: entrepriseData.country,
             remote: entrepriseData.remote,
             paying: entrepriseData.paying,

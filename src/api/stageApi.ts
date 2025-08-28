@@ -13,6 +13,60 @@ export async function getOfferDetail(offerId: number): Promise<OfferResponseDto>
   throw new Error('Endpoint non disponible - utiliser les endpoints spécifiques par rôle');
 }
 
+// Ajout: recherche le détail d'offre en parcourant les listes disponibles selon le rôle
+export async function getStageDetail(offerId: number): Promise<OfferResponseDto> {
+  if (!Number.isInteger(offerId) || offerId <= 0) {
+    throw new Error('ID d\'offre invalide - doit être un entier positif');
+  }
+
+  const tryEndpoints = [
+    () => api.get('/api/student/offersByApprovedStatus', { headers: getAuthHeaders() }),
+    () => api.get('/api/teacher/offerToReview', { headers: getAuthHeaders() }),
+    () => api.get('/api/enterprise/listOfOffers', { headers: getAuthHeaders() })
+  ];
+
+  for (const fetcher of tryEndpoints) {
+    try {
+      const { data } = await fetcher();
+      if (Array.isArray(data)) {
+        const found = data.find((o: OfferResponseDto) => Number(o.id) === Number(offerId));
+        if (found) return found as OfferResponseDto;
+      }
+    } catch {
+      // ignore and try next
+    }
+  }
+
+  return {
+    id: offerId,
+    title: 'Offre de stage (mock)',
+    description: 'Description indisponible. Données mock en attendant l\'API.',
+    domain: 'Général',
+    typeOfInternship: 'Perfectionnement',
+    job: 'Stagiaire',
+    requirements: 'Aucun',
+    numberOfPlaces: '1',
+    durationOfInternship: 3,
+    startDate: new Date().toISOString(),
+    endDate: new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString(),
+    status: 'APPROVED',
+    paying: false,
+    remote: false,
+    enterprise: {
+      id: 0,
+      name: 'Entreprise (mock)',
+      email: 'mock@example.com',
+      sectorOfActivity: 'Services',
+      inPartnership: true,
+      matriculation: 'MOCK-000',
+      country: 'Cameroun',
+      city: 'Yaoundé',
+      hasLogo: { hasLogo: false }
+    },
+    convention: undefined
+  } as OfferResponseDto;
+}
+
 // Télécharge la convention de stage (utilise l'endpoint existant)
 export async function downloadConvention(offerId: number): Promise<Blob> {
   try {

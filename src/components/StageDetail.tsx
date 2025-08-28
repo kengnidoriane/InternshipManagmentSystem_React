@@ -20,26 +20,37 @@ const StageDetail: React.FC = () => {
     if (!id) return;
     setLoading(true);
     getStageDetail(Number(id))
-      .then((offerData) => {
+      .then((offerData: OfferResponseDto) => {
         setOffer(offerData);
         setError(null);
       })
       .catch(() => {
-        // fallback mockdata
+        // fallback mockdata conforme à OfferResponseDto
         setOffer({
-          id: 0,
+          id: Number(id),
           title: 'Dev Three.js Canvas 3D (WebGL) SVG',
-          startDate: '15 juin',
-          endDate: '10 decembre 2025',
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString(),
           domain: 'web dev',
           description: 'Lorem ipsum dolor sit amet consectetur. Hendrerit molestie aliquam duis sagittis elit amet',
           status: 'APPROVED',
+          typeOfInternship: 'Perfectionnement',
+          job: 'Stagiaire',
+          requirements: 'Avoir un PC',
+          numberOfPlaces: '2',
+          durationOfInternship: 3,
+          paying: true,
+          remote: false,
           enterprise: {
             id: 1,
             name: 'LZ customs',
             email: 'lz@customs.com',
-            sector: 'Entreprise de services',
+            sectorOfActivity: 'Entreprise de services',
             matriculation: 'LZ-2025',
+            country: 'Cameroun',
+            city: 'Yaoundé',
+            hasLogo: { hasLogo: false },
+            inPartnership: true,
           },
           convention: undefined,
         } as OfferResponseDto);
@@ -62,7 +73,7 @@ const StageDetail: React.FC = () => {
   const handleDownloadConvention = async () => {
     if (!id) return;
     try {
-      const blob = await downloadConvention(id);
+      const blob = await downloadConvention(Number(id));
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -104,7 +115,7 @@ const StageDetail: React.FC = () => {
 
     setSubmitting(true);
     try {
-      await submitApplication(id, cvFile, coverLetterFile);
+      await submitApplication(Number(id), cvFile, coverLetterFile);
       setSubmitSuccess(true);
       setTimeout(() => {
         setShowCandidatureForm(false);
@@ -141,8 +152,8 @@ const StageDetail: React.FC = () => {
                   
                   <div className="mb-5">
                     <div className="flex flex-row flex-wrap gap-8 items-center mb-2">
-                      <div className="text-base text-[var(--color-dark)]">Type de stage <b>Perfectionnement</b></div>
-                      <div className="text-base text-[var(--color-dark)]">Stage payant <b>OUI</b></div>
+                      <div className="text-base text-[var(--color-dark)]">Type de stage <b>{offer.typeOfInternship || 'Perfectionnement'}</b></div>
+                      <div className="text-base text-[var(--color-dark)]">Stage payant <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
                       <div className="text-base text-[var(--color-dark)]">🗓️ Période du stage <b>{offer.startDate} - {offer.endDate}</b></div>
                     </div>
                     <div className="flex flex-row flex-wrap gap-2 mb-2">
@@ -193,9 +204,9 @@ const StageDetail: React.FC = () => {
                   <div className="text-base font-bold text-[var(--color-dark)] text-center mb-1">{offer.enterprise.name}</div>
                   <div className="flex flex-row gap-2 mb-1">
                     <span role="img" aria-label="flag" className="text-xl">🇨🇲</span>
-                    <span className="text-xs text-[var(--color-dark)]">Cameroun • Yaoundé</span>
+                    <span className="text-xs text-[var(--color-dark)]">{offer.enterprise.country} • {offer.enterprise.city}</span>
                   </div>
-                  <div className="text-xs text-[var(--color-dark)] mb-1">{offer.enterprise.sector || 'Entreprise de services'}</div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">{offer.enterprise.sectorOfActivity || 'Entreprise de services'}</div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de place <b>{places}</b></div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de postulants <b>{postulants}</b></div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Domaine <b>{offer.domain}</b></div>
@@ -251,6 +262,7 @@ const StageDetail: React.FC = () => {
                               onChange={handleCoverLetterChange}
                               className="hidden"
                               id="motivation-letter-upload"
+                              aria-label="Uploader la lettre de motivation"
                             />
                             <div className="cursor-pointer flex flex-col items-center">
                               <div className="w-16 h-20 bg-white rounded border border-gray-300 flex flex-col items-center justify-center mb-2 shadow-sm">
@@ -286,6 +298,7 @@ const StageDetail: React.FC = () => {
                               className="hidden"
                               id="cv-upload"
                               required
+                              aria-label="Uploader le CV"
                             />
                             <div className="cursor-pointer flex flex-col items-center">
                               <div className="w-16 h-20 bg-white rounded border border-gray-300 flex flex-col items-center justify-center mb-2 shadow-sm">
