@@ -45,6 +45,8 @@ const LoginPage = () => {
           navigate('/enseignant/offres');
         } else if (role === 'ENTERPRISE') {
           navigate('/entreprise/dashboard');
+        } else if (role === 'ADMIN') {
+          navigate('/admin/dashboard');
         } else {
           navigate('/');
         }

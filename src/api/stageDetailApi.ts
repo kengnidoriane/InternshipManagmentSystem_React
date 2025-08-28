@@ -1,35 +1,32 @@
 import { api, getAuthHeaders } from './api';
 import type { OfferResponseDto } from '../types/offer';
 
-// Récupère le détail d'une offre
+// Note: Les endpoints /offers/{id} ne sont pas disponibles dans le backend
+// Ces fonctions sont conservées pour compatibilité mais ne fonctionneront pas
+
+// Récupère le détail d'une offre (endpoint non disponible)
 export async function getOfferDetail(id: number): Promise<OfferResponseDto> {
-  const { data } = await api.get<OfferResponseDto>(`/offers/${id}`, {
-    headers: getAuthHeaders()
-  });
-  return data;
+  try {
+    if (!id || id <= 0) {
+      throw new Error('ID d\'offre invalide');
+    }
+    // Endpoint non disponible dans le backend
+    throw new Error('Endpoint non disponible - utiliser les endpoints spécifiques par rôle');
+  } catch (error) {
+    throw error;
+  }
 }
 
-// Récupère le texte ou le PDF de la convention
+// Récupère le texte ou le PDF de la convention (endpoint non disponible)
 export async function getConventionText(id: number): Promise<{ text: string; isPdf: boolean; downloadUrl?: string }> {
-  // On suppose que l'API retourne soit un texte (markdown ou plain), soit un PDF à télécharger
   try {
-    const { data, headers } = await api.get(`/offers/${id}/convention`, { 
-      responseType: 'arraybuffer',
-      headers: getAuthHeaders()
-    });
-    const contentType = headers['content-type'];
-    if (contentType && contentType.includes('application/pdf')) {
-      // Génère une URL blob pour le PDF
-      const blob = new Blob([data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      return { text: '', isPdf: true, downloadUrl: url };
-    } else {
-      // Si c'est du texte (markdown, plain, etc.)
-      const decoder = new TextDecoder('utf-8');
-      return { text: decoder.decode(data), isPdf: false };
+    if (!id || id <= 0) {
+      throw new Error('ID d\'offre invalide');
     }
-  } catch {
-    // Fallback si erreur
-    return { text: '', isPdf: false };
+    // Endpoint non disponible dans le backend
+    // Utiliser downloadFiles/downloadConvention/{id} à la place
+    throw new Error('Endpoint non disponible - utiliser downloadConvention');
+  } catch (error) {
+    throw error;
   }
 }

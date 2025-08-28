@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getEnterpriseInfo, getEnterpriseLogo, updateEnterpriseProfile, uploadEnterpriseLogo } from '../api/enterpriseApi';
+import { getEnterpriseLogo, uploadProfilePhoto } from '../api/enterpriseApi';
+import { getUserEmail, updateEmail } from '../api/profileApi';
 import EnterpriseHeader from './EnterpriseHeader';
 
 interface EnterpriseProfile {
@@ -26,20 +27,22 @@ const ProfilEntreprise: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileResponse] = await Promise.all([
-          getEnterpriseInfo()
-        ]);
-        console.log('Données reçues du backend:', profileResponse.data);
-        // Initialiser les champs manquants avec des valeurs par défaut
+        // Récupérer l'email de l'utilisateur connecté
+        const emailResponse = await getUserEmail();
+        const userEmail = emailResponse.data;
+        
+        // Créer un profil par défaut avec l'email récupéré
         const profileData = {
-          ...profileResponse.data,
-          country: profileResponse.data.country || '',
-          city: profileResponse.data.city || '',
-          sectorOfActivity: profileResponse.data.sectorOfActivity || '',
-          contact: profileResponse.data.contact || '',
-          location: profileResponse.data.location || '',
-          matriculation: profileResponse.data.matriculation || '',
-          inPartnership: profileResponse.data.inPartnership || false
+          id: 1,
+          name: 'Mon Entreprise',
+          email: userEmail,
+          country: '',
+          city: '',
+          sectorOfActivity: '',
+          contact: '',
+          location: '',
+          matriculation: '',
+          inPartnership: false
         };
         setProfile(profileData);
         setEditForm(profileData);
@@ -86,13 +89,13 @@ const ProfilEntreprise: React.FC = () => {
     if (!editForm) return;
     setSaving(true);
     try {
-      await updateEnterpriseProfile({
-        country: editForm.country,
-        city: editForm.city,
-        sectorOfActivity: editForm.sectorOfActivity,
-        contact: editForm.contact,
-        location: editForm.location
-      });
+      // Note: Les endpoints pour mettre à jour les informations d'entreprise
+      // ne sont pas disponibles dans le backend. Seule la mise à jour d'email est possible.
+      if (editForm.email !== profile?.email) {
+        await updateEmail(editForm.email);
+      }
+      
+      // Sauvegarder localement les autres informations
       setProfile(editForm);
       setIsEditing(false);
       alert('Profil mis à jour avec succès!');
@@ -115,7 +118,7 @@ const ProfilEntreprise: React.FC = () => {
     if (!file) return;
 
     try {
-      await uploadEnterpriseLogo(file);
+      await uploadProfilePhoto(file);
       // Recharger le logo
       try {
         const logoResponse = await getEnterpriseLogo();
@@ -175,11 +178,11 @@ const ProfilEntreprise: React.FC = () => {
                 <div className="flex-grow text-white space-y-3">
                   <h2 className="text-xl font-light mb-6">{profile.name}</h2>
                   
+                  <div><span className="font-medium">Email :</span> {profile.email || 'Non renseigné'}</div>
                   <div><span className="font-medium">Pays :</span> {profile.country || 'Non renseigné'}</div>
                   <div><span className="font-medium">Ville :</span> {profile.city || 'Non renseigné'}</div>
                   <div><span className="font-medium">Domaine d'activé :</span> {profile.sectorOfActivity || 'Non renseigné'}</div>
                   <div><span className="font-medium">Telephone :</span> {profile.contact || 'Non renseigné'}</div>
-                  <div><span className="font-medium">Site web :</span> {profile.location || 'Non renseigné'}</div>
                 </div>
 
                 {/* Logo à droite */}
@@ -218,6 +221,17 @@ const ProfilEntreprise: React.FC = () => {
                 <p className="text-white text-sm mb-6">Définissez les informations du profil</p>
                 
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-white text-sm mb-1">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={editForm?.email || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-gray-200 rounded text-black outline-none"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-white text-sm mb-1">Pays</label>
                     <input

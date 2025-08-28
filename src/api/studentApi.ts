@@ -1,31 +1,201 @@
 import { api, getAuthHeaders } from './api';
+import type { StudentResponseDto } from '../types/student';
 
-// Récupérer les offres validées pour l'étudiant connecté
-export const getOffersByApprovedStatus = () =>
-  api.get('/api/student/offersByApprovedStatus', { headers: getAuthHeaders() });
+// Récupérer les offres approuvées pour l'étudiant
+export const getApprovedOffers = async () => {
+  try {
+    return await api.get('/api/student/offersByApprovedStatus', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des offres');
+  }
+};
 
-// Filtrer les offres selon les critères payant/distance
-export const filterOffers = (
-  paying?: boolean,
-  remote?: boolean
-) =>
-  api.get('/api/student/filter', {
-    params: { ...(paying !== undefined && { paying }), ...(remote !== undefined && { remote }) },
-    headers: getAuthHeaders()
-  });
+// Filtrer les offres
+export const filterOffers = async (paying?: boolean, remote?: boolean) => {
+  try {
+    const params = new URLSearchParams();
+    if (paying !== undefined) params.append('paying', paying.toString());
+    if (remote !== undefined) params.append('remote', remote.toString());
+    
+    return await api.get(`/api/student/filter?${params.toString()}`, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors du filtrage des offres');
+  }
+};
 
-// Postuler à une offre
-import type { StudentApplicationDto } from '../types/student';
-export const createApplication = (
-  offerId: string,
-  applicationData: StudentApplicationDto
-) =>
-  api.post(`/api/student/${offerId}/createApplication`, applicationData, {
-    headers: getAuthHeaders()
-  });
+// Récupérer les notifications de l'étudiant
+export const getStudentNotifications = async () => {
+  try {
+    return await api.get('/api/student/StudentNotifications', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des notifications');
+  }
+};
 
-// Supprimer le compte étudiant
-export const deleteStudentAccount = () =>
-  api.delete('/api/student/deleteStudentAccount', {
-    headers: getAuthHeaders()
-  });
+// Créer une candidature
+export const createApplication = async (offerId: number, applicationData: FormData) => {
+  try {
+    if (!offerId || offerId <= 0) {
+      throw new Error('ID d\'offre invalide');
+    }
+    if (!applicationData) {
+      throw new Error('Données de candidature requises');
+    }
+    return await api.post(`/api/student/${offerId}/createApplication`, applicationData, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 409) {
+      throw new Error('Vous avez déjà postulé pour cette offre');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la création de la candidature');
+  }
+};
+
+// Mettre à jour le statut de l'étudiant
+export const updateStudentStatus = async () => {
+  try {
+    return await api.put('/api/student/updateStudentStatus', {}, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du statut');
+  }
+};
+
+// Mettre à jour les langages
+export const updateLanguages = async (language: string) => {
+  try {
+    if (!language || language.trim() === '') {
+      throw new Error('Langage requis');
+    }
+    return await api.patch('/api/student/updateLanguages', { language }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du langage');
+  }
+};
+
+// Mettre à jour le lien GitHub
+export const updateGithubLink = async (github: string) => {
+  try {
+    if (!github || github.trim() === '') {
+      throw new Error('Lien GitHub requis');
+    }
+    return await api.patch('/api/student/updateGithubLink', { github }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du lien GitHub');
+  }
+};
+
+// Mettre à jour le lien LinkedIn  
+export const updateLinkedinLink = async (linkedin: string) => {
+  try {
+    if (!linkedin || linkedin.trim() === '') {
+      throw new Error('Lien LinkedIn requis');
+    }
+    return await api.patch('/api/student/updateLinkedinLink', { linkedin }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du lien LinkedIn');
+  }
+};
+
+
+
+// Télécharger un CV
+export const downloadCV = async (applicationId: number) => {
+  try {
+    if (!applicationId || applicationId <= 0) {
+      throw new Error('ID de candidature invalide');
+    }
+    return await api.get(`/downloadFiles/cv/${applicationId}/download`, {
+      responseType: 'blob',
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('CV non trouvé');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement du CV');
+  }
+};
+
+// Télécharger une lettre de motivation
+export const downloadCoverLetter = async (applicationId: number) => {
+  try {
+    if (!applicationId || applicationId <= 0) {
+      throw new Error('ID de candidature invalide');
+    }
+    return await api.get(`/downloadFiles/coverLetter/${applicationId}/download`, {
+      responseType: 'blob',
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('Lettre de motivation non trouvée');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement de la lettre');
+  }
+};
+
+// Télécharger une convention
+export const downloadConvention = async (offerId: number) => {
+  try {
+    if (!offerId || offerId <= 0) {
+      throw new Error('ID d\'offre invalide');
+    }
+    return await api.get(`/downloadFiles/downloadConvention/${offerId}`, {
+      responseType: 'blob',
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('Convention non trouvée');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement de la convention');
+  }
+};

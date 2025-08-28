@@ -20,10 +20,9 @@ export interface OfferRequestDto {
   typeOfInternship: string;
   job: string;
   requirements: string;
-  pdfConvention?: File; // Fichier PDF de convention (optionnel)
-  startDate: string; // ISO string
-  endDate: string;   // ISO string
-  numberOfPlaces: string;
+  startDate: string; // ISO string - sera converti en LocalDate par le backend
+  endDate: string;   // ISO string - sera converti en LocalDate par le backend
+  numberOfPlaces: number; // ✅ Corrigé: number au lieu de string
   paying: boolean;
   remote: boolean;
 }

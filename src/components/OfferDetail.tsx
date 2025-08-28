@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import EntrepriseHeader from './EnterpriseHeader';
-import { getOfferById, downloadConvention, getEnterpriseLogo } from '../api/enterpriseApi';
+import { getEnterpriseOffers, downloadConvention, getEnterpriseLogo } from '../api/enterpriseApi';
 import { useApplicationsStore } from '../store/applicationsStore';
 import type { OfferResponseDto } from '../types/offer';
 
@@ -18,13 +18,16 @@ const OfferDetail: React.FC = () => {
     if (!id) return;
     
     setLoading(true);
-    getOfferById(parseInt(id))
+    // Récupérer toutes les offres de l'entreprise et filtrer par ID
+    getEnterpriseOffers()
       .then(response => {
-        const data = response.data;
-        setOffer(data);
+        const offers = response.data || [];
+        const foundOffer = offers.find((offer: OfferResponseDto) => offer.id === parseInt(id));
         
-        // Charger le logo si disponible
-        if (data.enterprise?.hasLogo?.hasLogo) {
+        if (foundOffer) {
+          setOffer(foundOffer);
+          
+          // Charger le logo si disponible
           getEnterpriseLogo()
             .then(logoResponse => {
               if (logoResponse.data && logoResponse.data.size > 0) {
@@ -34,6 +37,8 @@ const OfferDetail: React.FC = () => {
               }
             })
             .catch(() => setLogoUrl(null));
+        } else {
+          setOffer(null);
         }
       })
       .catch(error => {

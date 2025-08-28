@@ -1,31 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import AdminHeader from './AdminHeader';
-import { getPendingEnterprises, approveEnterprise, downloadInternshipsExcel } from '../../api/adminApi';
+import { getPendingEnterprises, approveEnterprise, downloadInternshipsExcel, getAllTeachers, getAllStudents } from '../../api/adminApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 
 const AdminDashboard: React.FC = () => {
   const [pendingEnterprises, setPendingEnterprises] = useState<EnterpriseResponseDto[]>([]);
+  const [teachersCount, setTeachersCount] = useState(0);
+  const [studentsCount, setStudentsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPendingEnterprises();
+    fetchData();
   }, []);
 
-  const fetchPendingEnterprises = async () => {
+  const fetchData = async () => {
     try {
-      const response = await getPendingEnterprises();
-      setPendingEnterprises(response.data);
+      const [enterprisesRes, teachersRes, studentsRes] = await Promise.all([
+        getPendingEnterprises(),
+        getAllTeachers(),
+        getAllStudents()
+      ]);
+      setPendingEnterprises(enterprisesRes.data);
+      setTeachersCount(teachersRes.data.length);
+      setStudentsCount(studentsRes.data.length);
     } catch (error) {
-      console.error('Erreur lors du chargement des entreprises:', error);
+      console.error('Erreur lors du chargement des données:', error);
     } finally {
       setLoading(false);
     }
   };
 
+
+
   const handleApprove = async (enterpriseId: number, approved: boolean) => {
     try {
       await approveEnterprise(enterpriseId, approved);
-      fetchPendingEnterprises();
+      fetchData();
     } catch (error) {
       console.error('Erreur lors de l\'approbation:', error);
     }
@@ -51,10 +61,20 @@ const AdminDashboard: React.FC = () => {
       <AdminHeader />
       
       <div className="container mx-auto p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-2">Entreprises en attente</h3>
             <p className="text-3xl font-bold text-orange-600">{pendingEnterprises.length}</p>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold mb-2">Enseignants</h3>
+            <p className="text-3xl font-bold text-blue-600">{teachersCount}</p>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-semibold mb-2">Étudiants</h3>
+            <p className="text-3xl font-bold text-green-600">{studentsCount}</p>
           </div>
           
           <div className="bg-white p-6 rounded-lg shadow">

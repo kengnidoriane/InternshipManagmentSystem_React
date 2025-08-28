@@ -2,117 +2,191 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
 import { getPendingEnterprises } from '../../api/adminApi';
-import { getAllEnterprises } from '../../api/enterpriseApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const EnterprisesList: React.FC = () => {
   const navigate = useNavigate();
   const [pendingEnterprises, setPendingEnterprises] = useState<EnterpriseResponseDto[]>([]);
-  const [approvedEnterprises, setApprovedEnterprises] = useState<EnterpriseResponseDto[]>([]);
+  const [partnerEnterprises, setPartnerEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
+  const [error, setError] = useState<string | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [logoUrls, setLogoUrls] = useState<Record<number, string>>({});
 
   useEffect(() => {
+    return () => {
+      Object.values(logoUrls).forEach(url => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchEnterprises = async () => {
+      try {
+        setLoading(true);
+        // Récupérer seulement les entreprises en attente de validation
+        const response = await getPendingEnterprises();
+        const pendingEnts = response.data || [];
+        setPendingEnterprises(pendingEnts);
+        
+        // Note: Pas d'endpoint pour récupérer les entreprises partenaires
+        // On peut les simuler ou les laisser vides
+        setPartnerEnterprises([]);
+        
+      } catch (err) {
+        setError('Erreur lors du chargement des entreprises');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchEnterprises();
   }, []);
 
-  const fetchEnterprises = async () => {
-    try {
-      const [pendingResponse, allResponse] = await Promise.all([
-        getPendingEnterprises(),
-        getAllEnterprises()
-      ]);
-      
-      setPendingEnterprises(pendingResponse.data);
-      setApprovedEnterprises(allResponse.data.filter(e => e.inPartnership));
-    } catch (error) {
-      console.error('Erreur lors du chargement:', error);
-    } finally {
-      setLoading(false);
-    }
+  const nextSlide = () => {
+    if (pendingEnterprises.length <= 3) return;
+    setCurrentIndex(prevIndex => 
+      prevIndex === pendingEnterprises.length - 3 ? 0 : prevIndex + 1
+    );
   };
 
-  const handleEnterpriseClick = (enterprise: EnterpriseResponseDto) => {
-    navigate(`/admin/enterprises/${enterprise.id}`, { state: { enterprise } });
+  const prevSlide = () => {
+    if (pendingEnterprises.length <= 3) return;
+    setCurrentIndex(prevIndex => 
+      prevIndex === 0 ? pendingEnterprises.length - 3 : prevIndex - 1
+    );
   };
+
+  const visiblePendingEnterprises = pendingEnterprises.slice(currentIndex, currentIndex + 3);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen w-full bg-login-gradient">
       <AdminHeader />
-      
-      <div className="container mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Gestion des Entreprises</h1>
-        
-        <div className="bg-white rounded-lg shadow">
-          <div className="border-b">
-            <nav className="flex">
-              <button
-                onClick={() => setActiveTab('pending')}
-                className={`px-6 py-3 font-medium ${
-                  activeTab === 'pending'
-                    ? 'border-b-2 border-blue-500 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                En attente ({pendingEnterprises.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('approved')}
-                className={`px-6 py-3 font-medium ${
-                  activeTab === 'approved'
-                    ? 'border-b-2 border-blue-500 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Approuvées ({approvedEnterprises.length})
-              </button>
-            </nav>
+      <main className="container max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-[#e8e0d0] rounded-lg p-6 shadow-lg">
+          <div className="flex items-center mb-6">
+            <button 
+              onClick={() => navigate(-1)}
+              className="flex items-center text-gray-700 hover:text-gray-900"
+            >
+              <span className="text-xl mr-2">←</span>
+              <span className="text-xl font-medium">Entreprises</span>
+            </button>
           </div>
 
-          <div className="p-6">
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Demandes de partenariats en attente</h2>
+            
             {loading ? (
-              <div className="text-center py-8">Chargement...</div>
+              <div className="flex justify-center py-8">Chargement...</div>
+            ) : error ? (
+              <div className="text-red-500 py-4">{error}</div>
+            ) : pendingEnterprises.length === 0 ? (
+              <div className="py-4">Aucune demande de partenariat en attente.</div>
             ) : (
-              <div className="grid gap-4">
-                {(activeTab === 'pending' ? pendingEnterprises : approvedEnterprises).map((enterprise) => (
-                  <div
-                    key={enterprise.id}
-                    onClick={() => handleEnterpriseClick(enterprise)}
-                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+              <div className="relative">
+                <div className="flex items-center">
+                  <button 
+                    onClick={prevSlide}
+                    className="absolute left-0 z-10 bg-white/50 rounded-full p-2 shadow-md"
+                    disabled={pendingEnterprises.length <= 3}
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{enterprise.name}</h3>
-                        <p className="text-gray-600">{enterprise.email}</p>
-                        <p className="text-sm text-gray-500">{enterprise.sectorOfActivity}</p>
-                        <p className="text-sm text-gray-500">{enterprise.city}, {enterprise.country}</p>
+                    <FiChevronLeft size={24} />
+                  </button>
+                  
+                  <div className="flex justify-between w-full overflow-hidden px-10">
+                    {visiblePendingEnterprises.map((enterprise) => (
+                      <div 
+                        key={enterprise.id} 
+                        className="p-4 mx-2 w-1/3 cursor-pointer"
+                        onClick={() => navigate(`/admin/enterprises/${enterprise.id}`)}
+                      >
+                        <div className="flex">
+                          <div className="w-20 h-20 rounded-md flex items-center justify-center mr-4 overflow-hidden">
+                            {logoUrls[enterprise.id] ? (
+                              <img 
+                                src={logoUrls[enterprise.id]} 
+                                alt={`Logo ${enterprise.name}`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-2xl">
+                                {enterprise.name.substring(0, 2)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-medium">{enterprise.name}</h3>
+                            <div className="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs my-1">
+                              En attente
+                            </div>
+                            <p className="text-xs text-gray-600">{enterprise.country} • {enterprise.city}</p>
+                            <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          enterprise.inPartnership
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {enterprise.inPartnership ? 'Approuvée' : 'En attente'}
-                        </span>
+                    ))}
+                  </div>
+                  
+                  <button 
+                    onClick={nextSlide}
+                    className="absolute right-0 z-10 bg-white/50 rounded-full p-2 shadow-md"
+                    disabled={pendingEnterprises.length <= 3}
+                  >
+                    <FiChevronRight size={24} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-xl font-medium mb-4">Entreprises partenaires</h2>
+            
+            {loading ? (
+              <div className="flex justify-center py-8">Chargement...</div>
+            ) : error ? (
+              <div className="text-red-500 py-4">{error}</div>
+            ) : partnerEnterprises.length === 0 ? (
+              <div className="py-4">Aucune entreprise partenaire.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                {partnerEnterprises.map((enterprise) => (
+                  <div 
+                    key={enterprise.id} 
+                    className="p-4 cursor-pointer"
+                    onClick={() => navigate(`/admin/enterprises/${enterprise.id}`)}
+                  >
+                    <div className="flex">
+                      <div className="w-16 h-16 rounded-md flex items-center justify-center mr-3 overflow-hidden">
+                        {logoUrls[enterprise.id] ? (
+                          <img 
+                            src={logoUrls[enterprise.id]} 
+                            alt={`Logo ${enterprise.name}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-xl">
+                            {enterprise.name.substring(0, 2)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{enterprise.name}</h3>
+                        <p className="text-xs text-gray-600">{enterprise.country} • {enterprise.city}</p>
+                        <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
                       </div>
                     </div>
                   </div>
                 ))}
-                
-                {(activeTab === 'pending' ? pendingEnterprises : approvedEnterprises).length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    {activeTab === 'pending' 
-                      ? 'Aucune entreprise en attente'
-                      : 'Aucune entreprise approuvée'
-                    }
-                  </div>
-                )}
               </div>
             )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

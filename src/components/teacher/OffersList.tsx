@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { api } from '../../api/api';
+import { getOffersToReviewByDepartment } from '../../api/teacherApi';
 
 interface Offer {
   id: number;
@@ -31,7 +31,7 @@ export default function OffersList() {
     const fetchOffers = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/api/teacher/offerToReview');
+        const response = await getOffersToReviewByDepartment();
         console.log('=== OFFERS RESPONSE ===');
         console.log('Response:', response);
         console.log('Data:', response.data);

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { getCurrentUser } from '../api/authApi';
+import { getUserEmail } from '../api/profileApi';
 import TeacherHeader from './TeacherHeader';
 import EnterpriseHeader from './EnterpriseHeader';
 import EtudiantHeader from './EtudiantHeader';
+import AdminHeader from './admin/AdminHeader';
 import PasswordVerification from './PasswordVerification';
 import UserSettingsModification from './UserSettingsModification';
 import LogoutConfirmation from './LogoutConfirmation';
@@ -23,8 +24,8 @@ const UserSettings: React.FC = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await getCurrentUser();
-        setUserEmail(response.data.email);
+        const response = await getUserEmail();
+        setUserEmail(response.data);
       } catch (error) {
         console.error('Erreur lors de la récupération des infos utilisateur:', error);
         setUserEmail('Email non disponible');
@@ -68,6 +69,7 @@ const UserSettings: React.FC = () => {
     if (role === 'TEACHER') return <TeacherHeader />;
     if (role === 'ENTERPRISE') return <EnterpriseHeader />;
     if (role === 'STUDENT') return <EtudiantHeader />;
+    if (role === 'ADMIN') return <AdminHeader />;
     return null;
   };
 

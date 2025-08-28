@@ -4,78 +4,145 @@ import type { EnterpriseResponseDto } from '../types/enterprise';
 import type { OfferResponseDto } from '../types/offer';
 
 // Offres à valider pour le département de l'enseignant
-export const getOffersToReviewByDepartment = () =>
-  api.get('/api/teacher/offerToReview', { headers: getAuthHeaders() });
-
-// Récupérer toutes les offres des entreprises partenaires
-export const getAllPartnerOffers = () =>
-  api.get<OfferResponseDto[]>('/api/teacher/allPartnerOffers', { headers: getAuthHeaders() });
-
-// Récupérer toutes les offres (pour admin)
-export const getTeacherOffers = () =>
-  api.get<OfferResponseDto[]>('/api/teacher/offerToReview', { headers: getAuthHeaders() });
+export const getOffersToReviewByDepartment = async () => {
+  try {
+    return await api.get('/api/teacher/offerToReview', { headers: getAuthHeaders() });
+  } catch (error) {
+    throw error;
+  }
+};
 
 // Télécharger la convention PDF d'une offre
-export const downloadConvention = (id: string) =>
-  api.get(`/api/teacher/convention/${id}/download`, { 
-    responseType: 'blob',
-    headers: getAuthHeaders()
-  });
-
-// Télécharger la convention d'une offre (nouveau endpoint)
-export const downloadOfferConvention = (offerId: number) =>
-  api.get(`/api/teacher/downloadConvention/${offerId}`, { 
-    responseType: 'blob',
-    headers: getAuthHeaders()
-  });
+export const downloadConvention = async (offerId: number) => {
+  try {
+    if (!offerId || offerId <= 0) {
+      throw new Error('ID d\'offre invalide');
+    }
+    return await api.get(`/downloadFiles/downloadConvention/${offerId}`, { 
+      responseType: 'blob',
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};
 
 // Valider une offre et sa convention
-export const validateOfferAndConvention = (
-  id: string,
-  validationData: TeacherRegistrationRequestDto
-) =>
-  api.post(`/api/teacher/offers/${id}/validate`, validationData, {
-    headers: getAuthHeaders()
-  });
+export const validateOfferAndConvention = async (
+  id: number,
+  validationData: { offerApproved: boolean; conventionApproved: boolean }
+) => {
+  try {
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('ID d\'offre invalide - doit être un entier positif');
+    }
+    return await api.put(`/api/teacher/offers/${id}/validate`, validationData, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 400) {
+      throw new Error('Offre déjà traitée ou données invalides');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    if (error.response?.status === 403) {
+      throw new Error('Vous n\'avez pas les droits pour valider cette offre');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la validation de l\'offre');
+  }
+};
 
 // Récupérer la liste des étudiants par département
-export const getStudentsByDepartment = () =>
-  api.get('/api/teacher/listOfStudentByDepartment', { headers: getAuthHeaders() });
+export const getStudentsByDepartment = async () => {
+  try {
+    return await api.get('/api/teacher/listOfStudentByDepartment', { headers: getAuthHeaders() });
+  } catch (error) {
+    throw error;
+  }
+};
 
 // Télécharger le CV d'un étudiant
-export const downloadStudentCV = (studentId: string) =>
-  api.get(`/api/teacher/cv/${studentId}/download`, { 
-    responseType: 'blob',
-    headers: getAuthHeaders()
-  });
+export const downloadStudentCV = async (applicationId: number) => {
+  try {
+    if (!applicationId || applicationId <= 0) {
+      throw new Error('ID de candidature invalide');
+    }
+    return await api.get(`/downloadFiles/cv/${applicationId}/download`, { 
+      responseType: 'blob',
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};
 
 // Récupérer les entreprises en attente de validation
-export const getPendingEnterprises = () =>
-  api.get<EnterpriseResponseDto[]>('/api/teacher/approvalPendingEnterprise', { headers: getAuthHeaders() });
-
-// Récupérer toutes les entreprises
-export const getAllEnterprises = () =>
-  api.get<EnterpriseResponseDto[]>('/api/teacher/allEnterprises', { headers: getAuthHeaders() });
-
-// Récupérer une entreprise par ID
-export const getEnterpriseById = (enterpriseId: number) =>
-  api.get<EnterpriseResponseDto>(`/api/teacher/enterprise/${enterpriseId}`, { headers: getAuthHeaders() });
-
-// Récupérer le logo d'une entreprise par ID
-export const getEnterpriseLogoById = (enterpriseId: number) =>
-  api.get(`/api/teacher/enterprise/${enterpriseId}/logo`, { 
-    responseType: 'blob',
-    headers: getAuthHeaders()
-  });
+export const getPendingEnterprises = async () => {
+  try {
+    return await api.get<EnterpriseResponseDto[]>('/api/admin/approvalPendingEnterprise', { headers: getAuthHeaders() });
+  } catch (error) {
+    throw error;
+  }
+};
 
 // Approuver ou rejeter une entreprise
-export const approveEnterprise = (enterpriseId: number, approved: boolean) =>
-  api.put<EnterpriseResponseDto>(`/api/teacher/Enterprise/${enterpriseId}/approve?approved=${approved}`, {}, {
-    headers: getAuthHeaders()
-  });
+export const approveEnterprise = async (enterpriseId: number, approved: boolean) => {
+  try {
+    if (!enterpriseId || enterpriseId <= 0) {
+      throw new Error('ID d\'entreprise invalide');
+    }
+    return await api.put<EnterpriseResponseDto>(`/api/admin/Enterprise/${enterpriseId}/approve?approved=${approved}`, {}, {
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};
 
-// Supprimer le compte enseignant
-export const deleteTeacherAccount = () =>
-  api.delete('/api/teacher/deleteTeacherAccount', {
-    headers: getAuthHeaders()
-  });
+// Statistiques des stages par département
+export const getInternshipStats = async () => {
+  try {
+    return await api.get('/api/teacher/internshipsByDepartment', {
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Récupérer les notifications de l'enseignant
+export const getTeacherNotifications = async () => {
+  try {
+    return await api.get('/api/teacher/teacherNotifications', {
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Supprimer le compte utilisateur
+export const deleteUserAccount = async () => {
+  try {
+    return await api.delete('/updateProfile/deleteUserAccount', {
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Vérifier le mot de passe
+export const verifyPassword = async (password: string) => {
+  try {
+    if (!password || password.trim() === '') {
+      throw new Error('Mot de passe requis');
+    }
+    return await api.put('/updateProfile/verifyPassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};

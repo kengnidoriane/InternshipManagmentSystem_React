@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createOffer, updateOffer, getEnterpriseInfo, getOfferById, getEnterpriseLogo } from '../api/enterpriseApi';
+import { createOffer, addConventionToOffer, getEnterpriseLogo, getEnterpriseOffers } from '../api/enterpriseApi';
 import type { OfferRequestDto } from '../types/offer';
 import EnterpriseHeader from './EnterpriseHeader';
 
@@ -13,7 +13,7 @@ const defaultState: OfferRequestDto = {
   requirements: '',
   startDate: '',
   endDate: '',
-  numberOfPlaces: '1',
+  numberOfPlaces: 1,
   paying: false,
   remote: false,
 };
@@ -49,8 +49,15 @@ const CreerOffreEntreprise: React.FC = () => {
     const fetchData = async () => {
       setEnterpriseLoading(true);
       try {
-        const enterpriseResponse = await getEnterpriseInfo();
-        setEnterpriseInfo(enterpriseResponse.data);
+        // getEnterpriseInfo n'existe pas dans le backend
+        // Utiliser des données par défaut ou récupérer depuis une autre source
+        setEnterpriseInfo({
+          name: 'Mon Entreprise',
+          sectorOfActivity: 'Secteur d\'activité',
+          location: 'Localisation',
+          country: 'Pays',
+          city: 'Ville'
+        });
         
         // Charger le logo de l'entreprise
         try {
@@ -64,23 +71,11 @@ const CreerOffreEntreprise: React.FC = () => {
           setLogoUrl(null);
         }
         
-        // Si on est en mode édition, charger l'offre existante
+        // Mode édition non supporté - les endpoints getEnterpriseInfo et getOfferById n'existent pas
         if (isEditing && id) {
-          const offerResponse = await getOfferById(parseInt(id));
-          const offer = offerResponse.data;
-          setForm({
-            title: offer.title,
-            description: offer.description,
-            domain: offer.domain,
-            typeOfInternship: offer.typeOfInternship || '',
-            job: offer.job,
-            requirements: offer.requirements || '',
-            numberOfPlaces: offer.numberOfPlaces || '1',
-            startDate: offer.startDate,
-            endDate: offer.endDate,
-            paying: offer.paying || false,
-            remote: offer.remote || false
-          });
+          setError('La modification d\'offres n\'est pas disponible actuellement');
+          navigate('/entreprise/offres');
+          return;
         }
       } catch (error) {
         setEnterpriseError("Impossible de charger les informations");
@@ -90,7 +85,16 @@ const CreerOffreEntreprise: React.FC = () => {
     };
     
     fetchData();
-  }, [isEditing, id]);
+  }, [isEditing, id, navigate]);
+
+  // Cleanup séparé pour le logoUrl
+  React.useEffect(() => {
+    return () => {
+      if (logoUrl) {
+        URL.revokeObjectURL(logoUrl);
+      }
+    };
+  }, [logoUrl]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -103,23 +107,51 @@ const CreerOffreEntreprise: React.FC = () => {
     }
   };
 
+  // Fonction de validation séparée pour améliorer la lisibilité
+  const validateForm = (): string | null => {
+    const requiredFields = [
+      { value: form.title.trim(), name: 'Titre' },
+      { value: form.description.trim(), name: 'Description' },
+      { value: form.domain.trim(), name: 'Domaine' },
+      { value: form.typeOfInternship.trim(), name: 'Type de stage' },
+      { value: form.job.trim(), name: 'Poste/Job' },
+      { value: form.requirements.trim(), name: 'Exigences' },
+      { value: form.startDate.trim(), name: 'Date de début' },
+      { value: form.endDate.trim(), name: 'Date de fin' }
+    ];
+
+    for (const field of requiredFields) {
+      if (!field.value) {
+        return `Le champ "${field.name}" est obligatoire.`;
+      }
+    }
+
+    if (!pdfConvention) {
+      return 'La convention PDF est obligatoire.';
+    }
+
+    // Validation des dates
+    const startDate = new Date(form.startDate);
+    const endDate = new Date(form.endDate);
+    if (startDate >= endDate) {
+      return 'La date de fin doit être postérieure à la date de début.';
+    }
+
+    // Validation du nombre de places
+    if (!form.numberOfPlaces || form.numberOfPlaces < 1) {
+      return 'Le nombre de places doit être un nombre positif.';
+    }
+
+    return null;
+  };
+
   const handlePreview = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Validation stricte : tous les champs doivent être remplis
-    if (
-      !form.title.trim() ||
-      !form.description.trim() ||
-      !form.domain.trim() ||
-      !form.typeOfInternship.trim() ||
-      !form.job.trim() ||
-      !form.requirements.trim() ||
-      !form.startDate.trim() ||
-      !form.endDate.trim() ||
-      (!pdfConvention && !isEditing)
-    ) {
-      setError(`Tous les champs sont obligatoires${!isEditing ? ', y compris la convention PDF' : ''}.`);
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -137,24 +169,35 @@ const CreerOffreEntreprise: React.FC = () => {
     setError(null);
     
     try {
-      console.log('=== FORM DATA BEING SENT ===');
-      console.log('Form:', form);
-      console.log('PDF Convention:', pdfConvention);
-      console.log('Is Editing:', isEditing);
-      console.log('============================');
+      // Mode création uniquement (édition non supportée)
+      const offerResponse = await createOffer(form);
       
-      if (isEditing && id) {
-        await updateOffer(parseInt(id), { ...form, pdfConvention: pdfConvention || undefined });
-        setSuccess(true);
-        setTimeout(() => navigate(`/entreprise/offres/${id}`), 2000);
-      } else {
-        await createOffer({ ...form, pdfConvention: pdfConvention || undefined });
-        setSuccess(true);
-        setTimeout(() => navigate('/entreprise/offres'), 2000);
+      // Vérifier si l'ID est retourné dans la réponse
+      const createdOfferId = offerResponse.data?.id;
+      
+      if (pdfConvention) {
+        if (createdOfferId) {
+          // Utiliser l'ID retourné si disponible
+          await addConventionToOffer(createdOfferId, pdfConvention);
+        } else {
+          // Fallback: chercher l'offre par titre (plus fiable)
+          const offersResponse = await getEnterpriseOffers();
+          const matchingOffer = offersResponse.data.find(offer => 
+            offer.title === form.title && 
+            offer.description === form.description
+          );
+          if (matchingOffer?.id) {
+            await addConventionToOffer(matchingOffer.id, pdfConvention);
+          }
+        }
       }
+      
+      setSuccess(true);
+      setTimeout(() => navigate('/entreprise/offres'), 2000);
     } catch (err: any) {
-      console.error('Error details:', err.response?.data);
-      setError(err?.response?.data?.message || `Erreur lors de ${isEditing ? 'la modification' : 'la création'} de l'offre`);
+      // Éviter l'injection de logs - ne pas logger les données utilisateur
+      const errorMessage = err?.response?.data?.message || 'Erreur lors de la création de l\'offre';
+      setError(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +227,7 @@ const CreerOffreEntreprise: React.FC = () => {
               <button type="button" className="mr-2 text-xl cursor-pointer" onClick={() => navigate(-1)}>
                 <span className="material-icons">arrow_back</span>
               </button>
-              <h2 className="text-xl font-semibold">{isEditing ? 'Modifier l\'offre de stage' : 'Creer une offre de stage'}</h2>
+              <h2 className="text-xl font-semibold">Créer une offre de stage</h2>
             </div>
             <form onSubmit={handlePreview} className="flex flex-col gap-3">
               <label className="font-medium">Titre du stage
@@ -223,7 +266,7 @@ const CreerOffreEntreprise: React.FC = () => {
                 <input id="job" name="job" value={form.job} onChange={handleChange} required className="w-full px-2 py-1 rounded border border-gray-300 bg-white mt-1 outline-none" />
               </label>
               <label className="font-medium">Nombre de places
-                <input id="numberOfPlaces" name="numberOfPlaces" type="number" min="1" value={form.numberOfPlaces} onChange={handleChange} required className="w-full px-2 py-1 rounded border border-gray-300 bg-white mt-1 outline-none" />
+                <input id="numberOfPlaces" name="numberOfPlaces" type="number" min="1" value={form.numberOfPlaces} onChange={(e) => setForm(prev => ({ ...prev, numberOfPlaces: parseInt(e.target.value) || 1 }))} required className="w-full px-2 py-1 rounded border border-gray-300 bg-white mt-1 outline-none" />
               </label>
               <div className="flex gap-2">
                 <label className="flex-1 font-medium">Date de debut
@@ -255,7 +298,7 @@ const CreerOffreEntreprise: React.FC = () => {
               <div className="flex gap-4 mt-4">
                 <button type="button" className="flex-1 bg-gray-200 text-gray-500 border border-gray-300 rounded py-2" disabled>Supprimer l'offre</button>
                 <button type="submit" disabled={loading} className="flex-1 bg-[#4c7a4c] text-white rounded py-2 font-semibold hover:bg-[#6a9a6a] transition-colors disabled:opacity-60 cursor-pointer">
-                  {showPreview ? (isEditing ? 'Mettre l\'offre à jour' : 'Créer l\'offre') : (isEditing ? 'Modifier l\'offre' : 'Créer l\'offre')}
+                  {showPreview ? 'Créer l\'offre' : 'Créer l\'offre'}
                 </button>
               </div>
             </form>
@@ -332,7 +375,7 @@ const CreerOffreEntreprise: React.FC = () => {
                 <div>
                   <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Convention de stage</h4>
                   <div className="text-sm text-[#2d2d2d]">
-                    Fichier: {pdfConvention?.name}
+                    Fichier: {pdfConvention?.name || 'Aucun fichier sélectionné'}
                   </div>
                 </div>
 

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
 import egLogo from '../assets/eg-logo.jpg'; // à remplacer par tes assets réels
 
-import { getOffersByApprovedStatus } from '../api/studentApi';
+import { getApprovedOffers, filterOffers } from '../api/studentApi';
 import type { OfferResponseDto } from '../types/offer';
 
 // Mock data au format backend (fallback si API vide)
@@ -37,7 +37,7 @@ export default function ListStagesEtudiant() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getOffersByApprovedStatus()
+    getApprovedOffers()
       .then(res => {
         const apiOffers = res?.data as OfferResponseDto[] | undefined;
         if (apiOffers && apiOffers.length > 0) {

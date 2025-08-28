@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import TeacherHeader from '../TeacherHeader';
-import { api } from '../../api/api';
+import { getOffersToReviewByDepartment, validateOfferAndConvention, downloadConvention } from '../../api/teacherApi';
 
 interface Offer {
   id: number;
@@ -38,7 +38,7 @@ const TeacherOfferDetail = () => {
     const fetchOffer = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/api/teacher/offerToReview');
+        const response = await getOffersToReviewByDepartment();
         const offers = response.data || [];
         const foundOffer = offers.find((o: Offer) => o.id === Number(id));
         setOffer(foundOffer || null);
@@ -58,16 +58,16 @@ const TeacherOfferDetail = () => {
     setProcessingAction(true);
     
     try {
-      await api.put(`/api/teacher/offers/${id}/validate`, {
+      await validateOfferAndConvention(Number(id), {
         offerApproved: true,
         conventionApproved: true
       });
       setOffer({ ...offer, status: 'APPROVED' });
       alert('Offre approuvée avec succès');
-      // Rediriger vers la liste pour voir le changement
       setTimeout(() => navigate('/enseignant/offres'), 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur:', error);
+      alert(error.message || 'Erreur lors de l\'approbation');
     } finally {
       setProcessingAction(false);
     }
@@ -78,16 +78,16 @@ const TeacherOfferDetail = () => {
     setProcessingAction(true);
     
     try {
-      await api.put(`/api/teacher/offers/${id}/validate`, {
+      await validateOfferAndConvention(Number(id), {
         offerApproved: false,
         conventionApproved: false
       });
       setOffer({ ...offer, status: 'REJECTED' });
       alert('Offre refusée');
-      // Rediriger vers la liste pour voir le changement
       setTimeout(() => navigate('/enseignant/offres'), 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur:', error);
+      alert(error.message || 'Erreur lors du refus');
     } finally {
       setProcessingAction(false);
     }
@@ -97,9 +97,7 @@ const TeacherOfferDetail = () => {
     if (!id) return;
     
     try {
-      const response = await api.get(`/api/teacher/downloadConvention/${id}`, {
-        responseType: 'blob'
-      });
+      const response = await downloadConvention(Number(id));
       
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
@@ -116,22 +114,13 @@ const TeacherOfferDetail = () => {
     }
   };
 
+  // Note: Les enseignants ne gèrent pas les candidatures - c'est le rôle des entreprises
   const handleAcceptApplication = async (applicationId: number) => {
-    try {
-      await acceptApplication(applicationId);
-      alert('Candidature acceptée');
-    } catch (error) {
-      console.error('Erreur lors de l\'acceptation de la candidature:', error);
-    }
+    alert('Les candidatures sont gérées par les entreprises, pas les enseignants.');
   };
   
   const handleRejectApplication = async (applicationId: number) => {
-    try {
-      await rejectApplication(applicationId);
-      alert('Candidature refusée');
-    } catch (error) {
-      console.error('Erreur lors du refus de la candidature:', error);
-    }
+    alert('Les candidatures sont gérées par les entreprises, pas les enseignants.');
   };
 
   const handleToggleApplications = () => {

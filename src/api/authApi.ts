@@ -1,26 +1,42 @@
-import { api, getAuthHeaders } from './api';
+import { api } from './api';
 
 // Authentification
 import type { LoginRequest, ResetPasswordRequestDto } from '../types/auth';
-export const login = (loginData: LoginRequest) =>
-  api.post('/login', loginData);
+
+export const login = async (loginData: LoginRequest) => {
+  try {
+    if (!loginData.email || !loginData.password) {
+      throw new Error('Email et mot de passe requis');
+    }
+    return await api.post('/login', loginData);
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Email ou mot de passe incorrect');
+    }
+    if (error.response?.status === 403) {
+      throw new Error('Compte non vérifié. Vérifiez votre email.');
+    }
+    if (error.code === 'NETWORK_ERROR') {
+      throw new Error('Erreur de connexion. Vérifiez votre réseau.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur de connexion');
+  }
+};
 
 // Réinitialisation du mot de passe
-export const resetPassword = (resetData: ResetPasswordRequestDto) =>
-  api.patch('/resetPassword', resetData);
-
-// Récupérer l'utilisateur connecté
-export const getCurrentUser = () =>
-  api.get('/auth/me', { headers: getAuthHeaders() });
-
-// Vérifier le mot de passe actuel
-export const verifyCurrentPassword = (password: string) =>
-  api.post('/auth/verifyPassword', { password }, { headers: getAuthHeaders() });
-
-// Modifier l'email
-export const updateEmail = (newEmail: string, currentPassword: string) =>
-  api.put('/auth/updateEmail', { newEmail, currentPassword }, { headers: getAuthHeaders() });
-
-// Modifier le mot de passe
-export const updatePassword = (currentPassword: string, newPassword: string) =>
-  api.put('/auth/updatePassword', { currentPassword, newPassword }, { headers: getAuthHeaders() });
+export const resetPassword = async (resetData: ResetPasswordRequestDto) => {
+  try {
+    if (!resetData.email || !resetData.password) {
+      throw new Error('Email et mot de passe requis');
+    }
+    return await api.patch('/resetPassword', resetData);
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('Utilisateur non trouvé');
+    }
+    if (error.code === 'NETWORK_ERROR') {
+      throw new Error('Erreur de connexion. Vérifiez votre réseau.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la réinitialisation');
+  }
+};

@@ -25,9 +25,12 @@ import AdminEnterprisesList from './components/admin/EnterprisesList';
 import AdminEnterpriseDetail from './components/admin/EnterpriseDetail';
 import AdminTeachersList from './components/admin/TeachersList';
 import AdminTeacherDetail from './components/admin/TeacherDetail';
+import AdminStudentsList from './components/admin/StudentsList';
+import AdminStudentDetail from './components/admin/StudentDetail';
 
 import ListStagesEtudiant from './components/ListStagesEtudiant';
 import MonStageEtudiant from './components/MonStageEtudiant';
+import MonProfil from './components/etudiant/MonProfil';
 import Felicitations from './components/Felicitations';
 // Les dashboards spécifiques n'existent pas, routes simplifiées
 
@@ -47,6 +50,7 @@ const App = () => {
         <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}> 
           <Route path="/etudiant/stages" element={<ListStagesEtudiant />} />
           <Route path="/etudiant/mon-stage" element={<MonStageEtudiant />} />
+          <Route path="/etudiant/profil" element={<MonProfil />} />
           <Route path="/etudiant/parametres" element={<UserSettings />} />
         </Route>
 
@@ -84,7 +88,8 @@ const App = () => {
           <Route path="/admin/enterprises/:id" element={<AdminEnterpriseDetail />} />
           <Route path="/admin/teachers" element={<AdminTeachersList />} />
           <Route path="/admin/teachers/:id" element={<AdminTeacherDetail />} />
-          <Route path="/admin/students" element={<AdminDashboard />} />
+          <Route path="/admin/students" element={<AdminStudentsList />} />
+          <Route path="/admin/students/:id" element={<AdminStudentDetail />} />
           <Route path="/admin/settings" element={<UserSettings />} />
         </Route>
 

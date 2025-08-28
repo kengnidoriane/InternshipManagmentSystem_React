@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import {useAuthStore} from '../store/authStore';
-import { updateEmail, updatePassword } from '../api/authApi';
-import TeacherHeader from '../components/TeacherHeader';
-import EnterpriseHeader from '../components/EnterpriseHeader';
-import EtudiantHeader from '../components/EtudiantHeader';
+import { updateEmail, updatePassword } from '../api/profileApi';
+
 
 interface UserSettingsModificationProps {
   currentEmail: string;
@@ -72,12 +70,12 @@ const UserSettingsModification: React.FC<UserSettingsModificationProps> = ({
     try {
       // Modifier l'email si fourni
       if (formData.newEmail) {
-        await updateEmail(formData.newEmail, verifiedPassword);
+        await updateEmail(formData.newEmail);
       }
       
       // Modifier le mot de passe si fourni
       if (formData.newPassword) {
-        await updatePassword(verifiedPassword, formData.newPassword);
+        await updatePassword(formData.newPassword);
       }
       
       alert('Paramètres mis à jour avec succès');

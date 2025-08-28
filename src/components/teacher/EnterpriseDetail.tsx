@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { getEnterpriseById, approveEnterprise, getEnterpriseLogoById } from '../../api/enterpriseApi';
+import { getEnterpriseById, getEnterpriseLogoById } from '../../api/enterpriseApi';
 import { api } from '../../api/api';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 
