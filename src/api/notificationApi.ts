@@ -1,6 +1,34 @@
 import { api, getAuthHeaders } from './api';
 
-// Récupérer les notifications par rôle
+// Récupérer les notifications non vues
+export const getUnseenNotifications = async () => {
+  try {
+    return await api.get('/getNotifications/getUnseenNotifications', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des notifications');
+  }
+};
+
+// Marquer une notification comme vue
+export const markNotificationAsSeen = async (notificationId: number) => {
+  try {
+    return await api.put(`/getNotifications/userNotifications/${notificationId}/seen`, {}, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors du marquage de la notification');
+  }
+};
+
+// Récupérer les notifications par rôle (ancienne fonction maintenue pour compatibilité)
 export const getNotificationsByRole = async (role: 'student' | 'teacher' | 'enterprise') => {
   try {
     const endpoints = {

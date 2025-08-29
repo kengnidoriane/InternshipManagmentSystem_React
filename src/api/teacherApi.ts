@@ -111,6 +111,17 @@ export const getInternshipStats = async () => {
   }
 };
 
+// Récupérer les offres approuvées par l'enseignant
+export const getOffersApprovedByTeacher = async () => {
+  try {
+    return await api.get('/api/teacher/offersApprovedByTeacher', {
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Récupérer les notifications de l'enseignant
 export const getTeacherNotifications = async () => {
   try {

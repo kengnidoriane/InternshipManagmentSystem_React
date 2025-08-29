@@ -70,10 +70,41 @@ export const createApplication = async (offerId: number, applicationData: FormDa
   }
 };
 
-// Mettre à jour le statut de l'étudiant
-export const updateStudentStatus = async () => {
+// Récupérer les candidatures en attente de l'étudiant
+export const getPendingApplicationsOfStudent = async () => {
   try {
-    return await api.put('/api/student/updateStudentStatus', {}, {
+    return await api.get('/api/student/pendingApplicationsOfStudent', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des candidatures');
+  }
+};
+
+// Récupérer les candidatures approuvées de l'étudiant
+export const getApplicationsApprovedOfStudent = async () => {
+  try {
+    return await api.get('/api/student/applicationsApprovedOfStudent', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des candidatures approuvées');
+  }
+};
+
+// Mettre à jour le statut de l'étudiant pour une candidature
+export const updateStudentStatus = async (applicationId: number, applicationAccepted: boolean) => {
+  try {
+    if (!applicationId || applicationId <= 0) {
+      throw new Error('ID de candidature invalide');
+    }
+    return await api.put(`/api/student/${applicationId}/updateStudentStatus?applicationAccepted=${applicationAccepted}`, {}, {
       headers: getAuthHeaders()
     });
   } catch (error: any) {

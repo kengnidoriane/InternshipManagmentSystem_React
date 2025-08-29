@@ -11,3 +11,5 @@ export * from './stageApi';
 export * from './stageDetailApi';
 export * from './notificationApi';
 export * from './adminApi';
+export * from './profilePhotoApi';
+export * from './downloadApi';

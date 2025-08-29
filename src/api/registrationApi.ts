@@ -16,24 +16,20 @@ export const registerStudent = async (studentData: StudentRegistrationRequestDto
 // Inscription entreprise
 import type { EnterpriseRegistrationRequestDto } from '../types/enterprise';
 export const registerEnterprise = async (enterpriseData: EnterpriseRegistrationRequestDto) => {
-  try {
-    if (!enterpriseData.email || !enterpriseData.password || !enterpriseData.name) {
-      throw new Error('Email, mot de passe et nom requis');
-    }
-    const formData = new FormData();
-    Object.entries(enterpriseData).forEach(([key, value]) => {
-      if (key === 'logo' && value) {
-        formData.append(key, value as File);
-      } else if (typeof value !== 'undefined') {
-        formData.append(key, String(value));
-      }
-    });
-    return await api.post('/registration/registerEnterprise', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-  } catch (error) {
-    throw error;
+  if (!enterpriseData.email || !enterpriseData.password || !enterpriseData.name) {
+    throw new Error('Email, mot de passe et nom requis');
   }
+  const formData = new FormData();
+  Object.entries(enterpriseData).forEach(([key, value]) => {
+    if (key === 'logo' && value) {
+      formData.append(key, value as File);
+    } else if (typeof value !== 'undefined') {
+      formData.append(key, String(value));
+    }
+  });
+  return await api.post('/registration/registerEnterprise', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
 };
 
 // Inscription enseignant

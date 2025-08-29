@@ -40,6 +40,13 @@ export const getAllStudents = async () => {
   });
 };
 
+// Récupérer les entreprises en partenariat
+export const getEnterpriseInPartnership = async () => {
+  return api.get('/api/admin/enterpriseInPartnership', {
+    headers: getAuthHeaders()
+  });
+};
+
 // Récupérer les enseignants avec pagination
 export const getTeachersPagination = async (page: number, size: number) => {
   if (page < 0 || size <= 0) {
