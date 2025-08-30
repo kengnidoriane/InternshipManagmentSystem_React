@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
 import { Link } from 'react-router-dom';
-import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent, updateStudentStatus } from '../api/studentApi';
+import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent, updateStudentStatus, deleteApplication } from '../api/studentApi';
 
 interface Application {
   id: number;
@@ -83,6 +83,25 @@ export default function MonStageEtudiant() {
     }
   };
 
+  const handleDeleteApplication = async (applicationId: number) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
+      return;
+    }
+    try {
+      await deleteApplication(applicationId);
+      // Recharger les candidatures
+      const [pendingRes, approvedRes] = await Promise.all([
+        getPendingApplicationsOfStudent(),
+        getApplicationsApprovedOfStudent()
+      ]);
+      setPendingApplications(pendingRes.data || []);
+      setApprovedApplications(approvedRes.data || []);
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur lors de la suppression de la candidature');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
@@ -135,18 +154,13 @@ export default function MonStageEtudiant() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Aucun stage</h2>
+          <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mon Stage</h2>
           <div className="mx-auto max-w-md border border-[#e1d3c1] rounded-lg py-7 px-6 bg-transparent flex flex-col items-center" style={{boxShadow: '0 0 0 2px #e1d3c1'}}>
-            <div className="text-[var(--color-light)] text-sm text-left mb-6 w-full">
-              Vous n’avez pas encore de stage.<br />
-              Cliquez ci-dessous pour choisir un qui correspond à votre profil
+            <div className="text-[var(--color-light)] text-sm text-center mb-6 w-full">
+              Vous n’avez êtes actuellement en stage.<br />
+              Vous ne pouvez plus consulter ou gérer de nouvelles candidatures 
             </div>
-            <Link
-              to="/etudiant/stages"
-              className="w-full block bg-[var(--color-vert)] text-[var(--color-light)] text-base font-medium rounded px-4 py-2 mt-2 text-center hover:bg-[#6b7d4b] transition-colors"
-            >
-              Liste des offres
-            </Link>
+
           </div>
         </motion.div>
       </main>
@@ -177,10 +191,20 @@ export default function MonStageEtudiant() {
                     <h4 className="font-semibold text-[#2d2d2d] mb-2">{app.offer.title}</h4>
                     <p className="text-gray-600 mb-1">Entreprise: {app.enterprise.name}</p>
                     <p className="text-gray-600 mb-2">Domaine: {app.offer.domain}</p>
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium inline-block ${
-                      app.state === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {app.state === 'REJECTED' ? 'Refusée' : 'En attente'}
+                    <div className="flex items-center justify-between">
+                      <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        app.state === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {app.state === 'REJECTED' ? 'Refusée' : 'En attente'}
+                      </div>
+                      {app.state === 'REJECTED' && (
+                        <button
+                          onClick={() => handleDeleteApplication(app.id)}
+                          className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+                        >
+                          Supprimer
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -51,13 +51,9 @@ export default function ListStagesEtudiant() {
     getApprovedOffers()
       .then(res => {
         const apiOffers = res?.data as OfferResponseDto[] | undefined;
-        if (apiOffers && apiOffers.length > 0) {
-          setOffers(apiOffers);
-        } else {
-          setOffers(mockOffers);
-        }
+        setOffers(apiOffers || []);
       })
-      .catch(() => setOffers(mockOffers))
+      .catch(() => setOffers([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -122,8 +118,12 @@ export default function ListStagesEtudiant() {
             <div className="flex flex-col gap-7">
               {loading ? (
                 <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement des offres...</div>
+              ) : offers.length === 0 ? (
+                <div className="py-16 text-center text-[var(--color-jaune)] text-lg">
+                  Vous êtes déjà en stage. Vous ne pouvez plus consulter les offres disponibles.
+                </div>
               ) : filteredOffers.length === 0 ? (
-                <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre trouvée.</div>
+                <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre trouvée pour votre recherche.</div>
               ) : (
                 filteredOffers.map((offer) => (
                   <motion.div

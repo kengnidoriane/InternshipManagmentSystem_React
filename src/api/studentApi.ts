@@ -231,3 +231,23 @@ export const downloadConvention = async (offerId: number) => {
   }
 };
 
+// Supprimer une candidature
+export const deleteApplication = async (applicationId: number) => {
+  try {
+    if (!applicationId || applicationId <= 0) {
+      throw new Error('ID de candidature invalide');
+    }
+    return await api.delete(`/api/student/${applicationId}`, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('Candidature non trouvée');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la suppression de la candidature');
+  }
+};
+
