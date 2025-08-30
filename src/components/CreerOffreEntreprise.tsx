@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createOffer, addConventionToOffer, getEnterpriseLogo, getEnterpriseOffers } from '../api/enterpriseApi';
+import { createOffer, addConventionToOffer, getEnterpriseLogo, getEnterpriseOffers, getCurrentEnterpriseInfo } from '../api/enterpriseApi';
 import type { OfferRequestDto } from '../types/offer';
 import EnterpriseHeader from './EnterpriseHeader';
 
@@ -49,14 +49,18 @@ const CreerOffreEntreprise: React.FC = () => {
     const fetchData = async () => {
       setEnterpriseLoading(true);
       try {
-        // getEnterpriseInfo n'existe pas dans le backend
-        // Utiliser des données par défaut ou récupérer depuis une autre source
+        console.log('=== RÉCUPÉRATION INFOS ENTREPRISE ===');
+        
+        // Récupérer les informations de l'entreprise
+        const enterpriseResponse = await getCurrentEnterpriseInfo();
+        console.log('Infos entreprise récupérées:', enterpriseResponse.data);
+        
         setEnterpriseInfo({
-          name: 'Mon Entreprise',
-          sectorOfActivity: 'Secteur d\'activité',
-          location: 'Localisation',
-          country: 'Pays',
-          city: 'Ville'
+          name: enterpriseResponse.data.name || 'Mon Entreprise',
+          sectorOfActivity: enterpriseResponse.data.sectorOfActivity || 'Secteur d\'activité',
+          location: `${enterpriseResponse.data.country || 'Pays'} • ${enterpriseResponse.data.city || 'Ville'}`,
+          country: enterpriseResponse.data.country || 'Pays',
+          city: enterpriseResponse.data.city || 'Ville'
         });
         
         // Charger le logo de l'entreprise
@@ -66,8 +70,10 @@ const CreerOffreEntreprise: React.FC = () => {
             const logoBlob = new Blob([logoResponse.data]);
             const logoObjectUrl = URL.createObjectURL(logoBlob);
             setLogoUrl(logoObjectUrl);
+            console.log('Logo chargé avec succès');
           }
         } catch (logoErr) {
+          console.log('Pas de logo disponible:', logoErr);
           setLogoUrl(null);
         }
         
@@ -78,6 +84,7 @@ const CreerOffreEntreprise: React.FC = () => {
           return;
         }
       } catch (error) {
+        console.error('Erreur lors du chargement des infos entreprise:', error);
         setEnterpriseError("Impossible de charger les informations");
       } finally {
         setEnterpriseLoading(false);
@@ -149,12 +156,31 @@ const CreerOffreEntreprise: React.FC = () => {
     e.preventDefault();
     setError(null);
 
+    console.log('=== VALIDATION DES DONNÉES AVANT APERÇU ===');
+    console.log('Form complet:', form);
+    console.log('PDF Convention:', pdfConvention);
+    
     const validationError = validateForm();
     if (validationError) {
+      console.log('Erreur de validation:', validationError);
       setError(validationError);
       return;
     }
 
+    console.log('=== DONNÉES VALIDÉES POUR APERÇU ===');
+    console.log('Titre:', form.title);
+    console.log('Description:', form.description);
+    console.log('Job/Poste:', form.job);
+    console.log('Domaine:', form.domain);
+    console.log('Type de stage:', form.typeOfInternship);
+    console.log('Exigences:', form.requirements);
+    console.log('Date début:', form.startDate);
+    console.log('Date fin:', form.endDate);
+    console.log('Nombre de places:', form.numberOfPlaces);
+    console.log('Payant:', form.paying);
+    console.log('Remote:', form.remote);
+    console.log('Convention PDF:', pdfConvention?.name);
+    
     setShowPreview(true);
   };
 
@@ -323,7 +349,7 @@ const CreerOffreEntreprise: React.FC = () => {
               <div className="flex gap-4 mt-4">
                 <button type="button" className="flex-1 bg-gray-200 text-gray-500 border border-gray-300 rounded py-2" disabled>Supprimer l'offre</button>
                 <button type="submit" disabled={loading} className="flex-1 bg-[#4c7a4c] text-white rounded py-2 font-semibold hover:bg-[#6a9a6a] transition-colors disabled:opacity-60 cursor-pointer">
-                  {showPreview ? 'Créer l\'offre' : 'Créer l\'offre'}
+                  Créer l'offre
                 </button>
               </div>
             </form>
@@ -362,114 +388,141 @@ const CreerOffreEntreprise: React.FC = () => {
         </div>
       </div>
 
-      {/* Aperçu de l'offre - en dessous avec la même largeur */}
+      {/* Modal d'aperçu de l'offre */}
       {showPreview && (
-        <div className="w-full flex justify-center items-start">
-          <div className="bg-[#e9dbc7] shadow-xl p-8 max-w-4xl w-full border border-[#d1c3b1]">
-            <h2 className="text-2xl font-bold text-[#2d2d2d] mb-6">Aperçu de l'offre de stage</h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Colonne principale */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Titre */}
-                <h3 className="text-2xl font-bold text-[#2d2d2d]">{form.title}</h3>
-
-                {/* Résumé */}
-                <div>
-                  <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Résumé</h4>
-                  <div className="space-y-2 text-sm text-[#2d2d2d]">
-                    <div><span className="font-medium">Type de stage:</span> {form.job}</div>
-                    <div><span className="font-medium">Stage payant:</span> {form.paying ? 'OUI' : 'NON'}</div>
-                    <div><span className="font-medium">Période du stage:</span> {formatDate(form.startDate)} - {formatDate(form.endDate)}</div>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    {form.paying && (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">Payant</span>
-                    )}
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{form.domain}</span>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Description de la mission</h4>
-                  <p className="text-sm text-[#2d2d2d]">{form.description}</p>
-                </div>
-
-                {/* Convention */}
-                <div>
-                  <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Convention de stage</h4>
-                  <div className="text-sm text-[#2d2d2d]">
-                    Fichier: {pdfConvention?.name || 'Aucun fichier sélectionné'}
-                  </div>
-                </div>
-
-                {/* Exigences */}
-                <div>
-                  <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Exigences</h4>
-                  <p className="text-sm text-[#2d2d2d]">{form.requirements}</p>
-                </div>
-
-                {/* Boutons d'action */}
-                <div className="pt-6">
-                  <div className="flex gap-4">
-                    <button 
-                      onClick={handleCancel}
-                      className="flex-1 px-6 py-3 border border-gray-400 text-gray-600 rounded hover:bg-gray-50 transition-colors cursor-pointer"
-                      disabled={submitting}
-                    >
-                      Annuler
-                    </button>
-                    <button 
-                      onClick={handleSubmitOffer}
-                      disabled={submitting}
-                      className="flex-1 px-6 py-3 bg-[#4c7a4c] text-white rounded hover:bg-[#6a9a6a] transition-colors disabled:opacity-60 cursor-pointer"
-                    >
-                      {submitting ? 'Envoi...' : 'Envoyer l\'offre'}
-                    </button>
-                  </div>
-                </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
+          <div className="bg-[#e9dbc7] rounded-lg shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-[#2d2d2d]">Aperçu de l'offre de stage</h2>
+                <button 
+                  type="button" 
+                  onClick={handleCancel}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ×
+                </button>
               </div>
+              {console.log('=== RENDU APERÇU ===')}
+              {console.log('Form dans le rendu:', form)}
+              {console.log('ShowPreview:', showPreview)}
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Colonne principale */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Titre */}
+                  <h3 className="text-2xl font-bold text-[#2d2d2d]">{form.title}</h3>
+                  {console.log('Titre affiché:', form.title)}
 
-              {/* Sidebar droite */}
-              <div className="space-y-6">
-                {/* Logo et infos entreprise */}
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-black rounded mx-auto mb-3 flex items-center justify-center text-white font-bold text-xl">
-                    {logoUrl ? (
-                      <img 
-                        src={logoUrl} 
-                        alt="Logo entreprise" 
-                        className="w-full h-full object-contain rounded"
-                      />
-                    ) : (
-                      enterpriseInfo ? getInitials(enterpriseInfo.name) : 'EN'
-                    )}
-                  </div>
-                  <h4 className="font-semibold text-[#2d2d2d] mb-1">{enterpriseInfo?.name || 'Entreprise'}</h4>
-                  <div className="text-xs text-[#2d2d2d] space-y-1">
-                    <div>{enterpriseInfo?.location || 'Localisation'}</div>
-                    <div>{enterpriseInfo?.sectorOfActivity || 'Secteur'}</div>
-                  </div>
-                </div>
-
-                {/* Statistiques */}
-                <div className="space-y-3 text-sm text-[#2d2d2d]">
-                  <div><span className="font-medium">Nombre de places:</span> {form.numberOfPlaces || '1'}</div>
-                  <div><span className="font-medium">Domaine:</span> {form.domain}</div>
-                </div>
-
-                {/* Tags */}
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-[#4c7a4c] text-white text-xs rounded">{form.domain}</span>
-                    <span className="px-2 py-1 bg-[#6a9a6a] text-white text-xs rounded">{form.job}</span>
-                  </div>
-                  {form.paying && (
-                    <div className="flex flex-wrap gap-2">
-                      <span className="px-2 py-1 bg-[#b79056] text-white text-xs rounded">Payant</span>
+                  {/* Résumé */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Résumé</h4>
+                    <div className="space-y-2 text-sm text-[#2d2d2d]">
+                      <div><span className="font-medium">Type de stage:</span> {form.typeOfInternship}</div>
+                      <div><span className="font-medium">Poste:</span> {form.job}</div>
+                      <div><span className="font-medium">Stage payant:</span> {form.paying ? 'OUI' : 'NON'}</div>
+                      <div><span className="font-medium">Télétravail:</span> {form.remote ? 'OUI' : 'NON'}</div>
+                      <div><span className="font-medium">Période du stage:</span> {formatDate(form.startDate)} - {formatDate(form.endDate)}</div>
+                      {console.log('Type:', form.typeOfInternship, 'Job:', form.job, 'Paying:', form.paying, 'Remote:', form.remote)}
                     </div>
-                  )}
+                    <div className="flex gap-2 mt-3">
+                      {form.paying && (
+                        <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">Payant</span>
+                      )}
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{form.domain}</span>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Description de la mission</h4>
+                    <p className="text-sm text-[#2d2d2d]">{form.description}</p>
+                    {console.log('Description:', form.description)}
+                  </div>
+
+                  {/* Convention */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Convention de stage</h4>
+                    <div className="text-sm text-[#2d2d2d]">
+                      Fichier: {pdfConvention?.name || 'Aucun fichier sélectionné'}
+                      {console.log('PDF Convention:', pdfConvention?.name)}
+                    </div>
+                  </div>
+
+                  {/* Exigences */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Exigences</h4>
+                    <p className="text-sm text-[#2d2d2d]">{form.requirements}</p>
+                    {console.log('Exigences:', form.requirements)}
+                  </div>
+
+                  {/* Boutons d'action */}
+                  <div className="pt-6">
+                    <div className="flex gap-4">
+                      <button 
+                        onClick={handleCancel}
+                        className="flex-1 px-6 py-3 border border-gray-400 text-gray-600 rounded hover:bg-gray-50 transition-colors cursor-pointer"
+                        disabled={submitting}
+                      >
+                        Annuler
+                      </button>
+                      <button 
+                        onClick={handleSubmitOffer}
+                        disabled={submitting}
+                        className="flex-1 px-6 py-3 bg-[#4c7a4c] text-white rounded hover:bg-[#6a9a6a] transition-colors disabled:opacity-60 cursor-pointer"
+                      >
+                        {submitting ? 'Envoi...' : 'Envoyer l\'offre'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sidebar droite */}
+                <div className="space-y-6">
+                  {/* Logo et infos entreprise */}
+                  <div className="text-center">
+                    <div className="w-20 h-20 bg-black rounded mx-auto mb-3 flex items-center justify-center text-white font-bold text-xl">
+                      {logoUrl ? (
+                        <img 
+                          src={logoUrl} 
+                          alt="Logo entreprise" 
+                          className="w-full h-full object-contain rounded"
+                        />
+                      ) : (
+                        enterpriseInfo ? getInitials(enterpriseInfo.name) : 'EN'
+                      )}
+                    </div>
+                    <h4 className="font-semibold text-[#2d2d2d] mb-1">{enterpriseInfo?.name || 'Entreprise'}</h4>
+                    {console.log('Enterprise info dans aperçu:', enterpriseInfo)}
+                    <div className="text-xs text-[#2d2d2d] space-y-1">
+                      <div>{enterpriseInfo?.location || 'Localisation'}</div>
+                      <div>{enterpriseInfo?.sectorOfActivity || 'Secteur'}</div>
+                    </div>
+                  </div>
+
+                  {/* Statistiques */}
+                  <div className="space-y-3 text-sm text-[#2d2d2d]">
+                    <div><span className="font-medium">Nombre de places:</span> {form.numberOfPlaces || '1'}</div>
+                    <div><span className="font-medium">Domaine:</span> {form.domain}</div>
+                    {console.log('Nombre de places:', form.numberOfPlaces, 'Domaine:', form.domain)}
+                  </div>
+
+                  {/* Tags */}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-[#4c7a4c] text-white text-xs rounded">{form.domain}</span>
+                      <span className="px-2 py-1 bg-[#6a9a6a] text-white text-xs rounded">{form.typeOfInternship}</span>
+                      {form.remote && (
+                        <span className="px-2 py-1 bg-[#8a7a5a] text-white text-xs rounded">Télétravail</span>
+                      )}
+                    </div>
+                    {form.paying && (
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-1 bg-[#b79056] text-white text-xs rounded">Payant</span>
+                      </div>
+                    )}
+                    {console.log('Tags - Domaine:', form.domain, 'Type:', form.typeOfInternship, 'Remote:', form.remote, 'Payant:', form.paying)}
+                  </div>
                 </div>
               </div>
             </div>

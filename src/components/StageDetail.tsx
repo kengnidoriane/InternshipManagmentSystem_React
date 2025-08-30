@@ -159,7 +159,7 @@ const StageDetail: React.FC = () => {
       <EtudiantHeader />
       <div className="flex flex-col items-center w-full mt-8 mb-2 px-4">
         <div className="w-full max-w-[950px]">
-          <div className={`w-full bg-[var(--color-light)] shadow-xl p-8 border border-[#e1d3c1] relative`} style={{ borderRadius: showCandidatureForm ? '5px 5px 0 0' : '5px' }}>
+          <div className="w-full bg-[var(--color-light)] shadow-xl p-8 border border-[#e1d3c1] relative rounded-lg">
             <div style={{ position: 'relative', width: '100%' }}>
               <div className="flex flex-row justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-[var(--color-dark)]">Detail de stage</h1>
@@ -259,23 +259,27 @@ const StageDetail: React.FC = () => {
             </div>
           </div>
           
-          <AnimatePresence>
-            {showCandidatureForm && (
+        </div>
+        
+        {/* Popup Modal de candidature */}
+        <AnimatePresence>
+          {showCandidatureForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
-                className="bg-[#e1d3c1] shadow-xl p-8 border border-t-0 border-[#c4b5a0] overflow-hidden relative"
-                style={{ 
-                  width: '100%',
-                  maxWidth: '950px',
-                  borderRadius: '0 0 5px 5px',
-                  boxSizing: 'border-box'
-                }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+                className="bg-[#e1d3c1] rounded-lg shadow-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
               >
+                <button
+                  onClick={() => setShowCandidatureForm(false)}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
+                
                 <div className="relative">
-                  <img src="/ornement-1.png" alt="ornement" className="pointer-events-none select-none absolute top-0 right-0 w-32 opacity-80 z-0" />
                   <h2 className="text-xl font-bold text-[var(--color-vert)] mb-6 text-center">Candidature</h2>
                   
                   {submitSuccess ? (
@@ -301,7 +305,7 @@ const StageDetail: React.FC = () => {
                               id="motivation-letter-upload"
                               aria-label="Uploader la lettre de motivation"
                             />
-                            <div className="cursor-pointer flex flex-col items-center">
+                            <div className="cursor-pointer flex flex-col items-center" onClick={() => document.getElementById('motivation-letter-upload')?.click()}>
                               <div className="w-16 h-20 bg-white rounded border border-gray-300 flex flex-col items-center justify-center mb-2 shadow-sm">
                                 <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -337,7 +341,7 @@ const StageDetail: React.FC = () => {
                               required
                               aria-label="Uploader le CV"
                             />
-                            <div className="cursor-pointer flex flex-col items-center">
+                            <div className="cursor-pointer flex flex-col items-center" onClick={() => document.getElementById('cv-upload')?.click()}>
                               <div className="w-16 h-20 bg-white rounded border border-gray-300 flex flex-col items-center justify-center mb-2 shadow-sm">
                                 <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -362,7 +366,14 @@ const StageDetail: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex justify-center">
+                      <div className="flex justify-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => setShowCandidatureForm(false)}
+                          className="bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-600 transition"
+                        >
+                          Annuler
+                        </button>
                         <button
                           type="submit"
                           disabled={submitting || !cvFile || !coverLetterFile}
@@ -375,9 +386,9 @@ const StageDetail: React.FC = () => {
                   )}
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

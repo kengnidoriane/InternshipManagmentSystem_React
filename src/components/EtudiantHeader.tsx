@@ -1,6 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { motion } from 'framer-motion';
+import NotificationBell from './NotificationBell';
 
 const navLinks = [
   { to: '/etudiant/stages', label: 'Liste des stages' },
@@ -124,6 +125,7 @@ export default function EtudiantHeader() {
             )}
           </NavLink>
         ))}
+        <NotificationBell />
         <button
           onClick={handleLogout}
           className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors duration-200 text-sm font-medium ml-4"
