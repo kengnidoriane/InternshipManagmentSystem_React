@@ -230,3 +230,4 @@ export const downloadConvention = async (offerId: number) => {
     throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement de la convention');
   }
 };
+

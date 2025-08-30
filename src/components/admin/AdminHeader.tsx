@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 
 const navLinks = [
+  { to: '/admin/dashboard', label: 'Dashboard' },
   { to: '/admin/enterprises', label: 'Entreprises' },
   { to: '/admin/teachers', label: 'Enseignants' },
   { to: '/admin/students', label: 'Étudiants' },
@@ -23,7 +24,7 @@ export default function AdminHeader() {
     <header className="w-full flex items-end justify-center gap-8 px-8 pt-3 bg-transparent select-none">
       {/* Liens de gauche */}
       <nav className="flex gap-8 items-center">
-        {navLinks.slice(0, 2).map(link => (
+        {navLinks.slice(0, 3).map(link => (
           <NavLink
             key={link.to}
             to={link.to}
@@ -44,7 +45,7 @@ export default function AdminHeader() {
       </div>
       {/* Liens de droite */}
       <nav className="flex gap-8 items-center">
-        {navLinks.slice(2).map(link => (
+        {navLinks.slice(3).map(link => (
           <NavLink
             key={link.to}
             to={link.to}

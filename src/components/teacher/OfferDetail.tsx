@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import TeacherHeader from '../TeacherHeader';
+import AdminHeader from '../admin/AdminHeader';
 import { getOffersToReviewByDepartment, validateOfferAndConvention, downloadConvention } from '../../api/teacherApi';
+import { useLocation } from 'react-router-dom';
 
 interface Offer {
   id: number;
@@ -26,11 +28,14 @@ interface Offer {
 const TeacherOfferDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [offer, setOffer] = useState<Offer | null>(null);
   const [loading, setLoading] = useState(true);
   const [showApplications, setShowApplications] = useState(false);
   const [processingAction, setProcessingAction] = useState(false);
   const applications: any[] = [];
+  
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
     if (!id) return;
@@ -38,6 +43,15 @@ const TeacherOfferDetail = () => {
     const fetchOffer = async () => {
       try {
         setLoading(true);
+        
+        // Essayer d'abord de récupérer depuis le state de navigation
+        const stateOffer = location.state?.offer;
+        if (stateOffer) {
+          setOffer(stateOffer);
+          return;
+        }
+        
+        // Sinon, récupérer depuis l'API
         const response = await getOffersToReviewByDepartment();
         const offers = response.data || [];
         const foundOffer = offers.find((o: Offer) => o.id === Number(id));
@@ -51,7 +65,7 @@ const TeacherOfferDetail = () => {
     };
     
     fetchOffer();
-  }, [id]);
+  }, [id, location.state]);
 
   const handleApprove = async () => {
     if (!id || !offer) return;
@@ -64,7 +78,7 @@ const TeacherOfferDetail = () => {
       });
       setOffer({ ...offer, status: 'APPROVED' });
       alert('Offre approuvée avec succès');
-      setTimeout(() => navigate('/enseignant/offres'), 1000);
+      setTimeout(() => navigate(isAdminRoute ? '/admin/offres' : '/enseignant/offres'), 1000);
     } catch (error: any) {
       console.error('Erreur:', error);
       alert(error.message || 'Erreur lors de l\'approbation');
@@ -84,7 +98,7 @@ const TeacherOfferDetail = () => {
       });
       setOffer({ ...offer, status: 'REJECTED' });
       alert('Offre refusée');
-      setTimeout(() => navigate('/enseignant/offres'), 1000);
+      setTimeout(() => navigate(isAdminRoute ? '/admin/offres' : '/enseignant/offres'), 1000);
     } catch (error: any) {
       console.error('Erreur:', error);
       alert(error.message || 'Erreur lors du refus');
@@ -130,7 +144,7 @@ const TeacherOfferDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
-        <TeacherHeader />
+        {isAdminRoute ? <AdminHeader /> : <TeacherHeader />}
         <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement...</div>
       </div>
     );
@@ -139,7 +153,7 @@ const TeacherOfferDetail = () => {
   if (!offer) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
-        <TeacherHeader />
+        {isAdminRoute ? <AdminHeader /> : <TeacherHeader />}
         <div className="py-16 text-center text-red-600 text-lg">Offre introuvable.</div>
       </div>
     );
@@ -168,7 +182,7 @@ const TeacherOfferDetail = () => {
 
   return (
     <div className="min-h-screen bg-login-gradient flex flex-col">
-      <TeacherHeader />
+      {isAdminRoute ? <AdminHeader /> : <TeacherHeader />}
       <div className="flex flex-col items-center w-full mt-8 mb-2 px-4">
         <div className="w-full max-w-[950px]">
           <div className={`w-full bg-[var(--color-light)] shadow-xl p-8 border border-[#e1d3c1] relative`} style={{ borderRadius: showApplications ? '5px 5px 0 0' : '5px' }}>
@@ -247,7 +261,7 @@ const TeacherOfferDetail = () => {
                       {showApplications ? 'Masquer les candidatures' : `Voir les candidatures (${postulants})`}
                     </button>
                     <button 
-                      onClick={() => navigate('/enseignant/offres')}
+                      onClick={() => navigate(isAdminRoute ? '/admin/offres' : '/enseignant/offres')}
                       className="bg-white border border-[var(--color-jaune)] text-[var(--color-jaune)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] transition cursor-pointer"
                     >
                       Retour aux offres

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AdminHeader from './AdminHeader';
-import { getStudentsByDepartment } from '../../api/teacherApi';
+import { getAllStudents } from '../../api/adminApi';
 import type { StudentResponseDto } from '../../types/student';
 
 interface Teacher {
@@ -33,15 +33,24 @@ export default function TeacherDetail() {
       };
       setTeacher(mockTeacher);
       setLoading(false);
-      fetchStudents();
     }, 500);
   }, [id]);
 
+  useEffect(() => {
+    if (teacher) {
+      fetchStudents();
+    }
+  }, [teacher]);
+
   const fetchStudents = async () => {
+    if (!teacher) return;
     setStudentsLoading(true);
     try {
-      const response = await getStudentsByDepartment();
-      setStudents(response.data);
+      const response = await getAllStudents();
+      const departmentStudents = response.data.filter(
+        (student: StudentResponseDto) => student.department === teacher.department
+      );
+      setStudents(departmentStudents);
     } catch (error) {
       console.error('Erreur lors du chargement des étudiants:', error);
     } finally {

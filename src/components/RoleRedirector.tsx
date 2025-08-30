@@ -5,9 +5,9 @@ const RoleRedirector = () => {
   const { token, role } = useAuthStore();
 
   if (!token) return <Navigate to="/login" replace />;
-  if (role === 'STUDENT') return <Navigate to="/dashboard-etudiant" replace />;
+  if (role === 'STUDENT') return <Navigate to="/etudiant/stages" replace />;
   if (role === 'TEACHER') return <Navigate to="/enseignant/offres" replace />;
-  if (role === 'ENTERPRISE') return <Navigate to="/entreprise/dashboard" replace />;
+  if (role === 'ENTERPRISE') return <Navigate to="/entreprise/offres" replace />;
   if (role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
   return <Navigate to="/login" replace />;
 };

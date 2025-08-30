@@ -47,7 +47,7 @@ const App = () => {
         <Route path="/stage/:id" element={<StageDetail />} />
 
         {/* Route protégée pour les étudiants */}
-        <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}> 
+        <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']} />}> 
           <Route path="/etudiant/stages" element={<ListStagesEtudiant />} />
           <Route path="/etudiant/mon-stage" element={<MonStageEtudiant />} />
           <Route path="/etudiant/profil" element={<MonProfil />} />
@@ -58,8 +58,7 @@ const App = () => {
         <Route path="/felicitations" element={<Felicitations />} />
 
         {/* Routes enseignant (protégées) */}
-        <Route element={<ProtectedRoute allowedRoles={['TEACHER']} />}>
-          {/* <Route path="/enseignant/offres" element={<DashboardEnseignant />} /> */}
+        <Route element={<ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']} />}>
           <Route path="/enseignant/offres" element={<OffersList />} />
           <Route path="/enseignant/offres/:id" element={<TeacherOfferDetail />} />
           <Route path="/enseignant/entreprises" element={<EntreprisesList />} />
@@ -70,7 +69,7 @@ const App = () => {
         </Route>
 
         {/* Routes entreprises (protégées) */}
-        <Route element={<ProtectedRoute allowedRoles={['ENTERPRISE']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['ENTERPRISE', 'ADMIN']} />}>
           <Route path="/entreprise/candidatures" element={<CandidaturesEntreprise />} />
           <Route path="/entreprise/candidatures/:applicationId" element={<DetailCandidature />} />
           <Route path="/entreprise/offres" element={<ListeOffresEntreprise />} />
@@ -90,6 +89,8 @@ const App = () => {
           <Route path="/admin/teachers/:id" element={<AdminTeacherDetail />} />
           <Route path="/admin/students" element={<AdminStudentsList />} />
           <Route path="/admin/students/:id" element={<AdminStudentDetail />} />
+          <Route path="/admin/offres" element={<OffersList />} />
+          <Route path="/admin/offres/:id" element={<TeacherOfferDetail />} />
           <Route path="/admin/settings" element={<UserSettings />} />
         </Route>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { getEnterpriseInPartnership } from '../../api/teacherApi';
+import { getEnterpriseInPartnership } from '../../api/adminApi';
 import { getEnterpriseLogoById } from '../../api/enterpriseApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 

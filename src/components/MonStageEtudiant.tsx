@@ -22,8 +22,10 @@ interface Application {
 export default function MonStageEtudiant() {
   const [pendingApplications, setPendingApplications] = useState<Application[]>([]);
   const [approvedApplications, setApprovedApplications] = useState<Application[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [acceptingApplication, setAcceptingApplication] = useState<number | null>(null);
+  const [showCongratulations, setShowCongratulations] = useState(false);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -49,6 +51,7 @@ export default function MonStageEtudiant() {
     setAcceptingApplication(applicationId);
     try {
       await updateStudentStatus(applicationId, true);
+      setShowCongratulations(true);
       // Recharger les candidatures
       const [pendingRes, approvedRes] = await Promise.all([
         getPendingApplicationsOfStudent(),
@@ -92,7 +95,7 @@ export default function MonStageEtudiant() {
   }
 
   // Si l'étudiant a une candidature approuvée et acceptée, afficher seulement celle-ci
-  const acceptedApplication = approvedApplications.find(app => app.state === 'ACCEPTED');
+  const acceptedApplication = [...pendingApplications, ...approvedApplications].find(app => app.state === 'ACCEPTED');
   
   if (acceptedApplication) {
     return (
@@ -165,17 +168,19 @@ export default function MonStageEtudiant() {
           <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mes Candidatures</h2>
           
           {/* Candidatures en attente */}
-          {pendingApplications.length > 0 && (
+          {pendingApplications.filter(app => app.state !== 'ACCEPTED').length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">En attente de réponse</h3>
               <div className="grid gap-4">
-                {pendingApplications.map(app => (
+                {pendingApplications.filter(app => app.state !== 'ACCEPTED').map(app => (
                   <div key={app.id} className="bg-[#f5ede3] rounded-lg p-4 shadow-md">
                     <h4 className="font-semibold text-[#2d2d2d] mb-2">{app.offer.title}</h4>
                     <p className="text-gray-600 mb-1">Entreprise: {app.enterprise.name}</p>
                     <p className="text-gray-600 mb-2">Domaine: {app.offer.domain}</p>
-                    <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium inline-block">
-                      En attente
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium inline-block ${
+                      app.state === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {app.state === 'REJECTED' ? 'Refusée' : 'En attente'}
                     </div>
                   </div>
                 ))}
@@ -184,11 +189,11 @@ export default function MonStageEtudiant() {
           )}
           
           {/* Candidatures approuvées */}
-          {approvedApplications.length > 0 && (
+          {approvedApplications.filter(app => app.state !== 'ACCEPTED').length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">Offres approuvées</h3>
               <div className="grid gap-4">
-                {approvedApplications.map(app => (
+                {approvedApplications.filter(app => app.state !== 'ACCEPTED').map(app => (
                   <div key={app.id} className="bg-[#f5ede3] rounded-lg p-4 shadow-md">
                     <h4 className="font-semibold text-[#2d2d2d] mb-2">{app.offer.title}</h4>
                     <p className="text-gray-600 mb-1">Entreprise: {app.enterprise.name}</p>
@@ -213,7 +218,35 @@ export default function MonStageEtudiant() {
               </div>
             </div>
           )}
+          
+
         </motion.div>
+        
+        {/* Popup de félicitations */}
+        {showCongratulations && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <motion.div
+              className="bg-white rounded-lg p-8 max-w-md mx-4 text-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Félicitations !</h3>
+              <p className="text-gray-600 mb-6">Vous avez accepté l'offre de stage avec succès. Votre stage est maintenant confirmé !</p>
+              <button
+                onClick={() => setShowCongratulations(false)}
+                className="bg-[var(--color-vert)] text-white px-6 py-2 rounded hover:bg-[#6b7d4b] transition-colors"
+              >
+                Continuer
+              </button>
+            </motion.div>
+          </div>
+        )}
       </main>
     </div>
   );

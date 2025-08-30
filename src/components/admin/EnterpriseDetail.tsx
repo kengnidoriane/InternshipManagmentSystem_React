@@ -195,7 +195,7 @@ const EnterpriseDetail: React.FC = () => {
                       <div
                         key={offer.id}
                         className="flex flex-row items-stretch bg-[var(--color-light)] rounded-xl shadow-lg border border-[#e1d3c1] overflow-hidden hover:bg-[var(--color-light)] transition-colors cursor-pointer"
-                        onClick={() => navigate(`/enseignant/offres/${offer.id}`, { state: { offer } })}
+                        onClick={() => navigate(`/admin/offres/${offer.id}`, { state: { offer } })}
                       >
                         {/* Colonne gauche : logo, entreprise */}
                         <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
