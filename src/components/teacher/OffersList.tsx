@@ -13,6 +13,7 @@ interface Offer {
   startDate: string;
   endDate: string;
   numberOfPlaces: string;
+  paying: boolean;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   enterprise: {
     id: number;
@@ -180,7 +181,12 @@ export default function OffersList() {
                   {/* Centre : titre, deadline, type, période, badges */}
                   <div className="flex-1 flex flex-col justify-between py-4">
                     <div className="flex flex-col pb-2">
-                      <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
+                        <span className={getStatusBadge(offer.status)}>
+                          {getStatusText(offer.status)}
+                        </span>
+                      </div>
                       <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span>
                     </div>
                     <div className="flex flex-col mt-2 mb-2 flex-wrap">
@@ -189,9 +195,12 @@ export default function OffersList() {
                       <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
                     </div>
                     <div className="flex flex-row flex-wrap gap-2 mt-1 ">
-                      {/* Badge de statut spécifique aux enseignants */}
-                      <span className={getStatusBadge(offer.status)}>
-                        {getStatusText(offer.status)}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                        offer.paying 
+                          ? 'bg-green-100 text-green-700 border-green-200' 
+                          : 'bg-gray-100 text-gray-700 border-gray-200'
+                      }`}>
+                        {offer.paying ? 'Payant' : 'Non payant'}
                       </span>
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">. En remote</span>
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">.Après interview</span>
