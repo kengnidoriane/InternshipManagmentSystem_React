@@ -34,7 +34,10 @@ const EnterprisesList: React.FC = () => {
         
         // Récupérer les entreprises partenaires (approuvées)
         const partnerResponse = await getEnterpriseInPartnership();
+        console.log('Entreprises partenaires - réponse complète:', partnerResponse);
+        console.log('Entreprises partenaires - données:', partnerResponse.data);
         const partnerEnts = partnerResponse.data || [];
+        console.log('Entreprises partenaires - après traitement:', partnerEnts);
         setPartnerEnterprises(partnerEnts);
         
         try {
@@ -133,7 +136,7 @@ const EnterprisesList: React.FC = () => {
                             <div className="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs my-1">
                               En attente
                             </div>
-                            <p className="text-xs text-gray-600">{enterprise.country} • {enterprise.city}</p>
+                            <p className="text-xs text-gray-600">Matriculation: {enterprise.matriculation}</p>
                             <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
                           </div>
                         </div>
@@ -164,15 +167,15 @@ const EnterprisesList: React.FC = () => {
             ) : partnerEnterprises.length === 0 ? (
               <div className="py-4">Aucune entreprise partenaire.</div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {partnerEnterprises.map((enterprise) => (
                   <div 
                     key={enterprise.id} 
-                    className="p-4 cursor-pointer"
-                    onClick={() => navigate(`/admin/enterprises/${enterprise.id}`)}
+                    className="bg-white rounded-lg p-4 shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(`/admin/enterprises/${enterprise.id}`, { state: { enterprise } })}
                   >
-                    <div className="flex">
-                      <div className="w-16 h-16 rounded-md flex items-center justify-center mr-3 overflow-hidden">
+                    <div className="flex items-start gap-3">
+                      <div className="w-16 h-16 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
                         {logoUrls[enterprise.id] ? (
                           <img 
                             src={logoUrls[enterprise.id]} 
@@ -180,15 +183,21 @@ const EnterprisesList: React.FC = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-xl">
+                          <div className="w-full h-full bg-green-500 text-white flex items-center justify-center text-lg font-bold">
                             {enterprise.name.substring(0, 2)}
                           </div>
                         )}
                       </div>
-                      <div>
-                        <h3 className="font-medium">{enterprise.name}</h3>
-                        <p className="text-xs text-gray-600">{enterprise.country} • {enterprise.city}</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">{enterprise.name}</h3>
+                        <div className="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs my-1">
+                          Partenaire
+                        </div>
+                        <p className="text-xs text-gray-600 mb-1">{enterprise.email}</p>
                         <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
+                        {enterprise.matriculation && (
+                          <p className="text-xs text-gray-500 mt-1">Mat: {enterprise.matriculation}</p>
+                        )}
                       </div>
                     </div>
                   </div>

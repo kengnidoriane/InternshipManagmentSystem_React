@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, getAuthHeaders } from './api';
 
 // Authentification
 import type { LoginRequest, ResetPasswordRequestDto } from '../types/auth';
@@ -24,9 +24,14 @@ export const login = async (loginData: LoginRequest) => {
 };
 export const verifyCurrentPassword = async (password: string) => {
   try {
-    return await api.post('/verifyPassword', { password });
-  }catch(error: any){
-    throw new Error('mot de passe incorrect');
+    if (!password || password.trim() === '') {
+      throw new Error('Mot de passe requis');
+    }
+    return await api.put('/updateProfile/verifyPassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || 'Mot de passe incorrect');
   }
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getEnterpriseApplications, downloadCandidateCV, downloadCandidateCoverLetter, validateApplication } from '../api/enterpriseApi';
 import EnterpriseHeader from './EnterpriseHeader';
 
@@ -31,9 +31,20 @@ const DetailCandidature: React.FC = () => {
   const [processing, setProcessing] = useState(false);
   const navigate = useNavigate();
 
+  const location = useLocation();
+
   useEffect(() => {
     const fetchApplication = async () => {
       try {
+        // Récupérer depuis le state de navigation
+        const stateAny = location.state as unknown as { application?: ApplicationDetail } | undefined;
+        if (stateAny && stateAny.application) {
+          setApplication(stateAny.application);
+          setLoading(false);
+          return;
+        }
+        
+        // Fallback: chercher dans toutes les candidatures
         const response = await getEnterpriseApplications();
         const app = response.data.find((a: ApplicationDetail) => a.id === parseInt(applicationId!));
         setApplication(app);
@@ -47,10 +58,10 @@ const DetailCandidature: React.FC = () => {
     if (applicationId) {
       fetchApplication();
     }
-  }, [applicationId]);
+  }, [applicationId, location.state]);
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (firstName: string, name: string) => {
+    return `${firstName.charAt(0)}${name.charAt(0)}`.toUpperCase();
   };
 
   const handleDownloadCV = async () => {
@@ -61,7 +72,7 @@ const DetailCandidature: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `CV_${application.student.firstName}_${application.student.lastName}.pdf`;
+      link.download = `CV_${application.student.firstName}_${application.student.name}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -79,7 +90,7 @@ const DetailCandidature: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `LettreMotivation_${application.student.firstName}_${application.student.lastName}.pdf`;
+      link.download = `LettreMotivation_${application.student.firstName}_${application.student.name}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -172,10 +183,10 @@ const DetailCandidature: React.FC = () => {
             <div className="flex items-start gap-8 mb-8">
               <div className="flex-grow">
                 <h4 className="text-2xl font-light text-[#2d2d2d] mb-2 italic">
-                  {application.offer.job}
+                  {application.offer.title}
                 </h4>
                 <h3 className="text-xl font-bold text-[#2d2d2d] mb-6">
-                  {application.student.firstName} {application.student.lastName}
+                  {application.student.firstName} {application.student.name}
                 </h3>
 
                 {/* Langues */}
@@ -232,7 +243,7 @@ const DetailCandidature: React.FC = () => {
 
               {/* Avatar */}
               <div className="w-32 h-32 bg-[#4c7a4c] rounded flex items-center justify-center text-white font-bold text-3xl flex-shrink-0">
-                {getInitials(application.student.firstName, application.student.lastName)}
+                {getInitials(application.student.firstName, application.student.name)}
               </div>
             </div>
 

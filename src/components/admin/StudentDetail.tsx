@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
-import { getStudentById, deleteStudent } from '../../api/adminStudentApi';
 import type { StudentResponseDto } from '../../types/student';
 
 const StudentDetail: React.FC = () => {
@@ -11,6 +10,8 @@ const StudentDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const location = useLocation();
+
   useEffect(() => {
     const fetchStudentDetails = async () => {
       if (!id) return;
@@ -18,29 +19,16 @@ const StudentDetail: React.FC = () => {
       try {
         setLoading(true);
         
-        const studentId = Number(id);
-        if (isNaN(studentId) || studentId <= 0) {
-          setError('ID d\'étudiant invalide');
+        // Récupérer depuis le state de navigation
+        const stateAny = location.state as unknown as { student?: StudentResponseDto } | undefined;
+        if (stateAny && stateAny.student) {
+          setStudent(stateAny.student);
+          setLoading(false);
           return;
         }
         
-        // TODO: Décommenter quand l'endpoint sera disponible
-        // const response = await getStudentById(studentId);
-        // setStudent(response.data);
-        
-        // Données mockées en attendant l'API
-        setTimeout(() => {
-          const mockStudent = {
-            id: studentId,
-            name: 'Durand',
-            firstName: 'Alice',
-            email: 'alice.durand@etudiant.univ.fr',
-            department: 'Informatique',
-            onInternship: false
-          };
-          setStudent(mockStudent);
-          setLoading(false);
-        }, 500);
+        setError('Aucune donnée d\'étudiant disponible');
+        setLoading(false);
         
       } catch (err) {
         setError('Erreur lors du chargement des détails de l\'étudiant');
@@ -50,18 +38,13 @@ const StudentDetail: React.FC = () => {
     };
 
     fetchStudentDetails();
-  }, [id]);
+  }, [id, location.state]);
 
   const handleDeleteAccount = async () => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce compte étudiant ?')) {
-      try {
-        // TODO: Décommenter quand l'endpoint sera disponible
-        // await deleteStudent(student!.id);
-        console.log('Suppression du compte étudiant:', student?.id);
-        navigate('/admin/students');
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
-      }
+      // TODO: Implémenter la suppression quand l'endpoint sera disponible
+      console.log('Suppression du compte étudiant:', student?.id);
+      navigate('/admin/students');
     }
   };
 
@@ -118,7 +101,44 @@ const StudentDetail: React.FC = () => {
                     <div className="mt-4">
                       <h2 className="text-lg font-semibold mb-2">Informations de contact</h2>
                       <p className="text-gray-700">Email: {student.email}</p>
-                      <p className="text-gray-700">Département: {student.department}</p>
+                      {student.department && (
+                        <p className="text-gray-700">Département: {student.department}</p>
+                      )}
+                      
+                      {/* Liens sociaux */}
+                      {((student as any).githubLink || (student as any).linkedinLink) && (
+                        <div className="mt-4">
+                          <h3 className="text-md font-semibold mb-2">Liens professionnels</h3>
+                          <div className="flex gap-4">
+                            {(student as any).githubLink && (
+                              <a 
+                                href={(student as any).githubLink} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                <span>🐈</span> GitHub
+                              </a>
+                            )}
+                            {(student as any).linkedinLink && (
+                              <a 
+                                href={(student as any).linkedinLink} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                <span>💼</span> LinkedIn
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Debug: Afficher toutes les propriétés disponibles */}
+                      <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
+                        <h4 className="font-semibold mb-1">Données disponibles:</h4>
+                        <pre className="text-xs overflow-auto">{JSON.stringify(student, null, 2)}</pre>
+                      </div>
                     </div>
                   </div>
                 </div>

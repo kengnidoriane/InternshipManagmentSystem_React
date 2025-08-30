@@ -24,7 +24,14 @@ export default function StudentsList() {
     try {
       setLoading(true);
       const response = await getStudentsPagination(currentPage, pageSize);
+      console.log('Étudiants - réponse complète:', response);
+      console.log('Étudiants - données:', response.data);
       const data = response.data;
+      console.log('Étudiants - contenu:', data.content);
+      if (data.content && data.content.length > 0) {
+        console.log('Premier étudiant - détails complets:', data.content[0]);
+        console.log('Propriétés disponibles:', Object.keys(data.content[0]));
+      }
       setStudents(data.content || []);
       setTotalPages(data.totalPages || 0);
       setTotalElements(data.totalElements || 0);
@@ -35,8 +42,8 @@ export default function StudentsList() {
     }
   };
 
-  const handleStudentClick = (studentId: number) => {
-    navigate(`/admin/students/${studentId}`);
+  const handleStudentClick = (student: StudentResponseDto) => {
+    navigate(`/admin/students/${student.id}`, { state: { student } });
   };
 
   const getInitials = (name: string, firstName: string) => {
@@ -66,7 +73,7 @@ export default function StudentsList() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  onClick={() => handleStudentClick(student.id)}
+                  onClick={() => handleStudentClick(student)}
                 >
                   <div className="p-4">
                     <div className="flex items-start mb-3">

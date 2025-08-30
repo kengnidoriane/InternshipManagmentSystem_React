@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStageDetail, downloadConvention, submitApplication } from "../api/stageApi";
+import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent } from "../api/studentApi";
 import type { OfferResponseDto } from '../types/offer';
 import EtudiantHeader from './EtudiantHeader';
 
@@ -15,10 +16,34 @@ const StageDetail: React.FC = () => {
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [hasApprovedApplication, setHasApprovedApplication] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
+    
+    // Vérifier les candidatures existantes
+    const checkApplications = async () => {
+      try {
+        const [pendingApps, approvedApps] = await Promise.all([
+          getPendingApplicationsOfStudent(),
+          getApplicationsApprovedOfStudent()
+        ]);
+        
+        const currentOfferId = Number(id);
+        const hasPending = pendingApps.data?.some((app: any) => app.offer?.id === currentOfferId);
+        const hasApproved = approvedApps.data?.some((app: any) => app.offer?.id === currentOfferId);
+        
+        setHasApplied(hasPending || hasApproved);
+        setHasApprovedApplication(hasApproved);
+      } catch (error) {
+        console.error('Erreur lors de la vérification des candidatures:', error);
+      }
+    };
+    
+    checkApplications();
+    
     getStageDetail(Number(id))
       .then((offerData: OfferResponseDto) => {
         setOffer(offerData);
@@ -138,12 +163,18 @@ const StageDetail: React.FC = () => {
             <div style={{ position: 'relative', width: '100%' }}>
               <div className="flex flex-row justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-[var(--color-dark)]">Detail de stage</h1>
-                <button 
-                  onClick={handleCandidaterClick}
-                  className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
-                >
-                  {showCandidatureForm ? 'Annuler' : 'Candidater'}
-                </button>
+                {!hasApplied ? (
+                  <button 
+                    onClick={handleCandidaterClick}
+                    className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
+                  >
+                    {showCandidatureForm ? 'Annuler' : 'Candidater'}
+                  </button>
+                ) : (
+                  <div className="bg-gray-200 text-gray-600 px-5 py-2 rounded-lg font-semibold">
+                    {hasApprovedApplication ? 'Candidature approuvée' : 'Déjà candidaté'}
+                  </div>
+                )}
               </div>
               
               <div className="flex flex-row gap-10">
@@ -187,12 +218,18 @@ const StageDetail: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-row gap-3 mt-2">
-                    <button 
-                      onClick={handleCandidaterClick}
-                      className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
-                    >
-                      {showCandidatureForm ? 'Annuler' : 'Candidater'}
-                    </button>
+                    {!hasApplied ? (
+                      <button 
+                        onClick={handleCandidaterClick}
+                        className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
+                      >
+                        {showCandidatureForm ? 'Annuler' : 'Candidater'}
+                      </button>
+                    ) : (
+                      <div className="bg-gray-200 text-gray-600 px-5 py-2 rounded-lg font-semibold">
+                        {hasApprovedApplication ? 'Candidature approuvée' : 'Déjà candidaté'}
+                      </div>
+                    )}
                     <button className="bg-white border border-[var(--color-jaune)] text-[var(--color-jaune)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] transition cursor-pointer">
                       Voir des stages similaires
                     </button>

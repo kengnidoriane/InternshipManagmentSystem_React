@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { motion } from 'framer-motion';
 
@@ -13,8 +13,15 @@ const rightLinks = [
 ];
 
 export default function EntrepriseHeader() {
+  const navigate = useNavigate();
   const linkClass =
     'relative text-lg font-light font-[var(--font-family-poiret)] tracking-wider px-1 pb-1 transition-colors duration-200';
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    sessionStorage.clear();
+    navigate('/login');
+  };
 
   return (
     <header className="w-full flex items-end justify-center gap-8 px-8 pt-3 bg-transparent select-none">
@@ -115,6 +122,12 @@ export default function EntrepriseHeader() {
             )}
           </NavLink>
         ))}
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors duration-200 text-sm font-medium ml-4"
+        >
+          Déconnexion
+        </button>
       </nav>
     </header>
   );

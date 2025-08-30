@@ -5,6 +5,20 @@ import { approveEnterprise } from '../../api/adminApi';
 import { getEnterpriseById } from '../../api/enterpriseApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 
+interface OfferInEnterprise {
+  id: number;
+  title: string;
+  description: string;
+  domain: string;
+  job: string;
+  typeOfInternship?: string;
+  startDate: string;
+  endDate: string;
+  numberOfPlaces?: number;
+  paying?: boolean;
+  remote?: boolean;
+}
+
 const EnterpriseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
@@ -45,7 +59,22 @@ const EnterpriseDetail: React.FC = () => {
           console.warn('Lecture du cache pendingEnterprises échouée', e);
         }
 
-        // 3) Fallback: tenter un appel backend si disponible
+        // 3) Troisième essai: récupérer depuis le cache des entreprises partenaires
+        try {
+          const cachedPartners = sessionStorage.getItem('partnerEnterprises');
+          if (cachedPartners) {
+            const partnerList = JSON.parse(cachedPartners) as EnterpriseResponseDto[];
+            const foundPartner = partnerList.find(e => Number(e.id) === Number(id));
+            if (foundPartner) {
+              setEnterprise(foundPartner);
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Lecture du cache partnerEnterprises échouée', e);
+        }
+
+        // 4) Fallback: tenter un appel backend si disponible
         const enterpriseId = Number(id);
         if (isNaN(enterpriseId) || enterpriseId <= 0) {
           setError('ID d\'entreprise invalide');
@@ -137,19 +166,78 @@ const EnterpriseDetail: React.FC = () => {
                       <p className="text-gray-700">Matriculation: {enterprise.matriculation}</p>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="bg-white/60 rounded-md p-4">
-                        <h3 className="text-sm font-medium text-gray-600">Pays</h3>
-                        <p className="text-gray-800">{enterprise.country || '—'}</p>
+                    {(enterprise.city || enterprise.country) && (
+                      <div className="mt-4">
+                        <h2 className="text-lg font-semibold mb-2">Localisation</h2>
+                        <div className="bg-white/60 rounded-md p-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-600">📍</span>
+                            <span className="text-gray-800">
+                              {enterprise.city && enterprise.country 
+                                ? `${enterprise.city}, ${enterprise.country}`
+                                : enterprise.city || enterprise.country
+                              }
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="bg-white/60 rounded-md p-4">
-                        <h3 className="text-sm font-medium text-gray-600">Ville</h3>
-                        <p className="text-gray-800">{enterprise.city || '—'}</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
+              
+              {/* Section des offres */}
+              {enterprise.offers && enterprise.offers.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                  <h2 className="text-xl font-semibold mb-4">Offres de stage ({enterprise.offers.length})</h2>
+                  <div className="flex flex-col gap-4">
+                    {enterprise.offers.map((offer: any) => (
+                      <div
+                        key={offer.id}
+                        className="flex flex-row items-stretch bg-[var(--color-light)] rounded-xl shadow-lg border border-[#e1d3c1] overflow-hidden hover:bg-[var(--color-light)] transition-colors cursor-pointer"
+                        onClick={() => navigate(`/enseignant/offres/${offer.id}`, { state: { offer } })}
+                      >
+                        {/* Colonne gauche : logo, entreprise */}
+                        <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
+                          <div className="h-12 w-12 rounded-full mb-2 border border-[#e1d3c1] bg-white flex items-center justify-center">
+                            <span className="text-xs font-bold text-[var(--color-dark)]">
+                              {enterprise.name.substring(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{enterprise.name}</div>
+                          <div className="text-[10px] text-[var(--color-dark)] mt-1">{enterprise.sectorOfActivity || 'Non renseigné'}</div>
+                        </div>
+                        
+                        {/* Centre : titre, type, période */}
+                        <div className="flex-1 flex flex-col justify-between py-4">
+                          <div className="flex flex-col pb-2">
+                            <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
+                            <span className="ml-2 text-xs text-[var(--color-dark)]">Poste : <b>{offer.job}</b></span>
+                          </div>
+                          <div className="flex flex-col mt-2 mb-2 flex-wrap">
+                            <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship || 'Non spécifié'}</b></div>
+                            <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
+                            <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
+                          </div>
+                          <div className="flex flex-row flex-wrap gap-2 mt-1">
+                            {offer.remote && (
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">En remote</span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Colonne droite : places, domaine */}
+                        <div className="flex flex-col justify-between items-end max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
+                          <div className="mb-2">
+                            <div className="text-xs text-[var(--color-dark)]">Nombre de places : <b>{offer.numberOfPlaces || 1}</b></div>
+                            <div className="text-xs text-[var(--color-dark)]">Domaine : <b>{offer.domain}</b></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Section actions admin */}
               {!enterprise.inPartnership && (

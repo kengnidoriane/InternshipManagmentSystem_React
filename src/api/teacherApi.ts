@@ -157,3 +157,14 @@ export const verifyPassword = async (password: string) => {
     throw error;
   }
 };
+
+// Récupérer les entreprises partenaires
+export const getEnterpriseInPartnership = async () => {
+  try {
+    return await api.get('/api/teacher/enterpriseInPartnership', {
+      headers: getAuthHeaders()
+    });
+  } catch (error) {
+    throw error;
+  }
+};

@@ -7,17 +7,24 @@ interface Application {
   id: number;
   student: {
     firstName: string;
-    lastName: string;
+    name: string;
     email: string;
-    department: string;
   };
   offer: {
-    id: number;
     title: string;
-    job: string;
+    description: string;
+    domain: string;
+    status: string;
   };
-  applicationDate: string;
-  status: string;
+  enterprise: {
+    id: number;
+    name: string;
+  };
+  state: string;
+  hasFiles: {
+    hasCV: boolean;
+    hasCoverLetter: boolean;
+  };
 }
 
 const CandidaturesEntreprise: React.FC = () => {
@@ -37,15 +44,18 @@ const CandidaturesEntreprise: React.FC = () => {
         
         // Récupérer toutes les candidatures de l'entreprise
         const applicationsResponse = await getEnterpriseApplications();
+        console.log('Candidatures - réponse complète:', applicationsResponse);
+        console.log('Candidatures - données:', applicationsResponse.data);
         const allApplications = applicationsResponse.data || [];
+        console.log('Candidatures - après traitement:', allApplications);
         
-        // Filtrer les candidatures pour ne garder que celles liées aux offres de cette entreprise
-        const enterpriseOfferIds = enterpriseOffers.map((offer: any) => offer.id);
-        const filteredApplications = allApplications.filter((app: Application) => 
-          enterpriseOfferIds.includes(app.offer.id)
-        );
+        // Les candidatures sont déjà filtrées par entreprise par l'API
+        const filteredApplications = allApplications;
         
         setApplications(filteredApplications);
+        console.log('Candidatures filtrées pour cette entreprise:', filteredApplications);
+        console.log('Nombre de candidatures:', filteredApplications.length);
+        console.log('Nombre d\'offres:', enterpriseOffers.length);
       } catch (err: any) {
         console.error('Erreur lors du chargement:', err);
         setError(err?.response?.data?.message || 'Erreur lors du chargement des candidatures');
@@ -57,8 +67,8 @@ const CandidaturesEntreprise: React.FC = () => {
     fetchData();
   }, []);
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  const getInitials = (firstName: string, name: string) => {
+    return `${firstName.charAt(0)}${name.charAt(0)}`.toUpperCase();
   };
 
   const handleDownloadCV = async (applicationId: number) => {
@@ -133,6 +143,11 @@ const CandidaturesEntreprise: React.FC = () => {
     );
   }
 
+  console.log('Rendu - offers.length:', offers.length);
+  console.log('Rendu - applications.length:', applications.length);
+  console.log('Rendu - loading:', loading);
+  console.log('Rendu - error:', error);
+
   // État 3: Affichage des candidatures
   return (
     <div className="min-h-screen w-full bg-login-gradient">
@@ -143,7 +158,8 @@ const CandidaturesEntreprise: React.FC = () => {
           
           {/* Grouper par offre */}
           {offers.map(offer => {
-            const offerApplications = applications.filter(app => app.offer.id === offer.id);
+            const offerApplications = applications.filter(app => app.offer.title === offer.title);
+            console.log(`Offre "${offer.title}" - candidatures trouvées:`, offerApplications.length);
             if (offerApplications.length === 0) return null;
 
             return (
@@ -163,21 +179,33 @@ const CandidaturesEntreprise: React.FC = () => {
                       <div 
                         key={application.id} 
                         className="bg-white rounded-lg p-4 border border-[#d2bfa3] cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => navigate(`/entreprise/candidatures/${application.id}`)}
+                        onClick={() => navigate(`/entreprise/candidatures/${application.id}`, { state: { application } })}
                       >
                         <div className="flex items-start gap-4">
                           {/* Avatar avec initiales */}
                           <div className="w-16 h-16 bg-[#4c7a4c] rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                            {getInitials(application.student.firstName, application.student.lastName)}
+                            {getInitials(application.student.firstName, application.student.name)}
                           </div>
                           
                           {/* Informations du candidat */}
                           <div className="flex-grow">
                             <h3 className="font-semibold text-[#2d2d2d] mb-1">
-                              {application.student.firstName} {application.student.lastName}
+                              {application.student.firstName} {application.student.name}
                             </h3>
-                            <p className="text-sm text-gray-600 mb-1">{application.offer.job}</p>
-                            <p className="text-sm text-gray-600 mb-3">{application.student.department}</p>
+                            <p className="text-sm text-gray-600 mb-1">{application.offer.title}</p>
+                            <p className="text-sm text-gray-600 mb-1">Domaine: {application.offer.domain}</p>
+                            <div className="mb-2">
+                              <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                                application.state === 'PENDING' 
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : application.state === 'APPROVED'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {application.state === 'PENDING' ? 'En attente' : 
+                                 application.state === 'APPROVED' ? 'Approuvée' : 'Refusée'}
+                              </span>
+                            </div>
                             
                             <button
                               onClick={(e) => {
