@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AdminHeader from './AdminHeader';
-import { getAllTeachers } from '../../api/adminApi';
+import { getTeachersPagination } from '../../api/adminApi';
 
 interface Teacher {
   id: number;
@@ -15,20 +15,30 @@ interface Teacher {
 export default function TeachersList() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const pageSize = 9;
   const navigate = useNavigate();
 
   useEffect(() => {
-    (async () => {
-      try {
-        const response = await getAllTeachers();
-        setTeachers(response.data || []);
-      } catch (error) {
-        console.error('Erreur lors du chargement des enseignants:', error);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    fetchTeachers();
+  }, [currentPage]);
+
+  const fetchTeachers = async () => {
+    try {
+      setLoading(true);
+      const response = await getTeachersPagination(currentPage, pageSize);
+      const data = response.data;
+      setTeachers(data.content || []);
+      setTotalPages(data.totalPages || 0);
+      setTotalElements(data.totalElements || 0);
+    } catch (error) {
+      console.error('Erreur lors du chargement des enseignants:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTeacherClick = (teacherId: number) => {
     navigate(`/admin/teachers/${teacherId}`);
@@ -44,7 +54,7 @@ export default function TeachersList() {
       <main className="container max-w-4xl mx-auto px-4 py-8">
         <div className="bg-[#e8e0d0] rounded-lg p-6 shadow-lg">
           <h1 className="text-2xl font-semibold text-[var(--color-dark)] mb-6">
-            Liste des enseignants ({teachers.length})
+            Liste des enseignants ({totalElements})
           </h1>
           
           {loading ? (
@@ -80,6 +90,30 @@ export default function TeachersList() {
                   </div>
                 </motion.div>
               ))}
+            </div>
+          )}
+          
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center mt-6 space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                disabled={currentPage === 0}
+                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+              >
+                Précédent
+              </button>
+              
+              <span className="px-3 py-1">
+                Page {currentPage + 1} sur {totalPages}
+              </span>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                disabled={currentPage >= totalPages - 1}
+                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+              >
+                Suivant
+              </button>
             </div>
           )}
         </div>

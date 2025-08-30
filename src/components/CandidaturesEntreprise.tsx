@@ -30,14 +30,25 @@ const CandidaturesEntreprise: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [offersResponse, applicationsResponse] = await Promise.all([
-          getEnterpriseOffers(),
-          getEnterpriseApplications()
-        ]);
-        setOffers(offersResponse.data);
-        setApplications(applicationsResponse.data);
+        // Récupérer d'abord les offres de l'entreprise
+        const offersResponse = await getEnterpriseOffers();
+        const enterpriseOffers = offersResponse.data || [];
+        setOffers(enterpriseOffers);
+        
+        // Récupérer toutes les candidatures de l'entreprise
+        const applicationsResponse = await getEnterpriseApplications();
+        const allApplications = applicationsResponse.data || [];
+        
+        // Filtrer les candidatures pour ne garder que celles liées aux offres de cette entreprise
+        const enterpriseOfferIds = enterpriseOffers.map((offer: any) => offer.id);
+        const filteredApplications = allApplications.filter((app: Application) => 
+          enterpriseOfferIds.includes(app.offer.id)
+        );
+        
+        setApplications(filteredApplications);
       } catch (err: any) {
-        setError(err?.response?.data?.message || 'Erreur lors du chargement');
+        console.error('Erreur lors du chargement:', err);
+        setError(err?.response?.data?.message || 'Erreur lors du chargement des candidatures');
       } finally {
         setLoading(false);
       }

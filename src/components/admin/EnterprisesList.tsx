@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
-import { getPendingEnterprises } from '../../api/adminApi';
+import { getPendingEnterprises, getEnterpriseInPartnership } from '../../api/adminApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
@@ -26,21 +26,23 @@ const EnterprisesList: React.FC = () => {
     const fetchEnterprises = async () => {
       try {
         setLoading(true);
-        // Récupérer seulement les entreprises en attente de validation
-        const response = await getPendingEnterprises();
-        console.log('Admin - pending enterprises response:', response);
-        console.log('Admin - pending enterprises data:', response?.data);
-        const pendingEnts = response.data || [];
+        
+        // Récupérer les entreprises en attente de validation
+        const pendingResponse = await getPendingEnterprises();
+        const pendingEnts = pendingResponse.data || [];
         setPendingEnterprises(pendingEnts);
+        
+        // Récupérer les entreprises partenaires (approuvées)
+        const partnerResponse = await getEnterpriseInPartnership();
+        const partnerEnts = partnerResponse.data || [];
+        setPartnerEnterprises(partnerEnts);
+        
         try {
           sessionStorage.setItem('pendingEnterprises', JSON.stringify(pendingEnts));
+          sessionStorage.setItem('partnerEnterprises', JSON.stringify(partnerEnts));
         } catch (e) {
-          console.warn('Impossible de mettre en cache les entreprises en attente', e);
+          console.warn('Impossible de mettre en cache les entreprises', e);
         }
-        
-        // Note: Pas d'endpoint pour récupérer les entreprises partenaires
-        // On peut les simuler ou les laisser vides
-        setPartnerEnterprises([]);
         
       } catch (err) {
         setError('Erreur lors du chargement des entreprises');
@@ -96,15 +98,16 @@ const EnterprisesList: React.FC = () => {
             ) : (
               <div className="relative">
                 <div className="flex items-center">
-                  <button 
-                    onClick={prevSlide}
-                    className="absolute left-0 z-10 bg-white/50 rounded-full p-2 shadow-md"
-                    disabled={pendingEnterprises.length <= 3}
-                  >
-                    <FiChevronLeft size={24} />
-                  </button>
+                  {pendingEnterprises.length > 3 && (
+                    <button 
+                      onClick={prevSlide}
+                      className="absolute left-0 z-10 bg-white/50 rounded-full p-2 shadow-md"
+                    >
+                      <FiChevronLeft size={24} />
+                    </button>
+                  )}
                   
-                  <div className="flex justify-between w-full overflow-hidden px-10">
+                  <div className={`flex justify-between w-full overflow-hidden ${pendingEnterprises.length > 3 ? 'px-10' : 'px-0'}`}>
                     {visiblePendingEnterprises.map((enterprise) => (
                       <div 
                         key={enterprise.id} 
@@ -138,13 +141,14 @@ const EnterprisesList: React.FC = () => {
                     ))}
                   </div>
                   
-                  <button 
-                    onClick={nextSlide}
-                    className="absolute right-0 z-10 bg-white/50 rounded-full p-2 shadow-md"
-                    disabled={pendingEnterprises.length <= 3}
-                  >
-                    <FiChevronRight size={24} />
-                  </button>
+                  {pendingEnterprises.length > 3 && (
+                    <button 
+                      onClick={nextSlide}
+                      className="absolute right-0 z-10 bg-white/50 rounded-full p-2 shadow-md"
+                    >
+                      <FiChevronRight size={24} />
+                    </button>
+                  )}
                 </div>
               </div>
             )}
