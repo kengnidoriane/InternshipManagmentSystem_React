@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import NotificationBell from '../NotificationBell';
+import { useAuthStore } from '../../store/authStore';
 
 const navLinks = [
   { to: '/admin/dashboard', label: 'Dashboard' },
@@ -12,12 +13,12 @@ const navLinks = [
 
 export default function AdminHeader() {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
   const linkClass =
     'relative text-lg font-light font-[var(--font-family-poiret)] tracking-wider px-1 pb-1 transition-colors duration-200';
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    sessionStorage.clear();
+    logout();
     navigate('/login');
   };
 

@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { motion } from 'framer-motion';
 import NotificationBell from './NotificationBell';
+import { useAuthStore } from '../store/authStore';
 
 const navLinks = [
   { to: '/entreprise/offres', label: 'Listes des offres' },
@@ -15,12 +16,12 @@ const rightLinks = [
 
 export default function EntrepriseHeader() {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
   const linkClass =
     'relative text-lg font-light font-[var(--font-family-poiret)] tracking-wider px-1 pb-1 transition-colors duration-200';
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    sessionStorage.clear();
+    logout();
     navigate('/login');
   };
 

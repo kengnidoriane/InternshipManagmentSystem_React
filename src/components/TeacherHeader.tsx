@@ -1,6 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png'; // Adapter le chemin si besoin
 import NotificationBell from './NotificationBell';
+import { useAuthStore } from '../store/authStore';
 
 const navLinks = [
   { to: '/enseignant/entreprises', label: 'Entreprises' },
@@ -12,13 +13,13 @@ const navLinks = [
 export default function TeacherHeader() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
 
   const linkClass =
     'relative text-lg font-light font-[var(--font-family-poiret)] tracking-wider px-1 pb-1 transition-colors duration-200';
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    sessionStorage.clear();
+    logout();
     navigate('/login');
   };
 

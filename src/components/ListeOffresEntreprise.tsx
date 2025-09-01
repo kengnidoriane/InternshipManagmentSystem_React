@@ -13,7 +13,7 @@ const ListeOffresEntreprise: React.FC = () => {
   const [search, setSearch] = useState('');
   const [isPartner, setIsPartner] = useState(true);
   const navigate = useNavigate();
-  const setApplicationsStore = useApplicationsStore((state) => state.setApplicationsCount);
+  const setApplicationsCount = useApplicationsStore((state) => state.setApplicationsCount);
 
   useEffect(() => {
     const fetchData = async () => {
