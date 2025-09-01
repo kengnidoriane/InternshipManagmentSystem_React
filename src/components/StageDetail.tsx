@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStageDetail, downloadConvention, submitApplication } from "../api/stageApi";
-import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent } from "../api/studentApi";
 import type { OfferResponseDto } from '../types/offer';
 import EtudiantHeader from './EtudiantHeader';
+import EnterpriseLogo from './EnterpriseLogo';
+import { useStudentStatus } from '../hooks/useStudentStatus';
 
 const StageDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,36 +17,17 @@ const StageDetail: React.FC = () => {
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
-  const [hasApprovedApplication, setHasApprovedApplication] = useState(false);
+  const studentStatus = useStudentStatus();
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     
-    // Vérifier les candidatures existantes
-    const checkApplications = async () => {
-      try {
-        const [pendingApps, approvedApps] = await Promise.all([
-          getPendingApplicationsOfStudent(),
-          getApplicationsApprovedOfStudent()
-        ]);
-        
-        const currentOfferId = Number(id);
-        const hasPending = pendingApps.data?.some((app: any) => app.offer?.id === currentOfferId);
-        const hasApproved = approvedApps.data?.some((app: any) => app.offer?.id === currentOfferId);
-        
-        setHasApplied(hasPending || hasApproved);
-        setHasApprovedApplication(hasApproved);
-      } catch (error) {
-        console.error('Erreur lors de la vérification des candidatures:', error);
-      }
-    };
-    
-    checkApplications();
+
     
     getStageDetail(Number(id))
       .then((offerData: OfferResponseDto) => {
+
         setOffer(offerData);
         setError(null);
       })
@@ -113,6 +95,18 @@ const StageDetail: React.FC = () => {
 
   // Fonction pour gérer l'affichage du formulaire de candidature
   const handleCandidaterClick = () => {
+    if (!id) return;
+    
+    const offerId = Number(id);
+    
+    if (studentStatus.isOnInternship) {
+      alert('Vous êtes déjà en stage et ne pouvez plus candidater à de nouvelles offres.');
+      return;
+    }
+    if (studentStatus.hasApplicationForOffer(offerId)) {
+      alert('Vous avez déjà candidaté pour cette offre.');
+      return;
+    }
     setShowCandidatureForm(!showCandidatureForm);
   };
 
@@ -142,6 +136,8 @@ const StageDetail: React.FC = () => {
     try {
       await submitApplication(Number(id), cvFile, coverLetterFile);
       setSubmitSuccess(true);
+      // Rafraîchir le statut de l'étudiant
+      await studentStatus.refresh();
       setTimeout(() => {
         setShowCandidatureForm(false);
         setSubmitSuccess(false);
@@ -163,7 +159,7 @@ const StageDetail: React.FC = () => {
             <div style={{ position: 'relative', width: '100%' }}>
               <div className="flex flex-row justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-[var(--color-dark)]">Detail de stage</h1>
-                {!hasApplied ? (
+                {!studentStatus.isOnInternship && !studentStatus.hasApplicationForOffer(Number(id || 0)) ? (
                   <button 
                     onClick={handleCandidaterClick}
                     className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
@@ -172,7 +168,8 @@ const StageDetail: React.FC = () => {
                   </button>
                 ) : (
                   <div className="bg-gray-200 text-gray-600 px-5 py-2 rounded-lg font-semibold">
-                    {hasApprovedApplication ? 'Candidature approuvée' : 'Déjà candidaté'}
+                    {studentStatus.isOnInternship ? 'En stage - Candidature impossible' : 
+                     studentStatus.hasApprovedApplicationForOffer(Number(id || 0)) ? 'Candidature approuvée' : 'Déjà candidaté'}
                   </div>
                 )}
               </div>
@@ -183,14 +180,17 @@ const StageDetail: React.FC = () => {
                   
                   <div className="mb-5">
                     <div className="flex flex-row flex-wrap gap-8 items-center mb-2">
-                      <div className="text-base text-[var(--color-dark)]">Type de stage <b>{offer.typeOfInternship || 'Perfectionnement'}</b></div>
+                      <div className="text-base text-[var(--color-dark)]">Type de stage <b>{offer.typeOfInternship || 'Non spécifié'}</b></div>
                       <div className="text-base text-[var(--color-dark)]">Stage payant <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
                       <div className="text-base text-[var(--color-dark)]">🗓️ Période du stage <b>{offer.startDate} - {offer.endDate}</b></div>
                     </div>
                     <div className="flex flex-row flex-wrap gap-2 mb-2">
-                      {badges.map(b => (
-                        <span key={b} className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">{b}</span>
-                      ))}
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">
+                        {offer.remote ? 'En remote' : 'En présentiel'}
+                      </span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">
+                        {offer.paying ? 'Payant' : 'Non payant'}
+                      </span>
                     </div>
                   </div>
                   
@@ -218,7 +218,7 @@ const StageDetail: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-row gap-3 mt-2">
-                    {!hasApplied ? (
+                    {!studentStatus.isOnInternship && !studentStatus.hasApplicationForOffer(Number(id || 0)) ? (
                       <button 
                         onClick={handleCandidaterClick}
                         className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
@@ -227,7 +227,8 @@ const StageDetail: React.FC = () => {
                       </button>
                     ) : (
                       <div className="bg-gray-200 text-gray-600 px-5 py-2 rounded-lg font-semibold">
-                        {hasApprovedApplication ? 'Candidature approuvée' : 'Déjà candidaté'}
+                        {studentStatus.isOnInternship ? 'En stage - Candidature impossible' : 
+                         studentStatus.hasApprovedApplicationForOffer(Number(id || 0)) ? 'Candidature approuvée' : 'Déjà candidaté'}
                       </div>
                     )}
                     <button className="bg-white border border-[var(--color-jaune)] text-[var(--color-jaune)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] transition cursor-pointer">
@@ -237,13 +238,19 @@ const StageDetail: React.FC = () => {
                 </div>
                 
                 <div className="min-w-[260px] max-w-[320px] flex flex-col items-center p-5 mt-1">
-                  <img src={'/default-logo.png'} alt={offer.enterprise.name} className="h-20 w-20 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
-                  <div className="text-base font-bold text-[var(--color-dark)] text-center mb-1">{offer.enterprise.name}</div>
+                  <EnterpriseLogo 
+                    enterpriseName={offer.enterprise.name}
+                    enterpriseId={offer.enterprise.id}
+                    hasLogo={offer.enterprise.hasLogo?.hasLogo}
+                    size="lg"
+                    className="mb-2"
+                  />
+                  <div className="text-base font-bold text-[var(--color-dark)] text-center mb-1">{offer.enterprise?.name || 'Entreprise'}</div>
                   <div className="flex flex-row gap-2 mb-1">
                     <span role="img" aria-label="flag" className="text-xl">🇨🇲</span>
-                    <span className="text-xs text-[var(--color-dark)]">{offer.enterprise.country} • {offer.enterprise.city}</span>
+                    <span className="text-xs text-[var(--color-dark)]">{offer.enterprise?.country || 'Pays'} • {offer.enterprise?.city || 'Ville'}</span>
                   </div>
-                  <div className="text-xs text-[var(--color-dark)] mb-1">{offer.enterprise.sectorOfActivity || 'Entreprise de services'}</div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">{offer.enterprise?.sectorOfActivity || 'Secteur d\'activité'}</div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de place <b>{places}</b></div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de postulants <b>{postulants}</b></div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Domaine <b>{offer.domain}</b></div>

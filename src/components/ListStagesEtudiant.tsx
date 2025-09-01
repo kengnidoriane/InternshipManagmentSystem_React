@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
-import egLogo from '../assets/eg-logo.jpg'; // à remplacer par tes assets réels
+import EnterpriseLogo from './EnterpriseLogo';
 
 import { getApprovedOffers } from '../api/studentApi';
 import type { OfferResponseDto } from '../types/offer';
@@ -51,6 +51,7 @@ export default function ListStagesEtudiant() {
     getApprovedOffers()
       .then(res => {
         const apiOffers = res?.data as OfferResponseDto[] | undefined;
+
         setOffers(apiOffers || []);
       })
       .catch(() => setOffers([]))
@@ -134,10 +135,16 @@ export default function ListStagesEtudiant() {
                   >
                   {/* Colonne gauche : logo, entreprise, pays, ville, secteur */}
                   <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
-                    <img src={egLogo} alt={offer.enterprise.name} className="h-12 w-12 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white" />
-                    <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise.name}</div>
-                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.country || 'Nigeria'} · {offer.enterprise.city || 'Lagos'}</div>
-                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.sectorOfActivity}</div>
+                    <EnterpriseLogo 
+                      enterpriseName={offer.enterprise.name}
+                      enterpriseId={offer.enterprise.id}
+                      hasLogo={offer.enterprise.hasLogo?.hasLogo}
+                      size="md"
+                      className="mb-2"
+                    />
+                    <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise?.name || 'Entreprise'}</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise?.country || 'Pays'} · {offer.enterprise?.city || 'Ville'}</div>
+                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise?.sectorOfActivity || 'Secteur'}</div>
                   </div>
                   {/* Centre : titre, deadline, type, période, badges */}
                   <div className="flex-1 flex flex-col justify-between py-4">
@@ -146,14 +153,17 @@ export default function ListStagesEtudiant() {
                       <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span>
                     </div>
                     <div className="flex flex-col mt-2 mb-2 flex-wrap">
-                      <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship || 'Perfectionnement'}</b></div>
+                      <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship || 'Non spécifié'}</b></div>
                       <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
                       <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
                     </div>
                     <div className="flex flex-row flex-wrap gap-2 mt-1 ">
-                      {/* Badges (mockés, car pas dans le backend) */}
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">. En remote</span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">.Après interview</span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">
+                        {offer.remote ? 'En remote' : 'Sur site'}
+                      </span>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">
+                        {offer.paying ? 'Payant' : 'Non payant'}
+                      </span>
                     </div>
                   </div>
                   {/* Colonne droite : places, postulants, domaine, tags */}

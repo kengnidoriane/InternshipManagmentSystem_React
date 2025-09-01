@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyEmail } from '../api/registrationApi';
+import { verifyEmail, resendToken } from '../api/registrationApi';
 import { useAuthStore } from '../store/authStore';
 import { useRegistrationStore } from '../store/registrationStore';
 
@@ -20,6 +20,9 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const navigate = useNavigate();
 
@@ -78,6 +81,34 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
     }
   };
 
+  const handleResendCode = async () => {
+    if (!email || resendCooldown > 0) return;
+    
+    setResendLoading(true);
+    setError('');
+    try {
+      await resendToken(email);
+      setResendSuccess(true);
+      setResendCooldown(60);
+      
+      const interval = setInterval(() => {
+        setResendCooldown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      setTimeout(() => setResendSuccess(false), 3000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erreur lors du renvoi du code');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   return (
     <form className="w-ful text-white flex flex-col items-start" onSubmit={handleSubmit}>
       <p className="text-white">Un code a été envoyé à l'adresse suivante&nbsp;</p>
@@ -103,6 +134,23 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
       {error && (
         <p className="text-xs text-red-600 mb-2 w-full">{error}</p>
       )}
+      {resendSuccess && (
+        <p className="text-xs text-green-600 mb-2 w-full">Code renvoyé avec succès !</p>
+      )}
+      
+      <div className="w-full text-center mb-4">
+        <p className="text-sm text-gray-300 mb-2">Vous n'avez pas reçu le code ?</p>
+        <button
+          type="button"
+          onClick={handleResendCode}
+          disabled={resendLoading || resendCooldown > 0}
+          className="text-[var(--color-jaune)] hover:text-[var(--color-vert)] underline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {resendLoading ? 'Envoi...' : 
+           resendCooldown > 0 ? `Renvoyer dans ${resendCooldown}s` : 
+           'Renvoyer le code'}
+        </button>
+      </div>
       <div className="flex w-full justify-between gap-2 mt-4">
         <button
           type="button"

@@ -4,6 +4,7 @@ import AdminHeader from './AdminHeader';
 import { getPendingEnterprises, getEnterpriseInPartnership } from '../../api/adminApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import EnterpriseLogo from '../EnterpriseLogo';
 
 const EnterprisesList: React.FC = () => {
   const navigate = useNavigate();
@@ -118,18 +119,13 @@ const EnterprisesList: React.FC = () => {
                         onClick={() => navigate(`/admin/enterprises/${enterprise.id}`, { state: { enterprise } })}
                       >
                         <div className="flex">
-                          <div className="w-20 h-20 rounded-md flex items-center justify-center mr-4 overflow-hidden">
-                            {logoUrls[enterprise.id] ? (
-                              <img 
-                                src={logoUrls[enterprise.id]} 
-                                alt={`Logo ${enterprise.name}`}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-2xl">
-                                {enterprise.name.substring(0, 2)}
-                              </div>
-                            )}
+                          <div className="mr-4">
+                            <EnterpriseLogo 
+                              enterpriseName={enterprise.name}
+                              enterpriseId={enterprise.id}
+                              hasLogo={enterprise.hasLogo?.hasLogo}
+                              size="lg"
+                            />
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium">{enterprise.name}</h3>
@@ -175,19 +171,13 @@ const EnterprisesList: React.FC = () => {
                     onClick={() => navigate(`/admin/enterprises/${enterprise.id}`, { state: { enterprise } })}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-16 h-16 rounded-md flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {logoUrls[enterprise.id] ? (
-                          <img 
-                            src={logoUrls[enterprise.id]} 
-                            alt={`Logo ${enterprise.name}`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-green-500 text-white flex items-center justify-center text-lg font-bold">
-                            {enterprise.name.substring(0, 2)}
-                          </div>
-                        )}
-                      </div>
+                      <EnterpriseLogo 
+                        enterpriseName={enterprise.name}
+                        enterpriseId={enterprise.id}
+                        hasLogo={enterprise.hasLogo?.hasLogo}
+                        size="md"
+                        className="flex-shrink-0"
+                      />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate">{enterprise.name}</h3>
                         <div className="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs my-1">

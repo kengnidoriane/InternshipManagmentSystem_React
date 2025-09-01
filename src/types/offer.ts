@@ -6,9 +6,9 @@ export interface EnterpriseOfferResponseDto {
   sectorOfActivity: string;
   inPartnership: boolean;
   matriculation: string;
-  country: string;
-  city: string;
-  hasLogo: {
+  country?: string;
+  city?: string;
+  hasLogo?: {
     hasLogo: boolean;
   };
 }

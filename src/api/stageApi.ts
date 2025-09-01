@@ -13,7 +13,7 @@ export async function getOfferDetail(offerId: number): Promise<OfferResponseDto>
   throw new Error('Endpoint non disponible - utiliser les endpoints spécifiques par rôle');
 }
 
-// Ajout: recherche le détail d'offre en parcourant les listes disponibles selon le rôle
+// Recherche le détail d'offre en parcourant les listes disponibles selon le rôle
 export async function getStageDetail(offerId: number): Promise<OfferResponseDto> {
   if (!Number.isInteger(offerId) || offerId <= 0) {
     throw new Error('ID d\'offre invalide - doit être un entier positif');
@@ -30,41 +30,17 @@ export async function getStageDetail(offerId: number): Promise<OfferResponseDto>
       const { data } = await fetcher();
       if (Array.isArray(data)) {
         const found = data.find((o: OfferResponseDto) => Number(o.id) === Number(offerId));
-        if (found) return found as OfferResponseDto;
+        if (found) {
+
+          return found as OfferResponseDto;
+        }
       }
-    } catch {
-      // ignore and try next
+    } catch (error) {
+      console.log('Erreur endpoint:', error);
     }
   }
 
-  return {
-    id: offerId,
-    title: 'Offre de stage (mock)',
-    description: 'Description indisponible. Données mock en attendant l\'API.',
-    domain: 'Général',
-    typeOfInternship: 'Perfectionnement',
-    job: 'Stagiaire',
-    requirements: 'Aucun',
-    numberOfPlaces: '1',
-    durationOfInternship: 3,
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString(),
-    status: 'APPROVED',
-    paying: false,
-    remote: false,
-    enterprise: {
-      id: 0,
-      name: 'Entreprise (mock)',
-      email: 'mock@example.com',
-      sectorOfActivity: 'Services',
-      inPartnership: true,
-      matriculation: 'MOCK-000',
-      country: 'Cameroun',
-      city: 'Yaoundé',
-      hasLogo: { hasLogo: false }
-    },
-    convention: undefined
-  } as OfferResponseDto;
+  throw new Error(`Offre avec l'ID ${offerId} non trouvée`);
 }
 
 // Télécharge la convention de stage (utilise l'endpoint existant)

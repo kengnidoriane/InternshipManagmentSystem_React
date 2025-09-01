@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useApplicationsStore } from '../store/applicationsStore';
-// import { getEnterpriseLogoById } from '../api/enterpriseApi';
 import type { OfferResponseDto } from '../types/offer';
+import EnterpriseLogo from './EnterpriseLogo';
 
 interface OfferCardProps {
   offer: OfferResponseDto;
@@ -13,30 +13,8 @@ interface OfferCardProps {
 const OfferCard: React.FC<OfferCardProps> = ({ offer, onClick }) => {
   const navigate = useNavigate();
   const getApplicationsCount = useApplicationsStore((state) => state.getApplicationsCount);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  
 
-  useEffect(() => {
-    if (offer.enterprise?.hasLogo?.hasLogo && offer.enterprise?.id) {
-      // Pour les entreprises, utiliser leur propre logo
-      import('../api/enterpriseApi').then(({ getEnterpriseLogoById }) => {
-        getEnterpriseLogoById(offer.enterprise.id)
-          .then(response => {
-            if (response.data && response.data.size > 0) {
-              const logoBlob = new Blob([response.data]);
-              const logoObjectUrl = URL.createObjectURL(logoBlob);
-              setLogoUrl(logoObjectUrl);
-            }
-          })
-          .catch(() => setLogoUrl(null));
-      });
-    }
-    
-    return () => {
-      if (logoUrl) {
-        URL.revokeObjectURL(logoUrl);
-      }
-    };
-  }, [offer.enterprise?.hasLogo?.hasLogo, offer.enterprise?.id]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -71,15 +49,13 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onClick }) => {
     >
       {/* Colonne gauche : logo, entreprise, pays, ville, secteur */}
       <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
-        <div className="h-12 w-12 rounded-full object-contain mb-2 border border-[#e1d3c1] bg-white flex items-center justify-center overflow-hidden">
-          {logoUrl ? (
-            <img src={logoUrl} alt="Logo entreprise" className="h-12 w-12 object-contain rounded-full" />
-          ) : (
-            <span className="text-xs font-bold text-[var(--color-dark)]">
-              {(offer.enterprise?.name || 'Entreprise').split(' ').slice(0, 2).map(w => w.charAt(0).toUpperCase()).join('')}
-            </span>
-          )}
-        </div>
+        <EnterpriseLogo 
+          enterpriseName={offer.enterprise?.name || 'Entreprise'}
+          enterpriseId={offer.enterprise?.id}
+          hasLogo={offer.enterprise?.hasLogo?.hasLogo}
+          size="md"
+          className="mb-2"
+        />
         <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise?.name || 'Entreprise'}</div>
         <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise?.country || 'Pays'} · {offer.enterprise?.city || 'Ville'}</div>
         <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise?.sectorOfActivity || 'Secteur'}</div>
@@ -100,9 +76,12 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onClick }) => {
           <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{formatDate(offer.startDate)} - {formatDate(offer.endDate)}</b></div>
         </div>
         <div className="flex flex-row flex-wrap gap-2 mt-1 ">
-          {/* Badges (mockés, car pas dans le backend) */}
-          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">. {offer.remote ? 'En remote' : 'Sur site'}</span>
-          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">.Après interview</span>
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">
+            {offer.remote ? 'En remote' : 'Sur site'}
+          </span>
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">
+            {offer.paying ? 'Payant' : 'Non payant'}
+          </span>
         </div>
       </div>
 

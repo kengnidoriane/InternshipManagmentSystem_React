@@ -33,25 +33,36 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
-      const response = await login(data); // login de l'api
+      const response = await login(data);
+      console.log('Réponse login:', response.data);
       const { token, role } = response.data;
+      console.log('Token:', token);
+      console.log('Role:', role);
+      
       if (token && role) {
-        setAuth(token, role); // Stocke dans Zustand et localStorage
+        setAuth(token, role);
         clearError();
+        
+        console.log('Redirection vers:', role);
         // Redirection automatique selon le rôle
         if (role === 'STUDENT') {
-          navigate('/dashboard-etudiant');
+          navigate('/etudiant/stages');
         } else if (role === 'TEACHER') {
           navigate('/enseignant/offres');
         } else if (role === 'ENTERPRISE') {
-          navigate('/entreprise/dashboard');
+          navigate('/entreprise/offres');
         } else if (role === 'ADMIN') {
           navigate('/admin/dashboard');
         } else {
+          console.log('Role non reconnu, redirection vers /');
           navigate('/');
         }
+      } else {
+        console.log('Token ou role manquant');
+        setError('Réponse de connexion invalide');
       }
-    } catch {
+    } catch (error) {
+      console.log('Erreur login:', error);
       setError('Identifiants incorrects');
     }
   };
