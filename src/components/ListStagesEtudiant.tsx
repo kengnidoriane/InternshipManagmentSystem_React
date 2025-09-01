@@ -45,24 +45,56 @@ export default function ListStagesEtudiant() {
   const [offers, setOffers] = useState<OfferResponseDto[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isInInternship, setIsInInternship] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState({
+    remote: null as boolean | null,
+    paying: null as boolean | null,
+    typeOfInternship: [] as string[]
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
-    getApprovedOffers()
-      .then(res => {
-        const apiOffers = res?.data as OfferResponseDto[] | undefined;
-
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await getApprovedOffers();
+        const apiOffers = response?.data as OfferResponseDto[] | undefined;
         setOffers(apiOffers || []);
-      })
-      .catch(() => setOffers([]))
-      .finally(() => setLoading(false));
+      } catch (err: any) {
+        console.error('Erreur:', err);
+        if (err.message?.includes('déjà en stage') || err.response?.status === 403) {
+          setIsInInternship(true);
+        } else {
+          setError('Erreur lors du chargement des offres');
+        }
+        setOffers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
   }, []);
 
-  // Recherche sur le titre ou l'entreprise
-  const filteredOffers = offers.filter(offer =>
-    offer.title.toLowerCase().includes(search.toLowerCase()) ||
-    offer.enterprise.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filtrage complet
+  const filteredOffers = offers.filter(offer => {
+    // Filtre de recherche
+    const matchesSearch = offer.title.toLowerCase().includes(search.toLowerCase()) ||
+      offer.enterprise.name.toLowerCase().includes(search.toLowerCase());
+    
+    // Filtre remote
+    const matchesRemote = filters.remote === null || offer.remote === filters.remote;
+    
+    // Filtre payant
+    const matchesPaying = filters.paying === null || offer.paying === filters.paying;
+    
+    // Filtre type de stage
+    const matchesType = filters.typeOfInternship.length === 0 || 
+      filters.typeOfInternship.includes(offer.typeOfInternship || '');
+    
+    return matchesSearch && matchesRemote && matchesPaying && matchesType;
+  });
 
   return (
     <div className="min-h-screen bg-login-gradient flex flex-col">
@@ -71,32 +103,84 @@ export default function ListStagesEtudiant() {
         {/* Sidebar de filtres */}
         <aside className="hidden md:flex flex-col items-start min-w-[210px] max-w-[260px] mt-12 mr-4 rounded-xl shadow-lg px-7 py-8 gap-6">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-[var(--color-neutre9)] text-base">Filter</span>
-            <label className="inline-flex relative items-center cursor-pointer ml-2">
-              <input type="checkbox" className="sr-only peer" disabled aria-label="Activer le filtre" />
-              <div className="w-7 h-3 bg-gray-200 rounded-full peer peer-focus:ring-1 peer-focus:ring-[#b79056] dark:bg-gray-700 peer-checked:bg-[#b79056] after:content-[''] after:absolute after:top-0.8 after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-[#b79056]" />
-            </label>
+            <span className="text-[var(--color-neutre9)] text-base">Filtres</span>
+            <button 
+              onClick={() => setFilters({ remote: null, paying: null, typeOfInternship: [] })}
+              className="text-xs text-[#b79056] hover:underline ml-auto"
+            >
+              Réinitialiser
+            </button>
           </div>
           <div className="mb-4">
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Location</div>
             <div className="flex flex-col gap-1">
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />En remote</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Sur site</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)] cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="remote" 
+                  checked={filters.remote === true}
+                  onChange={() => setFilters(prev => ({ ...prev, remote: prev.remote === true ? null : true }))}
+                  className="accent-[#b79056]" 
+                />
+                En remote
+              </label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)] cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="remote" 
+                  checked={filters.remote === false}
+                  onChange={() => setFilters(prev => ({ ...prev, remote: prev.remote === false ? null : false }))}
+                  className="accent-[#b79056]" 
+                />
+                Sur site
+              </label>
             </div>
           </div>
           <div className="mb-4">
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Payant</div>
             <div className="flex flex-col gap-1">
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Non</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Oui</label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)] cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="paying" 
+                  checked={filters.paying === false}
+                  onChange={() => setFilters(prev => ({ ...prev, paying: prev.paying === false ? null : false }))}
+                  className="accent-[#b79056]" 
+                />
+                Non
+              </label>
+              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)] cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="paying" 
+                  checked={filters.paying === true}
+                  onChange={() => setFilters(prev => ({ ...prev, paying: prev.paying === true ? null : true }))}
+                  className="accent-[#b79056]" 
+                />
+                Oui
+              </label>
             </div>
           </div>
           <div>
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Type de stage</div>
             <div className="flex flex-col gap-1">
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Initiation</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Perfectionnement</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Pré-emploi</label>
+              {['Initiation', 'Perfectionnement', 'Pré-emploi'].map(type => (
+                <label key={type} className="flex items-center gap-2 text-xs text-[var(--color-neutre9)] cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={filters.typeOfInternship.includes(type)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setFilters(prev => ({ ...prev, typeOfInternship: [...prev.typeOfInternship, type] }));
+                      } else {
+                        setFilters(prev => ({ ...prev, typeOfInternship: prev.typeOfInternship.filter(t => t !== type) }));
+                      }
+                    }}
+                    className="accent-[#b79056]" 
+                  />
+                  {type}
+                </label>
+              ))}
             </div>
           </div>
         </aside>
@@ -119,10 +203,14 @@ export default function ListStagesEtudiant() {
             <div className="flex flex-col gap-7">
               {loading ? (
                 <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement des offres...</div>
-              ) : offers.length === 0 ? (
+              ) : isInInternship ? (
                 <div className="py-16 text-center text-[var(--color-jaune)] text-lg">
                   Vous êtes déjà en stage. Vous ne pouvez plus consulter les offres disponibles.
                 </div>
+              ) : error ? (
+                <div className="py-16 text-center text-red-500 text-lg">{error}</div>
+              ) : offers.length === 0 ? (
+                <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre disponible pour le moment.</div>
               ) : filteredOffers.length === 0 ? (
                 <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre trouvée pour votre recherche.</div>
               ) : (

@@ -160,29 +160,25 @@ export default function MonStageEtudiant() {
           <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mes Candidatures</h2>
           
           {/* Candidatures en attente */}
-          {pendingApplications.filter(app => app.state !== 'ACCEPTED').length > 0 && (
+          {pendingApplications.length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">En attente de réponse</h3>
               <div className="grid gap-4">
-                {pendingApplications.filter(app => app.state !== 'ACCEPTED').map(app => (
+                {pendingApplications.map(app => (
                   <div key={app.id} className="bg-[#f5ede3] rounded-lg p-4 shadow-md">
                     <h4 className="font-semibold text-[#2d2d2d] mb-2">{app.offer.title}</h4>
                     <p className="text-gray-600 mb-1">Entreprise: {app.enterprise.name}</p>
                     <p className="text-gray-600 mb-2">Domaine: {app.offer.domain}</p>
                     <div className="flex items-center justify-between">
-                      <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        app.state === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {app.state === 'REJECTED' ? 'Refusée' : 'En attente'}
+                      <div className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        En attente
                       </div>
-                      {app.state === 'REJECTED' && (
-                        <button
-                          onClick={() => handleDeleteApplication(app.id)}
-                          className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
-                        >
-                          Supprimer
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleDeleteApplication(app.id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+                      >
+                        Supprimer
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -191,28 +187,36 @@ export default function MonStageEtudiant() {
           )}
           
           {/* Candidatures approuvées */}
-          {approvedApplications.filter(app => app.state !== 'ACCEPTED').length > 0 && (
+          {approvedApplications.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">Offres approuvées</h3>
+              <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">Offres approuvées par l'entreprise</h3>
               <div className="grid gap-4">
-                {approvedApplications.filter(app => app.state !== 'ACCEPTED').map(app => (
+                {approvedApplications.map(app => (
                   <div key={app.id} className="bg-[#f5ede3] rounded-lg p-4 shadow-md">
                     <h4 className="font-semibold text-[#2d2d2d] mb-2">{app.offer.title}</h4>
                     <p className="text-gray-600 mb-1">Entreprise: {app.enterprise.name}</p>
                     <p className="text-gray-600 mb-4">Domaine: {app.offer.domain}</p>
+                    <div className="mb-3">
+                      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium inline-block mb-3">
+                        Approuvée par l'entreprise
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        L'entreprise a approuvé votre candidature. Souhaitez-vous accepter cette offre de stage ?
+                      </p>
+                    </div>
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleAcceptOffer(app.id)}
                         disabled={acceptingApplication === app.id}
                         className="bg-[#4c7a4c] text-white px-4 py-2 rounded hover:bg-[#6a9a6a] transition-colors disabled:opacity-50"
                       >
-                        {acceptingApplication === app.id ? 'Acceptation...' : 'Accepter'}
+                        {acceptingApplication === app.id ? 'Acceptation...' : 'Accepter l\'offre'}
                       </button>
                       <button
                         onClick={() => handleRejectOffer(app.id)}
                         className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
                       >
-                        Refuser
+                        Décliner l\'offre
                       </button>
                     </div>
                   </div>

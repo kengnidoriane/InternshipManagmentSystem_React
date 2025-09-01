@@ -116,10 +116,13 @@ const StageDetail: React.FC = () => {
       setSubmitSuccess(true);
       // Rafraîchir le statut de l'étudiant
       await studentStatus.refresh();
+      // Fermer le formulaire et réinitialiser les fichiers
+      setShowCandidatureForm(false);
+      setCvFile(null);
+      setCoverLetterFile(null);
       setTimeout(() => {
-        setShowCandidatureForm(false);
         setSubmitSuccess(false);
-      }, 2000);
+      }, 3000);
     } catch (error) {
       console.error('Erreur lors de la soumission:', error);
       alert('Erreur lors de la soumission de votre candidature.');

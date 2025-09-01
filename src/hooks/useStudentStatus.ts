@@ -31,13 +31,15 @@ export const useStudentStatus = (): StudentStatus => {
       setPendingApplications(pendingData);
       setApprovedApplications(approvedData);
       
-      // Si les deux listes sont vides, l'étudiant est probablement en stage
-      const isStudentOnInternship = pendingData.length === 0 && approvedData.length === 0;
-      setIsOnInternship(isStudentOnInternship);
+      // Un étudiant est en stage s'il a une candidature approuvée ET qu'il l'a acceptée
+      // Pour l'instant, on considère qu'il n'est pas en stage par défaut
+      // TODO: Ajouter un endpoint pour vérifier le vrai statut de stage
+      setIsOnInternship(false);
       
     } catch (error) {
       console.error('Erreur lors du chargement des candidatures:', error);
-      // En cas d'erreur, considérer que l'étudiant n'est pas en stage
+      setPendingApplications([]);
+      setApprovedApplications([]);
       setIsOnInternship(false);
     } finally {
       setLoading(false);
