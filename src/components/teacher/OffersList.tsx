@@ -11,6 +11,9 @@ export default function OffersList() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [locationFilter, setLocationFilter] = useState<'ALL' | 'REMOTE' | 'ONSITE'>('ALL');
+  const [payingFilter, setPayingFilter] = useState<'ALL' | 'PAYING' | 'NON_PAYING'>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'Initiation' | 'Perfectionnement' | 'Pré-emploi'>('ALL');
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -42,7 +45,14 @@ export default function OffersList() {
     const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (offer.enterprise?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || offer.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesLocation = locationFilter === 'ALL' || 
+      (locationFilter === 'REMOTE' && offer.remote) ||
+      (locationFilter === 'ONSITE' && !offer.remote);
+    const matchesPaying = payingFilter === 'ALL' ||
+      (payingFilter === 'PAYING' && offer.paying) ||
+      (payingFilter === 'NON_PAYING' && !offer.paying);
+    const matchesType = typeFilter === 'ALL' || offer.typeOfInternship === typeFilter;
+    return matchesSearch && matchesStatus && matchesLocation && matchesPaying && matchesType;
   });
 
   const getStatusBadge = (status: string) => {
@@ -108,23 +118,65 @@ export default function OffersList() {
           <div className="mb-4">
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Location</div>
             <div className="flex flex-col gap-1">
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />En remote</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Sur site</label>
+              {[
+                { key: 'ALL', label: 'Toutes' },
+                { key: 'REMOTE', label: 'En remote' },
+                { key: 'ONSITE', label: 'Sur site' }
+              ].map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]">
+                  <input 
+                    type="radio" 
+                    name="location" 
+                    checked={locationFilter === key}
+                    onChange={() => setLocationFilter(key as any)}
+                    className="accent-[#b79056]" 
+                  />
+                  {label}
+                </label>
+              ))}
             </div>
           </div>
           <div className="mb-4">
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Payant</div>
             <div className="flex flex-col gap-1">
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Non</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="radio" name="payant" disabled className="accent-[#b79056]" />Oui</label>
+              {[
+                { key: 'ALL', label: 'Toutes' },
+                { key: 'NON_PAYING', label: 'Non payant' },
+                { key: 'PAYING', label: 'Payant' }
+              ].map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]">
+                  <input 
+                    type="radio" 
+                    name="paying" 
+                    checked={payingFilter === key}
+                    onChange={() => setPayingFilter(key as any)}
+                    className="accent-[#b79056]" 
+                  />
+                  {label}
+                </label>
+              ))}
             </div>
           </div>
           <div>
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Type de stage</div>
             <div className="flex flex-col gap-1">
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Initiation</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Perfectionnement</label>
-              <label className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]"><input type="checkbox" disabled className="accent-[#b79056]" />Pré-emploi</label>
+              {[
+                { key: 'ALL', label: 'Tous' },
+                { key: 'Initiation', label: 'Initiation' },
+                { key: 'Perfectionnement', label: 'Perfectionnement' },
+                { key: 'Pré-emploi', label: 'Pré-emploi' }
+              ].map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-2 text-xs text-[var(--color-neutre9)]">
+                  <input 
+                    type="radio" 
+                    name="internshipType" 
+                    checked={typeFilter === key}
+                    onChange={() => setTypeFilter(key as any)}
+                    className="accent-[#b79056]" 
+                  />
+                  {label}
+                </label>
+              ))}
             </div>
           </div>
         </aside>
