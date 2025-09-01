@@ -55,6 +55,13 @@ const CreerOffreEntreprise: React.FC = () => {
         const enterpriseResponse = await getCurrentEnterpriseInfo();
         console.log('Infos entreprise récupérées:', enterpriseResponse.data);
         
+        // Vérifier si l'entreprise est partenaire
+        if (enterpriseResponse.data.inPartnership === false) {
+          setError('Votre entreprise doit être approuvée comme partenaire pour créer des offres de stage.');
+          setTimeout(() => navigate('/entreprise/offres'), 3000);
+          return;
+        }
+        
         setEnterpriseInfo({
           name: enterpriseResponse.data.name || 'Mon Entreprise',
           sectorOfActivity: enterpriseResponse.data.sectorOfActivity || 'Secteur d\'activité',

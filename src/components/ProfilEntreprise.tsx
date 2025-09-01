@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getEnterpriseLogo, uploadProfilePhoto } from '../api/enterpriseApi';
-import { getUserEmail, updateEmail } from '../api/profileApi';
+import { getEnterpriseLogo, uploadProfilePhoto, getCurrentEnterpriseInfo } from '../api/enterpriseApi';
+import { updateEmail } from '../api/profileApi';
 import EnterpriseHeader from './EnterpriseHeader';
 
 interface EnterpriseProfile {
@@ -27,22 +27,21 @@ const ProfilEntreprise: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Récupérer l'email de l'utilisateur connecté
-        const emailResponse = await getUserEmail();
-        const userEmail = emailResponse.data;
+        // Récupérer les vraies informations de l'entreprise
+        const enterpriseResponse = await getCurrentEnterpriseInfo();
+        console.log('Données entreprise reçues:', enterpriseResponse.data);
         
-        // Créer un profil par défaut avec l'email récupéré
         const profileData = {
-          id: 1,
-          name: 'Mon Entreprise',
-          email: userEmail,
-          country: '',
-          city: '',
-          sectorOfActivity: '',
-          contact: '',
-          location: '',
-          matriculation: '',
-          inPartnership: false
+          id: enterpriseResponse.data.id || 0,
+          name: enterpriseResponse.data.name || 'Mon Entreprise',
+          email: enterpriseResponse.data.email || '',
+          country: enterpriseResponse.data.country || '',
+          city: enterpriseResponse.data.city || '',
+          sectorOfActivity: enterpriseResponse.data.sectorOfActivity || '',
+          contact: enterpriseResponse.data.contact || '',
+          location: enterpriseResponse.data.location || '',
+          matriculation: enterpriseResponse.data.matriculation || '',
+          inPartnership: enterpriseResponse.data.inPartnership || false
         };
         setProfile(profileData);
         setEditForm(profileData);
@@ -63,6 +62,22 @@ const ProfilEntreprise: React.FC = () => {
       } catch (err: any) {
         console.error('Erreur lors du chargement du profil:', err);
         console.error('Détails de l\'erreur:', err.response?.data);
+        
+        // En cas d'erreur, créer un profil minimal
+        const fallbackProfile = {
+          id: 0,
+          name: 'Mon Entreprise',
+          email: '',
+          country: '',
+          city: '',
+          sectorOfActivity: '',
+          contact: '',
+          location: '',
+          matriculation: '',
+          inPartnership: false
+        };
+        setProfile(fallbackProfile);
+        setEditForm(fallbackProfile);
       } finally {
         setLoading(false);
       }

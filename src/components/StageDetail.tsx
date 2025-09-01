@@ -27,41 +27,20 @@ const StageDetail: React.FC = () => {
     
     getStageDetail(Number(id))
       .then((offerData: OfferResponseDto) => {
-
+        console.log('=== DONNÉES OFFRE REÇUES ===');
+        console.log('Offre complète:', offerData);
+        console.log('Entreprise:', offerData.enterprise);
+        console.log('Nom entreprise:', offerData.enterprise?.name);
+        console.log('Pays:', offerData.enterprise?.country);
+        console.log('Ville:', offerData.enterprise?.city);
+        console.log('Secteur:', offerData.enterprise?.sectorOfActivity);
+        console.log('=== FIN DONNÉES ===');
         setOffer(offerData);
         setError(null);
       })
-      .catch(() => {
-        // fallback mockdata conforme à OfferResponseDto
-        setOffer({
-          id: Number(id),
-          title: 'Dev Three.js Canvas 3D (WebGL) SVG',
-          startDate: new Date().toISOString(),
-          endDate: new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString(),
-          domain: 'web dev',
-          description: 'Lorem ipsum dolor sit amet consectetur. Hendrerit molestie aliquam duis sagittis elit amet',
-          status: 'APPROVED',
-          typeOfInternship: 'Perfectionnement',
-          job: 'Stagiaire',
-          requirements: 'Avoir un PC',
-          numberOfPlaces: '2',
-          durationOfInternship: 3,
-          paying: true,
-          remote: false,
-          enterprise: {
-            id: 1,
-            name: 'LZ customs',
-            email: 'lz@customs.com',
-            sectorOfActivity: 'Entreprise de services',
-            matriculation: 'LZ-2025',
-            country: 'Cameroun',
-            city: 'Yaoundé',
-            hasLogo: { hasLogo: false },
-            inPartnership: true,
-          },
-          convention: undefined,
-        } as OfferResponseDto);
-        setError(null);
+      .catch((error) => {
+        console.error('Erreur lors du chargement de l\'offre:', error);
+        setError('Offre non trouvée');
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -69,12 +48,11 @@ const StageDetail: React.FC = () => {
   if (loading) return <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement...</div>;
   if (error || !offer) return <div className="py-16 text-center text-red-600 text-lg">{error || "Stage introuvable."}</div>;
 
-  // Champs mockés uniquement si absents du backend
-  const postulants = 5;
-  const places = 2;
-  const badges = ['En présentiel', 'Après interview'];
-  const tags = ['Cisco', 'Equipement réseau', 'Réseau', 'IoT', 'Configuration routeur', 'Cloud computing'];
-  const exigences = "L'étudiant doit avoir de son propre PC";
+  // Données dynamiques basées sur l'offre
+  const postulants = 0; // TODO: implémenter le comptage des candidatures
+  const places = offer.numberOfPlaces || '1';
+  const tags = [offer.domain, offer.typeOfInternship].filter(Boolean);
+  const exigences = offer.requirements || 'Aucune exigence spécifiée';
 
   // Fonction de téléchargement de la convention
   const handleDownloadConvention = async () => {
@@ -251,12 +229,12 @@ const StageDetail: React.FC = () => {
                     <span className="text-xs text-[var(--color-dark)]">{offer.enterprise?.country || 'Pays'} • {offer.enterprise?.city || 'Ville'}</span>
                   </div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">{offer.enterprise?.sectorOfActivity || 'Secteur d\'activité'}</div>
-                  <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de place <b>{places}</b></div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de place <b>{offer.numberOfPlaces || '1'}</b></div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de postulants <b>{postulants}</b></div>
-                  <div className="text-xs text-[var(--color-dark)] mb-1">Domaine <b>{offer.domain}</b></div>
+                  <div className="text-xs text-[var(--color-dark)] mb-1">Domaine <b>{offer.domain || 'Non spécifié'}</b></div>
                   <div className="flex flex-wrap gap-2 mt-2 mb-1 justify-center">
-                    {tags.map(t => (
-                      <span key={t} className="bg-[var(--color-vert)] text-white px-2 py-0.5 rounded-full text-xs border border-[var(--color-vert)]">{t}</span>
+                    {tags.map((t, index) => (
+                      <span key={index} className="bg-[var(--color-vert)] text-white px-2 py-0.5 rounded-full text-xs border border-[var(--color-vert)]">{t}</span>
                     ))}
                   </div>
                 </div>

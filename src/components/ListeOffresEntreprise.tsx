@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { getEnterpriseOffers, getEnterpriseApplications } from '../api/enterpriseApi';
+import { getEnterpriseOffers, getEnterpriseApplications, getCurrentEnterpriseInfo } from '../api/enterpriseApi';
 import { useApplicationsStore } from '../store/applicationsStore';
 import type { OfferResponseDto } from '../types/offer';
 import EntrepriseHeader from './EnterpriseHeader';
@@ -11,20 +11,25 @@ const ListeOffresEntreprise: React.FC = () => {
   const [offers, setOffers] = useState<OfferResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [isPartner, setIsPartner] = useState(true);
   const navigate = useNavigate();
-  const setApplicationsCount = useApplicationsStore((state) => state.setApplicationsCount);
+  const setApplicationsStore = useApplicationsStore((state) => state.setApplicationsCount);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [offersResponse, applicationsResponse] = await Promise.all([
+        const [offersResponse, applicationsResponse, enterpriseInfo] = await Promise.all([
           getEnterpriseOffers(),
-          getEnterpriseApplications()
+          getEnterpriseApplications(),
+          getCurrentEnterpriseInfo()
         ]);
         
         const offersData = offersResponse.data || offersResponse;
         setOffers(Array.isArray(offersData) ? offersData : []);
+        
+        // Vérifier le statut de partenariat
+        setIsPartner(enterpriseInfo.data?.inPartnership === true);
         
         // Compter les candidatures par offre
         const applicationsData = applicationsResponse.data || [];
@@ -52,6 +57,10 @@ const ListeOffresEntreprise: React.FC = () => {
   }, [setApplicationsCount]);
 
   const handleCreateOffer = () => {
+    if (!isPartner) {
+      alert('Votre entreprise doit être approuvée comme partenaire pour créer des offres de stage.');
+      return;
+    }
     navigate('/entreprise/creer-offre');
   };
 
@@ -76,7 +85,13 @@ const ListeOffresEntreprise: React.FC = () => {
               <h1 className="text-3xl font-bold text-[var(--color-light)]">Mes offres de stage</h1>
               <button
                 onClick={handleCreateOffer}
-                className="bg-[var(--color-vert)] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] transition"
+                disabled={!isPartner}
+                className={`px-6 py-3 rounded-lg font-semibold transition ${
+                  isPartner 
+                    ? 'bg-[var(--color-vert)] text-white hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] cursor-pointer'
+                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                }`}
+                title={!isPartner ? 'Entreprise non partenaire' : ''}
               >
                 Créer une offre
               </button>

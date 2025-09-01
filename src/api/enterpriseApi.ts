@@ -20,9 +20,16 @@ export const createOffer = async (offer: OfferRequestDto) => {
     startDate: offer.startDate || '',
     endDate: offer.endDate || ''
   };
-  return await api.post('/api/enterprise/createOffer', data, {
-    headers: getAuthHeaders()
-  });
+  try {
+    return await api.post('/api/enterprise/createOffer', data, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 403) {
+      throw new Error('Votre entreprise doit être approuvée comme partenaire pour créer des offres');
+    }
+    throw error;
+  }
 };
 
 // Ajouter la convention PDF à une offre existante
@@ -211,39 +218,31 @@ export const getEnterpriseLogoById = async (enterpriseId: number) => {
 // Récupérer les informations de l'entreprise connectée
 export const getCurrentEnterpriseInfo = async () => {
   try {
-    // Essayer d'abord avec un endpoint potentiel
-    return await api.get('/api/enterprise/profile', {
-      headers: getAuthHeaders()
-    });
-  } catch (error) {
-    console.log('Endpoint /api/enterprise/profile non disponible, utilisation des offres pour récupérer les infos');
-    try {
-      // Fallback: récupérer les infos via les offres de l'entreprise
-      const offersResponse = await getEnterpriseOffers();
-      if (offersResponse.data && offersResponse.data.length > 0) {
-        const firstOffer = offersResponse.data[0];
-        if (firstOffer.enterprise) {
-          return { data: firstOffer.enterprise };
-        }
+    // Utiliser l'endpoint des offres pour récupérer les infos entreprise
+    const offersResponse = await getEnterpriseOffers();
+    console.log('Réponse offres pour infos entreprise:', offersResponse.data);
+    
+    if (offersResponse.data && offersResponse.data.length > 0) {
+      const firstOffer = offersResponse.data[0];
+      console.log('Première offre:', firstOffer);
+      console.log('Entreprise de la première offre:', firstOffer.enterprise);
+      
+      if (firstOffer.enterprise) {
+        return { data: firstOffer.enterprise };
       }
-      throw new Error('Aucune offre trouvée pour récupérer les infos entreprise');
-    } catch (fallbackError) {
-      console.log('Fallback échoué, utilisation de données par défaut');
-      // Données par défaut si aucun endpoint ne fonctionne
-      return {
-        data: {
-          id: 1,
-          name: 'Mon Entreprise',
-          email: 'contact@monentreprise.com',
-          sectorOfActivity: 'Secteur d\'activité',
-          matriculation: 'ENT-001',
-          country: 'Cameroun',
-          city: 'Yaoundé',
-          hasLogo: { hasLogo: false },
-          inPartnership: true
-        }
-      };
     }
+    
+    // Si pas d'offres, essayer l'endpoint profile (peut ne pas exister)
+    try {
+      return await api.get('/api/enterprise/profile', {
+        headers: getAuthHeaders()
+      });
+    } catch {
+      throw new Error('Impossible de récupérer les informations de l\'entreprise. Créez d\'abord une offre.');
+    }
+  } catch (error) {
+    console.error('Erreur getCurrentEnterpriseInfo:', error);
+    throw error;
   }
 };
 
