@@ -6,6 +6,7 @@ import type { OfferResponseDto } from '../types/offer';
 import EtudiantHeader from './EtudiantHeader';
 import EnterpriseLogo from './EnterpriseLogo';
 import { useStudentStatus } from '../hooks/useStudentStatus';
+import { validateApplicationEligibility, getApplicationButtonText, isApplicationButtonDisabled } from '../utils/applicationUtils';
 
 const StageDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -76,15 +77,13 @@ const StageDetail: React.FC = () => {
     if (!id) return;
     
     const offerId = Number(id);
+    const validation = validateApplicationEligibility(offerId, studentStatus);
     
-    if (studentStatus.isOnInternship) {
-      alert('Vous êtes déjà en stage et ne pouvez plus candidater à de nouvelles offres.');
+    if (!validation.canApply) {
+      alert(validation.message);
       return;
     }
-    if (studentStatus.hasApplicationForOffer(offerId)) {
-      alert('Vous avez déjà candidaté pour cette offre.');
-      return;
-    }
+    
     setShowCandidatureForm(!showCandidatureForm);
   };
 
@@ -110,9 +109,18 @@ const StageDetail: React.FC = () => {
       return;
     }
 
+    const offerId = Number(id);
+    
+    // Vérification finale avant soumission
+    if (studentStatus.hasApplicationForOffer(offerId)) {
+      alert('Vous avez déjà candidaté pour cette offre.');
+      setShowCandidatureForm(false);
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await submitApplication(Number(id), cvFile, coverLetterFile);
+      await submitApplication(offerId, cvFile, coverLetterFile);
       setSubmitSuccess(true);
       // Rafraîchir le statut de l'étudiant
       await studentStatus.refresh();
@@ -123,9 +131,20 @@ const StageDetail: React.FC = () => {
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la soumission:', error);
-      alert('Erreur lors de la soumission de votre candidature.');
+      // Gestion d'erreurs spécifiques
+      if (error?.response?.status === 409) {
+        alert('Vous avez déjà candidaté pour cette offre.');
+        await studentStatus.refresh(); // Rafraîchir pour mettre à jour l'état
+        setShowCandidatureForm(false);
+      } else if (error?.response?.status === 403) {
+        alert('Vous ne pouvez plus candidater car vous êtes déjà en stage.');
+        await studentStatus.refresh();
+        setShowCandidatureForm(false);
+      } else {
+        alert('Erreur lors de la soumission de votre candidature.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -140,7 +159,7 @@ const StageDetail: React.FC = () => {
             <div style={{ position: 'relative', width: '100%' }}>
               <div className="flex flex-row justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-[var(--color-dark)]">Detail de stage</h1>
-                {!studentStatus.isOnInternship && !studentStatus.hasApplicationForOffer(Number(id || 0)) ? (
+                {!isApplicationButtonDisabled(Number(id || 0), studentStatus) ? (
                   <button 
                     onClick={handleCandidaterClick}
                     className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
@@ -149,8 +168,7 @@ const StageDetail: React.FC = () => {
                   </button>
                 ) : (
                   <div className="bg-gray-200 text-gray-600 px-5 py-2 rounded-lg font-semibold">
-                    {studentStatus.isOnInternship ? 'En stage - Candidature impossible' : 
-                     studentStatus.hasApprovedApplicationForOffer(Number(id || 0)) ? 'Candidature approuvée' : 'Déjà candidaté'}
+                    {getApplicationButtonText(Number(id || 0), studentStatus)}
                   </div>
                 )}
               </div>
@@ -199,7 +217,7 @@ const StageDetail: React.FC = () => {
                   </div>
                   
                   <div className="flex flex-row gap-3 mt-2">
-                    {!studentStatus.isOnInternship && !studentStatus.hasApplicationForOffer(Number(id || 0)) ? (
+                    {!isApplicationButtonDisabled(Number(id || 0), studentStatus) ? (
                       <button 
                         onClick={handleCandidaterClick}
                         className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
@@ -208,8 +226,7 @@ const StageDetail: React.FC = () => {
                       </button>
                     ) : (
                       <div className="bg-gray-200 text-gray-600 px-5 py-2 rounded-lg font-semibold">
-                        {studentStatus.isOnInternship ? 'En stage - Candidature impossible' : 
-                         studentStatus.hasApprovedApplicationForOffer(Number(id || 0)) ? 'Candidature approuvée' : 'Déjà candidaté'}
+                        {getApplicationButtonText(Number(id || 0), studentStatus)}
                       </div>
                     )}
                     <button className="bg-white border border-[var(--color-jaune)] text-[var(--color-jaune)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] transition cursor-pointer">

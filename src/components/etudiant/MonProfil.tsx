@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { updateLanguages, updateGithubLink, updateLinkedinLink, getCurrentStudentInfo, updateEmail } from '../../api/studentApi';
+import { updateLanguages, updateGithubLink, updateLinkedinLink, getCurrentStudentInfo, updateEmail, updateStudentProfile } from '../../api/studentApi';
 import EtudiantHeader from '../EtudiantHeader';
 
 interface StudentProfile {
@@ -96,6 +96,14 @@ export default function MonProfil() {
     if (!editForm) return;
     
     try {
+      // Mettre à jour le profil complet
+      await updateStudentProfile({
+        name: editForm.name,
+        firstName: editForm.firstName,
+        sector: editForm.sector,
+        department: editForm.department
+      });
+      
       // Mettre à jour l'email si changé
       if (editForm.email !== profile?.email) {
         await updateEmail(editForm.email);

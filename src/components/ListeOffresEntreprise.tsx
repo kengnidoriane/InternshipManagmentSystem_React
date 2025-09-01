@@ -19,10 +19,13 @@ const ListeOffresEntreprise: React.FC = () => {
   const refreshData = async () => {
     try {
       const enterpriseInfo = await getCurrentEnterpriseInfo();
-      setIsPartner(enterpriseInfo.data?.inPartnership === true);
+      const partnershipStatus = enterpriseInfo.data?.inPartnership === true;
+      setIsPartner(partnershipStatus);
       setPartnershipLoading(false);
+      console.log('Statut de partenariat rafraêchi:', partnershipStatus);
     } catch (error) {
       console.error('Erreur lors du rafraîchissement:', error);
+      setPartnershipLoading(false);
     }
   };
 
@@ -68,10 +71,10 @@ const ListeOffresEntreprise: React.FC = () => {
     
     fetchData();
     
-    // Polling automatique toutes les 30 secondes
+    // Polling automatique toutes les 5 secondes
     const interval = setInterval(() => {
       refreshData();
-    }, 30000);
+    }, 5000);
     
     return () => clearInterval(interval);
   }, [setApplicationsCount]);
@@ -103,18 +106,29 @@ const ListeOffresEntreprise: React.FC = () => {
           >
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-3xl font-bold text-[var(--color-light)]">Mes offres de stage</h1>
-              <button
-                onClick={handleCreateOffer}
-                disabled={partnershipLoading || !isPartner}
-                className={`px-6 py-3 rounded-lg font-semibold transition ${
-                  !partnershipLoading && isPartner 
-                    ? 'bg-[var(--color-vert)] text-white hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] cursor-pointer'
-                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                }`}
-                title={partnershipLoading ? 'Vérification...' : !isPartner ? 'Entreprise non partenaire' : ''}
-              >
-                {partnershipLoading ? 'Vérification...' : 'Créer une offre'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCreateOffer}
+                  disabled={partnershipLoading || !isPartner}
+                  className={`px-6 py-3 rounded-lg font-semibold transition ${
+                    !partnershipLoading && isPartner 
+                      ? 'bg-[var(--color-vert)] text-white hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] cursor-pointer'
+                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  }`}
+                  title={partnershipLoading ? 'Vérification...' : !isPartner ? 'Entreprise non partenaire' : ''}
+                >
+                  {partnershipLoading ? 'Vérification...' : 'Créer une offre'}
+                </button>
+                {!isPartner && !partnershipLoading && (
+                  <button
+                    onClick={refreshData}
+                    className="px-4 py-3 rounded-lg font-semibold bg-blue-500 text-white hover:bg-blue-600 transition cursor-pointer"
+                    title="Rafraîchir le statut de partenariat"
+                  >
+                    ⟳
+                  </button>
+                )}
+              </div>
             </div>
             <input
               type="text"

@@ -61,12 +61,15 @@ export default function ListStagesEtudiant() {
         const response = await getApprovedOffers();
         const apiOffers = response?.data as OfferResponseDto[] | undefined;
         setOffers(apiOffers || []);
+        setError(null);
       } catch (err: any) {
-        console.error('Erreur:', err);
-        if (err.message?.includes('déjà en stage') || err.response?.status === 403) {
+        console.error('Erreur lors du chargement des offres:', err);
+        if (err.response?.status === 403) {
+          // L'étudiant est probablement déjà en stage
           setIsInInternship(true);
+          setError('Vous êtes déjà en stage et ne pouvez plus consulter les offres.');
         } else {
-          setError('Erreur lors du chargement des offres');
+          setError('Erreur lors du chargement des offres. Veuillez réessayer.');
         }
         setOffers([]);
       } finally {

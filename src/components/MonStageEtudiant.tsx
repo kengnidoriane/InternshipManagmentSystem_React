@@ -22,7 +22,7 @@ interface Application {
 
 export default function MonStageEtudiant() {
   const studentStatus = useStudentStatus();
-  const { pendingApplications, approvedApplications, loading } = studentStatus;
+  const { pendingApplications, approvedApplications, acceptedApplications, loading } = studentStatus;
   const [acceptingApplication, setAcceptingApplication] = useState<number | null>(null);
   const [showCongratulations, setShowCongratulations] = useState(false);
 
@@ -91,8 +91,8 @@ export default function MonStageEtudiant() {
     );
   }
 
-  // Si l'étudiant a une candidature approuvée et acceptée, afficher seulement celle-ci
-  const acceptedApplication = [...pendingApplications, ...approvedApplications].find(app => app.state === 'ACCEPTED');
+  // Si l'étudiant a une candidature acceptée, afficher seulement celle-ci
+  const acceptedApplication = acceptedApplications.length > 0 ? acceptedApplications[0] : null;
   
   if (acceptedApplication) {
     return (
@@ -132,13 +132,14 @@ export default function MonStageEtudiant() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mon Stage</h2>
+          <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mes Candidatures</h2>
           <div className="mx-auto max-w-md border border-[#e1d3c1] rounded-lg py-7 px-6 bg-transparent flex flex-col items-center" style={{boxShadow: '0 0 0 2px #e1d3c1'}}>
             <div className="text-[var(--color-light)] text-sm text-center mb-6 w-full">
-              Vous n’avez êtes actuellement en stage.<br />
-              Vous ne pouvez plus consulter ou gérer de nouvelles candidatures 
+              Vous n'avez aucune candidature en cours.<br />
+              <Link to="/stages" className="text-[var(--color-jaune)] hover:underline">
+                Consultez les offres disponibles
+              </Link> pour postuler à un stage.
             </div>
-
           </div>
         </motion.div>
       </main>
@@ -216,7 +217,7 @@ export default function MonStageEtudiant() {
                         onClick={() => handleRejectOffer(app.id)}
                         className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
                       >
-                        Décliner l\'offre
+                        Décliner l'offre
                       </button>
                     </div>
                   </div>

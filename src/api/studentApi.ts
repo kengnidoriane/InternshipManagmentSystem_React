@@ -194,6 +194,20 @@ export const updateEmail = async (email: string) => {
   }
 };
 
+// Mettre à jour le profil complet
+export const updateStudentProfile = async (profileData: any) => {
+  try {
+    return await api.patch('/api/student/updateProfile', profileData, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
+  }
+};
+
 
 
 // Télécharger un CV
