@@ -218,31 +218,14 @@ export const getEnterpriseLogoById = async (enterpriseId: number) => {
 // Récupérer les informations de l'entreprise connectée
 export const getCurrentEnterpriseInfo = async () => {
   try {
-    // Utiliser l'endpoint des offres pour récupérer les infos entreprise
-    const offersResponse = await getEnterpriseOffers();
-    console.log('Réponse offres pour infos entreprise:', offersResponse.data);
-    
-    if (offersResponse.data && offersResponse.data.length > 0) {
-      const firstOffer = offersResponse.data[0];
-      console.log('Première offre:', firstOffer);
-      console.log('Entreprise de la première offre:', firstOffer.enterprise);
-      
-      if (firstOffer.enterprise) {
-        return { data: firstOffer.enterprise };
-      }
+    return await api.get('/api/enterprise/info', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
-    
-    // Si pas d'offres, essayer l'endpoint profile (peut ne pas exister)
-    try {
-      return await api.get('/api/enterprise/profile', {
-        headers: getAuthHeaders()
-      });
-    } catch {
-      throw new Error('Impossible de récupérer les informations de l\'entreprise. Créez d\'abord une offre.');
-    }
-  } catch (error) {
-    console.error('Erreur getCurrentEnterpriseInfo:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des informations');
   }
 };
 

@@ -1,6 +1,20 @@
 import { api, getAuthHeaders } from './api';
 import type { StudentResponseDto } from '../types/student';
 
+// Récupérer le profil de l'utilisateur connecté
+export const getCurrentStudentInfo = async () => {
+  try {
+    return await api.get('/updateProfile/getCurrentUser', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du profil');
+  }
+};
+
 // Récupérer les offres approuvées pour l'étudiant
 export const getApprovedOffers = async () => {
   try {
@@ -163,6 +177,20 @@ export const updateLinkedinLink = async (linkedin: string) => {
       throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
     throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du lien LinkedIn');
+  }
+};
+
+// Mettre à jour le profil complet
+export const updateStudentProfile = async (profileData: any) => {
+  try {
+    return await api.patch('/api/student/updateProfile', profileData, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
   }
 };
 

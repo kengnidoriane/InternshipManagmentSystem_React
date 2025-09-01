@@ -16,6 +16,16 @@ const ListeOffresEntreprise: React.FC = () => {
   const navigate = useNavigate();
   const setApplicationsCount = useApplicationsStore((state) => state.setApplicationsCount);
 
+  const refreshData = async () => {
+    try {
+      const enterpriseInfo = await getCurrentEnterpriseInfo();
+      setIsPartner(enterpriseInfo.data?.inPartnership === true);
+      setPartnershipLoading(false);
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -57,6 +67,13 @@ const ListeOffresEntreprise: React.FC = () => {
     };
     
     fetchData();
+    
+    // Polling automatique toutes les 30 secondes
+    const interval = setInterval(() => {
+      refreshData();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, [setApplicationsCount]);
 
   const handleCreateOffer = () => {

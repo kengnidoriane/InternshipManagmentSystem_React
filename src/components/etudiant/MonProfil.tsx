@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { updateLanguages, updateGithubLink, updateLinkedinLink, getApprovedOffers } from '../../api/studentApi';
+import { updateLanguages, updateGithubLink, updateLinkedinLink, getCurrentStudentInfo, updateStudentProfile } from '../../api/studentApi';
 import EtudiantHeader from '../EtudiantHeader';
 
 interface StudentProfile {
@@ -96,7 +96,15 @@ export default function MonProfil() {
     if (!editForm) return;
     
     try {
-      // Sauvegarder les liens GitHub et LinkedIn
+      // Mettre à jour tous les champs du profil
+      await updateStudentProfile({
+        name: editForm.name,
+        firstName: editForm.firstName,
+        sector: editForm.sector,
+        department: editForm.department
+      });
+      
+      // Mettre à jour les liens séparément
       if (editForm.githubLink !== profile?.githubLink) {
         await updateGithubLink(editForm.githubLink);
       }
