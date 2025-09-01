@@ -180,17 +180,17 @@ export const updateLinkedinLink = async (linkedin: string) => {
   }
 };
 
-// Mettre à jour le profil complet
-export const updateStudentProfile = async (profileData: any) => {
+// Mettre à jour l'email
+export const updateEmail = async (email: string) => {
   try {
-    return await api.patch('/api/student/updateProfile', profileData, {
+    return await api.patch('/updateProfile/updateEmail', { email }, {
       headers: getAuthHeaders()
     });
   } catch (error: any) {
     if (error.response?.status === 401) {
       throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
-    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du profil');
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de l\'email');
   }
 };
 
