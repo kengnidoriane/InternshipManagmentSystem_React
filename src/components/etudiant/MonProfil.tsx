@@ -22,6 +22,33 @@ export default function MonProfil() {
   const [loading, setLoading] = useState(true);
   const [newLanguage, setNewLanguage] = useState('');
 
+  useEffect(() => {
+    const fetchStudentProfile = async () => {
+      try {
+        // Créer un profil par défaut (les vraies données viendraient d'un endpoint dédié)
+        const defaultProfile = {
+          name: 'Étudiant',
+          firstName: 'Prénom',
+          email: localStorage.getItem('userEmail') || 'etudiant@email.com',
+          department: 'Informatique',
+          sector: 'Technologie',
+          languages: ['Français', 'Anglais'],
+          githubLink: '',
+          linkedinLink: ''
+        };
+        
+        setProfile(defaultProfile);
+        setEditForm(defaultProfile);
+      } catch (error) {
+        console.error('Erreur lors du chargement du profil:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStudentProfile();
+  }, []);
+
   const handleAddLanguage = async () => {
     if (newLanguage.trim() && editForm) {
       try {
@@ -59,36 +86,6 @@ export default function MonProfil() {
       </div>
     );
   }
-
-  useEffect(() => {
-    const fetchStudentProfile = async () => {
-      try {
-        // Récupérer les informations via les offres (fallback)
-        const offersResponse = await getApprovedOffers();
-        
-        // Créer un profil par défaut (les vraies données viendraient d'un endpoint dédié)
-        const defaultProfile = {
-          name: 'Étudiant',
-          firstName: 'Prénom',
-          email: localStorage.getItem('userEmail') || 'etudiant@email.com',
-          department: 'Informatique',
-          sector: 'Technologie',
-          languages: ['Français', 'Anglais'],
-          githubLink: '',
-          linkedinLink: ''
-        };
-        
-        setProfile(defaultProfile);
-        setEditForm(defaultProfile);
-      } catch (error) {
-        console.error('Erreur lors du chargement du profil:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchStudentProfile();
-  }, []);
 
   const handleEditProfile = () => {
     setEditForm(profile);
