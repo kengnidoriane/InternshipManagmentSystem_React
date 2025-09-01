@@ -2,28 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
 import { getOffersToReviewByDepartment } from '../../api/teacherApi';
-
-interface Offer {
-  id: number;
-  title: string;
-  description: string;
-  domain: string;
-  job: string;
-  typeOfInternship: string;
-  startDate: string;
-  endDate: string;
-  numberOfPlaces: string;
-  paying: boolean;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  enterprise: {
-    id: number;
-    name: string;
-  };
-}
+import TeacherOfferCard from './TeacherOfferCard';
+import type { OfferResponseDto } from '../../types/offer';
 
 export default function OffersList() {
   const navigate = useNavigate();
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const [offers, setOffers] = useState<OfferResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
@@ -56,7 +40,7 @@ export default function OffersList() {
 
   const filteredOffers = offers.filter(offer => {
     const matchesSearch = offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      offer.enterprise.name.toLowerCase().includes(searchTerm.toLowerCase());
+      (offer.enterprise?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || offer.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -152,72 +136,24 @@ export default function OffersList() {
             placeholder="Saisir ici pour rechercher une offre"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full mb-5 px-4 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)]"
+            className="w-full mb-5 px-4 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)] rounded-lg"
             style={{ fontFamily: 'inherit', letterSpacing: '0.01em' }}
           />
-          <div className="flex flex-col gap-7">
+          <div className="space-y-4">
             {loading ? (
               <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement des offres...</div>
             ) : filteredOffers.length === 0 ? (
               <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Aucune offre trouvée.</div>
             ) : (
               filteredOffers.map((offer) => (
-                <div
+                <TeacherOfferCard
                   key={offer.id}
-                  className="flex flex-row items-stretch bg-[var(--color-light)] rounded-xl shadow-lg border border-[#e1d3c1] overflow-hidden hover:bg-[var(--color-light)] transition-colors cursor-pointer"
+                  offer={offer}
                   onClick={() => navigate(`/enseignant/offres/${offer.id}`)}
-                >
-                  {/* Colonne gauche : logo, entreprise, pays, ville, secteur */}
-                  <div className="flex flex-col items-center justify-center w-32 min-w-[175px] bg-[var(--color-light)] border-l-[var(--color-emraude)] p-3">
-                    <div className="h-12 w-12 rounded-full mb-2 border border-[#e1d3c1] bg-white flex items-center justify-center">
-                      <span className="text-xs font-bold text-[var(--color-dark)]">
-                        {offer.enterprise.name.substring(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise.name}</div>
-                    <div className="text-[10px] text-[var(--color-dark)] mt-1">Nigeria · Lagos</div>
-                    <div className="text-[10px] text-[var(--color-dark)] mt-1">{offer.enterprise.sector}</div>
-                  </div>
-                  {/* Centre : titre, deadline, type, période, badges */}
-                  <div className="flex-1 flex flex-col justify-between py-4">
-                    <div className="flex flex-col pb-2">
-                      <div className="flex items-center gap-3 mb-1">
-                        <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
-                        <span className={getStatusBadge(offer.status)}>
-                          {getStatusText(offer.status)}
-                        </span>
-                      </div>
-                      <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span>
-                    </div>
-                    <div className="flex flex-col mt-2 mb-2 flex-wrap">
-                      <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship}</b></div>
-                      <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>OUI</b></div>
-                      <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
-                    </div>
-                    <div className="flex flex-row flex-wrap gap-2 mt-1 ">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                        offer.paying 
-                          ? 'bg-green-100 text-green-700 border-green-200' 
-                          : 'bg-gray-100 text-gray-700 border-gray-200'
-                      }`}>
-                        {offer.paying ? 'Payant' : 'Non payant'}
-                      </span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">. En remote</span>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">.Après interview</span>
-                    </div>
-                  </div>
-                  {/* Colonne droite : places, postulants, domaine, tags */}
-                  <div className="flex flex-col justify-between items-end max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
-                    <div className="mb-2">
-                      <div className="text-xs text-[var(--color-dark)]">Nombre de place <b>{offer.numberOfPlaces}</b></div>
-                      <div className="text-xs text-[var(--color-dark)]">Nombre de postulants <b>5</b></div>
-                      <div className="text-xs text-[var(--color-dark)]">Domaine <b>{offer.domain}</b></div>
-                    </div>
-                  </div>
-                </div>
-                ))
-              )}
-            </div>
+                />
+              ))
+            )}
+          </div>
         </section>
       </main>
     </div>

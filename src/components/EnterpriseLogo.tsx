@@ -6,7 +6,7 @@ interface EnterpriseLogoProps {
   enterpriseId?: number;
   hasLogo?: boolean;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 }
 
 const EnterpriseLogo: React.FC<EnterpriseLogoProps> = ({ 
@@ -25,7 +25,10 @@ const EnterpriseLogo: React.FC<EnterpriseLogoProps> = ({
   const sizeClasses = {
     sm: 'h-8 w-8 text-xs',
     md: 'h-12 w-12 text-sm',
-    lg: 'h-20 w-20 text-lg'
+    lg: 'h-16 w-16 text-base',
+    xl: 'h-20 w-20 text-lg',
+    '2xl': 'h-24 w-24 text-xl',
+    '3xl': 'h-32 w-32 text-2xl'
   };
 
   useEffect(() => {
@@ -33,7 +36,7 @@ const EnterpriseLogo: React.FC<EnterpriseLogoProps> = ({
       // Essayer de charger le logo depuis l'API
       const loadLogo = async () => {
         try {
-          const response = await fetch('/profilePhoto/getEnterpriseLogo', {
+          const response = await fetch(`/profilePhoto/getEnterpriseLogo/${enterpriseId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }

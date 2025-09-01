@@ -2,25 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import TeacherHeader from '../TeacherHeader';
-import { getEnterpriseInPartnership } from '../../api/adminApi';
-import { getEnterpriseLogoById } from '../../api/enterpriseApi';
+import { getEnterpriseInPartnership } from '../../api/teacherApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
+import EnterpriseLogo from '../EnterpriseLogo';
 
 const EntreprisesList: React.FC = () => {
   const navigate = useNavigate();
   const [partnerEnterprises, setPartnerEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [logoUrls, setLogoUrls] = useState<Record<number, string>>({});
 
-  // Nettoyage des URLs de logos lors du démontage du composant
-  useEffect(() => {
-    return () => {
-      Object.values(logoUrls).forEach(url => {
-        URL.revokeObjectURL(url);
-      });
-    };
-  }, [logoUrls]);
 
   useEffect(() => {
     const fetchEnterprises = async () => {
@@ -30,28 +21,7 @@ const EntreprisesList: React.FC = () => {
         const enterprises = response.data || [];
         setPartnerEnterprises(enterprises);
         
-        // Charger les logos
-        const logoPromises = enterprises.map(async (enterprise) => {
-          if (enterprise.hasLogo?.hasLogo) {
-            try {
-              const logoResponse = await getEnterpriseLogoById(enterprise.id);
-              const logoUrl = URL.createObjectURL(logoResponse.data);
-              return { id: enterprise.id, url: logoUrl };
-            } catch (err) {
-              return null;
-            }
-          }
-          return null;
-        });
-        
-        const logoResults = await Promise.all(logoPromises);
-        const logoMap: Record<number, string> = {};
-        logoResults.forEach(result => {
-          if (result) {
-            logoMap[result.id] = result.url;
-          }
-        });
-        setLogoUrls(logoMap);
+
         
       } catch (err) {
         setError('Erreur lors du chargement des entreprises');
@@ -106,18 +76,14 @@ const EntreprisesList: React.FC = () => {
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="flex">
-                      <div className="w-16 h-16 rounded-md flex items-center justify-center mr-3 overflow-hidden">
-                        {logoUrls?.[enterprise.id] ? (
-                          <img 
-                            src={logoUrls[enterprise.id]} 
-                            alt={`Logo ${enterprise.name}`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-blue-500 text-white flex items-center justify-center text-xl">
-                            {enterprise.name.substring(0, 2)}
-                          </div>
-                        )}
+                      <div className="mr-3">
+                        <EnterpriseLogo 
+                          enterpriseName={enterprise.name}
+                          enterpriseId={enterprise.id}
+                          hasLogo={enterprise.hasLogo?.hasLogo}
+                          size="lg"
+                          className=""
+                        />
                       </div>
                       <div>
                         <h3 className="font-medium">{enterprise.name}</h3>

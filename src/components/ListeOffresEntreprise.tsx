@@ -11,7 +11,8 @@ const ListeOffresEntreprise: React.FC = () => {
   const [offers, setOffers] = useState<OfferResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [isPartner, setIsPartner] = useState(true);
+  const [isPartner, setIsPartner] = useState(false);
+  const [partnershipLoading, setPartnershipLoading] = useState(true);
   const navigate = useNavigate();
   const setApplicationsCount = useApplicationsStore((state) => state.setApplicationsCount);
 
@@ -30,6 +31,7 @@ const ListeOffresEntreprise: React.FC = () => {
         
         // Vérifier le statut de partenariat
         setIsPartner(enterpriseInfo.data?.inPartnership === true);
+        setPartnershipLoading(false);
         
         // Compter les candidatures par offre
         const applicationsData = applicationsResponse.data || [];
@@ -48,6 +50,7 @@ const ListeOffresEntreprise: React.FC = () => {
         
       } catch (error) {
         setOffers([]);
+        setPartnershipLoading(false);
       } finally {
         setLoading(false);
       }
@@ -85,15 +88,15 @@ const ListeOffresEntreprise: React.FC = () => {
               <h1 className="text-3xl font-bold text-[var(--color-light)]">Mes offres de stage</h1>
               <button
                 onClick={handleCreateOffer}
-                disabled={!isPartner}
+                disabled={partnershipLoading || !isPartner}
                 className={`px-6 py-3 rounded-lg font-semibold transition ${
-                  isPartner 
+                  !partnershipLoading && isPartner 
                     ? 'bg-[var(--color-vert)] text-white hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] cursor-pointer'
                     : 'bg-gray-400 text-gray-600 cursor-not-allowed'
                 }`}
-                title={!isPartner ? 'Entreprise non partenaire' : ''}
+                title={partnershipLoading ? 'Vérification...' : !isPartner ? 'Entreprise non partenaire' : ''}
               >
-                Créer une offre
+                {partnershipLoading ? 'Vérification...' : 'Créer une offre'}
               </button>
             </div>
             <input
