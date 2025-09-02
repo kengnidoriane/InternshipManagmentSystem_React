@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
 import { Link } from 'react-router-dom';
-import { updateStudentStatus, deleteApplication } from '../api/studentApi';
+import { updateStudentStatus, deleteApplication, getStudentStatus } from '../api/studentApi';
 import { useStudentStatus } from '../hooks/useStudentStatus';
 
 interface Application {
@@ -25,6 +25,22 @@ export default function MonStageEtudiant() {
   const { pendingApplications, approvedApplications, acceptedApplications, loading } = studentStatus;
   const [acceptingApplication, setAcceptingApplication] = useState<number | null>(null);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [internshipStatus, setInternshipStatus] = useState<any>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const response = await getStudentStatus();
+        setInternshipStatus(response.data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération du statut:', error);
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+    fetchStatus();
+  }, []);
 
 
 
@@ -80,13 +96,44 @@ export default function MonStageEtudiant() {
     }
   };
 
-  if (loading) {
+  if (loading || statusLoading) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
         <EtudiantHeader />
         <div className="flex justify-center items-center flex-1">
           <div className="text-lg text-[var(--color-jaune)]">Chargement...</div>
         </div>
+      </div>
+    );
+  }
+
+  // Si l'étudiant est en stage, afficher le message
+  if (internshipStatus?.inInternship) {
+    return (
+      <div className="min-h-screen bg-login-gradient flex flex-col">
+        <EtudiantHeader />
+        <main className="flex flex-col items-center flex-1 px-4 pb-12">
+          <motion.div
+            className="w-full max-w-2xl mt-8"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mon Stage</h2>
+            <div className="mx-auto max-w-md border border-[var(--color-vert)] rounded-lg py-8 px-6 bg-[#f5ede3] flex flex-col items-center shadow-lg">
+              <div className="w-16 h-16 bg-[var(--color-vert)] rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-[var(--color-dark)] mb-2">Félicitations !</h3>
+              <p className="text-[var(--color-dark)] text-center mb-4">{internshipStatus.message}</p>
+              <div className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-full text-sm font-medium">
+                Statut : En stage
+              </div>
+            </div>
+          </motion.div>
+        </main>
       </div>
     );
   }

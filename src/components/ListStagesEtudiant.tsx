@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
 import EnterpriseLogo from './EnterpriseLogo';
+import { useStudentStatus } from '../hooks/useStudentStatus';
 
 import { getApprovedOffers } from '../api/studentApi';
 import type { OfferResponseDto } from '../types/offer';
@@ -45,8 +46,8 @@ export default function ListStagesEtudiant() {
   const [offers, setOffers] = useState<OfferResponseDto[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isInInternship, setIsInInternship] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isOnInternship } = useStudentStatus();
   const [filters, setFilters] = useState({
     remote: null as boolean | null,
     paying: null as boolean | null,
@@ -64,13 +65,7 @@ export default function ListStagesEtudiant() {
         setError(null);
       } catch (err: any) {
         console.error('Erreur lors du chargement des offres:', err);
-        if (err.response?.status === 403) {
-          // L'étudiant est probablement déjà en stage
-          setIsInInternship(true);
-          setError('Vous êtes déjà en stage et ne pouvez plus consulter les offres.');
-        } else {
-          setError('Erreur lors du chargement des offres. Veuillez réessayer.');
-        }
+        setError('Erreur lors du chargement des offres. Veuillez réessayer.');
         setOffers([]);
       } finally {
         setLoading(false);
@@ -206,7 +201,7 @@ export default function ListStagesEtudiant() {
             <div className="flex flex-col gap-7">
               {loading ? (
                 <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement des offres...</div>
-              ) : isInInternship ? (
+              ) : isOnInternship ? (
                 <div className="py-16 text-center text-[var(--color-jaune)] text-lg">
                   Vous êtes déjà en stage. Vous ne pouvez plus consulter les offres disponibles.
                 </div>

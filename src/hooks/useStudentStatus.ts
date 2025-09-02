@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent } from '../api/studentApi';
+import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent, getCurrentStudentInfo } from '../api/studentApi';
 
 interface StudentStatus {
   isOnInternship: boolean;
@@ -23,31 +23,27 @@ export const useStudentStatus = (): StudentStatus => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const [pendingRes, approvedRes] = await Promise.all([
+      const [pendingRes, approvedRes, studentRes] = await Promise.all([
         getPendingApplicationsOfStudent(),
-        getApplicationsApprovedOfStudent()
+        getApplicationsApprovedOfStudent(),
+        getCurrentStudentInfo()
       ]);
       
       const pendingData = pendingRes.data || [];
       const approvedData = approvedRes.data || [];
-      
-      // Séparer les candidatures approuvées des candidatures acceptées
-      const approved = approvedData.filter((app: any) => app.state === 'APPROVED');
-      const accepted = approvedData.filter((app: any) => app.state === 'ACCEPTED');
+      const studentData = studentRes.data;
       
       setPendingApplications(pendingData);
-      setApprovedApplications(approved);
-      setAcceptedApplications(accepted);
+      setApprovedApplications(approvedData);
+      setAcceptedApplications([]);
       
-      // Un étudiant est en stage s'il a une candidature acceptée (state = 'ACCEPTED')
-      setIsOnInternship(accepted.length > 0);
+      // Vérifier le statut onInternship depuis le backend
+      setIsOnInternship(studentData.onInternship || false);
       
     } catch (error) {
       console.error('Erreur lors du chargement des candidatures:', error);
-      // Si erreur 403, l'étudiant est probablement déjà en stage
-      if (error?.response?.status === 403) {
-        setIsOnInternship(true);
-      }
+      // En cas d'erreur, ne pas considérer l'étudiant comme en stage
+      setIsOnInternship(false);
       setPendingApplications([]);
       setApprovedApplications([]);
       setAcceptedApplications([]);

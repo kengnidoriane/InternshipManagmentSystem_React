@@ -4,7 +4,7 @@ import type { StudentResponseDto } from '../types/student';
 // Récupérer le profil de l'utilisateur connecté
 export const getCurrentStudentInfo = async () => {
   try {
-    return await api.get('/updateProfile/getCurrentUser', {
+    return await api.get('/api/student/profile', {
       headers: getAuthHeaders()
     });
   } catch (error: any) {
@@ -12,6 +12,20 @@ export const getCurrentStudentInfo = async () => {
       throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
     throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du profil');
+  }
+};
+
+// Récupérer le statut de l'étudiant
+export const getStudentStatus = async () => {
+  try {
+    return await api.get('/api/student/status', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du statut');
   }
 };
 

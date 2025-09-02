@@ -218,9 +218,7 @@ export const getEnterpriseLogoById = async (enterpriseId: number) => {
 // Récupérer les informations de l'entreprise connectée
 export const getCurrentEnterpriseInfo = async () => {
   try {
-    return await api.get('/api/enterprise/info', {
-      headers: getAuthHeaders()
-    });
+    return await api.get('/api/enterprise/info', { headers: getAuthHeaders() });
   } catch (error: any) {
     if (error.response?.status === 401) {
       throw new Error('Session expirée. Veuillez vous reconnecter.');

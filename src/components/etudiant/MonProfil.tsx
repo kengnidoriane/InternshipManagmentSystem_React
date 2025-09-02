@@ -25,20 +25,22 @@ export default function MonProfil() {
   useEffect(() => {
     const fetchStudentProfile = async () => {
       try {
-        // Créer un profil par défaut (les vraies données viendraient d'un endpoint dédié)
-        const defaultProfile = {
-          name: 'Étudiant',
-          firstName: 'Prénom',
-          email: localStorage.getItem('userEmail') || 'etudiant@email.com',
-          department: 'Informatique',
-          sector: 'Technologie',
-          languages: ['Français', 'Anglais'],
-          githubLink: '',
-          linkedinLink: ''
+        const response = await getCurrentStudentInfo();
+        const studentData = response.data;
+        
+        const profile = {
+          name: studentData.name || '',
+          firstName: studentData.firstName || '',
+          email: studentData.email || '',
+          department: studentData.department || '',
+          sector: studentData.sector || '',
+          languages: studentData.languages || [],
+          githubLink: studentData.githubLink || '',
+          linkedinLink: studentData.linkedinLink || ''
         };
         
-        setProfile(defaultProfile);
-        setEditForm(defaultProfile);
+        setProfile(profile);
+        setEditForm(profile);
       } catch (error) {
         console.error('Erreur lors du chargement du profil:', error);
       } finally {
