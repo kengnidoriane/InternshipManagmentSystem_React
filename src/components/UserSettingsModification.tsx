@@ -143,7 +143,7 @@ const UserSettingsModification: React.FC<UserSettingsModificationProps> = ({
           
           <div className="mb-6">
             <label className="block text-[var(--color-light)] font-medium mb-2" htmlFor="confirmPassword">
-              Confirmation du nouveau M.D.P
+              Confirmation du nouveau mot de passe
             </label>
             <input
               type="password"
