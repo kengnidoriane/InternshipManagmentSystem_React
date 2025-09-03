@@ -120,6 +120,13 @@ const LoginPage = () => {
               <a href="/register" className="text-xs text-white hover:underline">Créer un compte?</a>
             </div>
           </div>
+          
+          {/* Lien mot de passe oublié */}
+          <div className="text-center mt-2">
+            <a href="/reset-password" className="text-xs text-[#e1d3c1] hover:text-white hover:underline transition-colors">
+              Mot de passe oublié ?
+            </a>
+          </div>
         </form>
     </div>
   );

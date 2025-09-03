@@ -35,20 +35,32 @@ export const verifyCurrentPassword = async (password: string) => {
   }
 };
 
-// Réinitialisation du mot de passe
-export const resetPassword = async (resetData: ResetPasswordRequestDto) => {
+// Demander un token de réinitialisation
+export const sendResetToken = async (email: string) => {
   try {
-    if (!resetData.email || !resetData.password) {
-      throw new Error('Email et mot de passe requis');
-    }
-    return await api.patch('/resetPassword', resetData);
+    return await api.post('/resetPassword/sendTokenWhenResetting', { email });
   } catch (error: any) {
     if (error.response?.status === 404) {
       throw new Error('Utilisateur non trouvé');
     }
-    if (error.code === 'NETWORK_ERROR') {
-      throw new Error('Erreur de connexion. Vérifiez votre réseau.');
-    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de l\'envoi du token');
+  }
+};
+
+// Vérifier le token de réinitialisation
+export const verifyResetToken = async (email: string, token: string) => {
+  try {
+    return await api.post('/resetPassword/verifyEmail', { email, token });
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Token invalide ou expiré');
+  }
+};
+
+// Réinitialiser le mot de passe (après vérification)
+export const resetPassword = async (resetData: ResetPasswordRequestDto) => {
+  try {
+    return await api.patch('/resetPassword', resetData);
+  } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Erreur lors de la réinitialisation');
   }
 };

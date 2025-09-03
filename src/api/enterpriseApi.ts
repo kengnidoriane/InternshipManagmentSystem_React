@@ -61,7 +61,7 @@ export const getEnterpriseOffers = () =>
 
 // Récupérer le logo de l'entreprise (courant)
 export const getEnterpriseLogo = () =>
-  api.get('/profilePhoto/getEnterpriseLogo', {
+  api.get('/api/enterprise/getEnterpriseLogo', {
     responseType: 'blob',
     headers: getAuthHeaders()
   });

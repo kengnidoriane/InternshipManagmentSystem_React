@@ -1,38 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect} from 'react';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
-import { Link } from 'react-router-dom';
-import { updateStudentStatus, deleteApplication, getStudentStatus } from '../api/studentApi';
+import { updateStudentStatus, deleteApplication, getStudentStatus } from '../api';
 import { useStudentStatus } from '../hooks/useStudentStatus';
-
-interface Application {
-  id: number;
-  offer: {
-    id: number;
-    title: string;
-    description: string;
-    domain: string;
-  };
-  enterprise: {
-    id: number;
-    name: string;
-  };
-  state: string;
-}
+import EnterpriseLogo from './EnterpriseLogo';
+import { Link } from 'react-router-dom';
 
 export default function MonStageEtudiant() {
   const studentStatus = useStudentStatus();
-  const { pendingApplications, approvedApplications, acceptedApplications, loading } = studentStatus;
+  const { pendingApplications, approvedApplications, loading } = studentStatus;
   const [acceptingApplication, setAcceptingApplication] = useState<number | null>(null);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [internshipStatus, setInternshipStatus] = useState<any>(null);
   const [statusLoading, setStatusLoading] = useState(true);
+  const [currentInternship, setCurrentInternship] = useState<any>(null);
 
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await getStudentStatus();
-        setInternshipStatus(response.data);
+        const statusResponse = await getStudentStatus();
+        setInternshipStatus(statusResponse.data);
+        
+        // Si l'étudiant est en stage, récupérer les infos depuis localStorage ou autre source
+        const savedInternship = localStorage.getItem('currentInternship');
+        if (statusResponse.data.inInternship && savedInternship) {
+          setCurrentInternship(JSON.parse(savedInternship));
+        }
       } catch (error) {
         console.error('Erreur lors de la récupération du statut:', error);
       } finally {
@@ -42,8 +35,6 @@ export default function MonStageEtudiant() {
     fetchStatus();
   }, []);
 
-
-
   const handleAcceptOffer = async (applicationId: number) => {
     if (!confirm('Êtes-vous sûr de vouloir accepter cette offre de stage ? Cette action est irréversible.')) {
       return;
@@ -51,14 +42,16 @@ export default function MonStageEtudiant() {
     
     setAcceptingApplication(applicationId);
     try {
-      await updateStudentStatus(applicationId, true);
+      const response = await updateStudentStatus(applicationId, true);
+      // Stocker les informations du stage accepté directement depuis la réponse
+      setCurrentInternship(response.data);
+      localStorage.setItem('currentInternship', JSON.stringify(response.data));
+      setInternshipStatus({ inInternship: true, message: 'Vous êtes en stage', canApply: false });
       setShowCongratulations(true);
       
-      // Après acceptation, l'étudiant est en stage - les listes seront vides
-      // Pas besoin de recharger, le backend gère automatiquement
-      setTimeout(() => {
-        // Recharger pour voir l'état final (probablement vide car en stage)
-        window.location.reload();
+      setTimeout(async () => {
+        setShowCongratulations(false);
+        await studentStatus.refresh();
       }, 3000);
     } catch (error) {
       console.error('Erreur lors de l\'acceptation:', error);
@@ -107,29 +100,83 @@ export default function MonStageEtudiant() {
     );
   }
 
-  // Si l'étudiant est en stage, afficher le message
-  if (internshipStatus?.inInternship) {
+  // Si l'étudiant est en stage, afficher les informations du stage
+  if (internshipStatus?.inInternship && currentInternship) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
         <EtudiantHeader />
         <main className="flex flex-col items-center flex-1 px-4 pb-12">
           <motion.div
-            className="w-full max-w-2xl mt-8"
+            className="w-full max-w-4xl mt-8"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mon Stage</h2>
-            <div className="mx-auto max-w-md border border-[var(--color-vert)] rounded-lg py-8 px-6 bg-[#f5ede3] flex flex-col items-center shadow-lg">
-              <div className="w-16 h-16 bg-[var(--color-vert)] rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold text-[var(--color-dark)] mb-2">Félicitations !</h3>
-              <p className="text-[var(--color-dark)] text-center mb-4">{internshipStatus.message}</p>
-              <div className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-full text-sm font-medium">
-                Statut : En stage
+            
+            <div className="bg-[#f5ede3] rounded-lg shadow-lg border border-[#e1d3c1] p-8">
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* Informations principales du stage */}
+                <div className="flex-1">
+                  <div className="flex items-center mb-6">
+                    <div className="w-12 h-12 bg-[var(--color-vert)] rounded-full flex items-center justify-center mr-4">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-[var(--color-dark)]">{currentInternship.offer.title}</h3>
+                      <p className="text-[var(--color-vert)] font-medium">Stage confirmé</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-[var(--color-dark)] mb-2">Description</h4>
+                      <p className="text-[var(--color-dark)] text-sm">{currentInternship.offer.description}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-[var(--color-dark)] mb-2">Domaine</h4>
+                      <span className="px-3 py-1 bg-[var(--color-vert)] text-white rounded-full text-sm">
+                        {currentInternship.offer.domain}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Informations de l'entreprise */}
+                <div className="lg:w-80">
+                  <div className="bg-white rounded-lg p-6 shadow-md">
+                    <div className="text-center mb-4">
+                      <EnterpriseLogo 
+                        enterpriseName={currentInternship.enterprise.name}
+                        enterpriseId={currentInternship.enterprise.id}
+                        hasLogo={false}
+                        size="lg"
+                        className="mb-3 mx-auto"
+                      />
+                      <h4 className="font-bold text-[var(--color-dark)] text-lg">{currentInternship.enterprise.name}</h4>
+                    </div>
+                    
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-[var(--color-dark)]">Statut :</span>
+                        <span className="text-[var(--color-vert)] font-medium">En stage</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium text-[var(--color-dark)]">Candidature :</span>
+                        <span className="text-green-600 font-medium">Acceptée</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <p className="text-xs text-gray-600 text-center">
+                        Félicitations ! Votre stage a été confirmé avec succès.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -138,34 +185,7 @@ export default function MonStageEtudiant() {
     );
   }
 
-  // Si l'étudiant a une candidature acceptée, afficher seulement celle-ci
-  const acceptedApplication = acceptedApplications.length > 0 ? acceptedApplications[0] : null;
-  
-  if (acceptedApplication) {
-    return (
-      <div className="min-h-screen bg-login-gradient flex flex-col">
-        <EtudiantHeader />
-        <main className="flex flex-col items-center flex-1 px-4 pb-12">
-          <motion.div
-            className="w-full max-w-2xl mt-8"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mon Stage</h2>
-            <div className="bg-[#f5ede3] rounded-lg p-6 shadow-lg">
-              <h3 className="text-xl font-semibold text-[#2d2d2d] mb-2">{acceptedApplication.offer.title}</h3>
-              <p className="text-gray-600 mb-2">Entreprise: {acceptedApplication.enterprise.name}</p>
-              <p className="text-gray-600 mb-4">Domaine: {acceptedApplication.offer.domain}</p>
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium inline-block">
-                Stage confirmé
-              </div>
-            </div>
-          </motion.div>
-        </main>
-      </div>
-    );
-  }
+
 
   // Si pas de candidatures du tout
   if (pendingApplications.length === 0 && approvedApplications.length === 0) {

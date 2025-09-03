@@ -14,6 +14,7 @@ import DetailCandidature from './components/DetailCandidature';
 import ProfilEntreprise from './components/ProfilEntreprise';
 import TeacherOfferDetail from './components/teacher/OfferDetail';
 import LoginPage from './components/LoginPage';
+import ResetPassword from './components/ResetPassword';
 import RegisterStepper from './components/RegisterStepper';
 import RegisterSuccess from './components/RegisterSuccess';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -42,6 +43,7 @@ const App = () => {
         {/* Route racine : redirection automatique selon le rôle */}
         <Route path="/" element={<RoleRedirector />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/register" element={<RegisterStepper />} />
         <Route path="/register-success" element={<RegisterSuccess />} />
         <Route path="/stage/:id" element={<StageDetail />} />
