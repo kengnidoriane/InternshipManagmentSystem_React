@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { generateEnterpriseInitials } from '../utils/enterpriseUtils';
+import { getEnterpriseLogo } from '../api/enterpriseApi';
 
 interface EnterpriseLogoProps {
   enterpriseName: string;
@@ -32,37 +33,25 @@ const EnterpriseLogo: React.FC<EnterpriseLogoProps> = ({
   };
 
   useEffect(() => {
-    if (hasLogo === true && enterpriseId) {
+    if (hasLogo === true) {
       // Essayer de charger le logo depuis l'API
       const loadLogo = async () => {
         try {
-          const response = await fetch(`/profilePhoto/getEnterpriseLogo/${enterpriseId}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          });
-          
-          if (response.ok) {
-            const blob = await response.blob();
-            // Vérifier que le blob n'est pas vide
-            if (blob.size > 0) {
-              const url = URL.createObjectURL(blob);
-              setLogoUrl(url);
-            } else {
-              setLogoError(true);
-            }
+          const response = await getEnterpriseLogo();
+          if (response.data && response.data.size > 0) {
+            const url = URL.createObjectURL(response.data);
+            setLogoUrl(url);
           } else {
             setLogoError(true);
           }
         } catch (error) {
-          // Ne pas logger l'erreur pour éviter le spam console
           setLogoError(true);
         }
       };
       
       loadLogo();
     } else {
-      // Pas de logo ou pas d'ID d'entreprise - utiliser directement les initiales
+      // Pas de logo - utiliser directement les initiales
       setLogoError(true);
     }
 
@@ -72,7 +61,7 @@ const EnterpriseLogo: React.FC<EnterpriseLogoProps> = ({
         URL.revokeObjectURL(logoUrl);
       }
     };
-  }, [hasLogo, enterpriseId]);
+  }, [hasLogo]);
 
   const initials = generateEnterpriseInitials(enterpriseName);
 

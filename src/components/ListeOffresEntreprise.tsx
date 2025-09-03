@@ -94,9 +94,9 @@ const ListeOffresEntreprise: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-login-gradient flex flex-col">
+    <div className="min-h-screen bg-login-gradient flex gap-4 flex-col">
       <EntrepriseHeader />
-      <main className="flex flex-col items-center flex-1 px-4 pb-12">
+      <main className="mt-7 flex flex-col items-center flex-1 px-4 pb-12">
         <div className="w-full max-w-3xl mt-8">
           {/* Barre de recherche */}
           <motion.div

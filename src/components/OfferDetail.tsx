@@ -149,7 +149,7 @@ const OfferDetail: React.FC = () => {
 
                 {/* Description */}
                 <div>
-                  <h3 className="text-lg font-semibold text-[#2d2d2d] mb-3">Description de la mission</h3>
+                  <h3 className="text-lg font-semibold text-[#2d2d2d] mb-3">Description de la mission:</h3>
                   <p className="text-sm text-[#2d2d2d]">{offer.description}</p>
                 </div>
 
@@ -166,7 +166,7 @@ const OfferDetail: React.FC = () => {
 
                 {/* Exigences */}
                 <div>
-                  <h3 className="text-lg font-semibold text-[#2d2d2d] mb-3">Exigences</h3>
+                  <h3 className="text-lg font-semibold text-[#2d2d2d] mb-3">Exigences:</h3>
                   <p className="text-sm text-[#2d2d2d]">{offer.requirements || 'Aucune exigence spécifiée'}</p>
                 </div>
 
@@ -181,16 +181,15 @@ const OfferDetail: React.FC = () => {
                       Retour à la liste
                     </button>
                     <button 
-                      onClick={() => navigate(`/entreprise/offres/${offer.id}/edit`)}
+                      onClick={() => navigate('/entreprise/candidatures')}
                       className="flex-1 px-6 py-3 bg-[#4c7a4c] text-white rounded hover:bg-[#6a9a6a] transition-colors cursor-pointer"
                     >
-                      Modifier l'offre
+                      Voir la liste des candidature
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Sidebar droite */}
               <div className="space-y-6">
                 {/* Logo et infos entreprise */}
                 <div className="text-center">
@@ -236,22 +235,6 @@ const OfferDetail: React.FC = () => {
                     )}
                     <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded">{offer.remote ? 'Télétravail' : 'Présentiel'}</span>
                   </div>
-                </div>
-
-                {/* Actions pour entreprise */}
-                <div className="space-y-3">
-                  <button 
-                    onClick={() => navigate(`/entreprise/offres/${offer.id}/candidatures`)}
-                    className="w-full px-4 py-2 bg-[#4c7a4c] text-white text-sm rounded hover:bg-[#6a9a6a] transition-colors cursor-pointer"
-                  >
-                    Voir les candidatures
-                  </button>
-                  <button 
-                    onClick={() => navigate(`/entreprise/offres/${offer.id}/edit`)}
-                    className="w-full px-4 py-2 border border-gray-400 text-gray-600 text-sm rounded hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    Modifier l'offre
-                  </button>
                 </div>
               </div>
             </div>

@@ -13,6 +13,7 @@ import CandidaturesEntreprise from './components/CandidaturesEntreprise';
 import DetailCandidature from './components/DetailCandidature';
 import ProfilEntreprise from './components/ProfilEntreprise';
 import TeacherOfferDetail from './components/teacher/OfferDetail';
+import DebugTeacher from './components/teacher/DebugTeacher';
 import LoginPage from './components/LoginPage';
 import ResetPassword from './components/ResetPassword';
 import RegisterStepper from './components/RegisterStepper';
@@ -40,7 +41,6 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        {/* Route racine : redirection automatique selon le rôle */}
         <Route path="/" element={<RoleRedirector />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -48,7 +48,6 @@ const App = () => {
         <Route path="/register-success" element={<RegisterSuccess />} />
         <Route path="/stage/:id" element={<StageDetail />} />
 
-        {/* Route protégée pour les étudiants */}
         <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']} />}> 
           <Route path="/etudiant/stages" element={<ListStagesEtudiant />} />
           <Route path="/etudiant/mon-stage" element={<MonStageEtudiant />} />
@@ -56,11 +55,10 @@ const App = () => {
           <Route path="/etudiant/parametres" element={<UserSettings />} />
         </Route>
 
-        {/* Page de félicitations après création de compte */}
         <Route path="/felicitations" element={<Felicitations />} />
 
-        {/* Routes enseignant (protégées) */}
         <Route element={<ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']} />}>
+          <Route path="/enseignant/debug" element={<DebugTeacher />} />
           <Route path="/enseignant/offres" element={<OffersList />} />
           <Route path="/enseignant/offres/:id" element={<TeacherOfferDetail />} />
           <Route path="/enseignant/entreprises" element={<EntreprisesList />} />

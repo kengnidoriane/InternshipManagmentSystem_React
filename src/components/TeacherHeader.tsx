@@ -7,6 +7,7 @@ const navLinks = [
   { to: '/enseignant/entreprises', label: 'Entreprises' },
   { to: '/enseignant/offres', label: 'Offres' },
   { to: '/enseignant/etudiants', label: 'Etudiants' },
+  { to: '/enseignant/debug', label: 'Debug' },
   { to: '/enseignant/parametres', label: 'Paramètres' },
 ];
 
@@ -27,7 +28,7 @@ export default function TeacherHeader() {
     <header className="w-full flex items-end justify-center gap-8 px-8 pt-3 bg-transparent select-none">
       {/* Liens de gauche */}
       <nav className="flex gap-8 items-center">
-        {navLinks.slice(0, 2).map(link => (
+        {navLinks.slice(0, 3).map(link => (
           <NavLink
             key={link.to}
             to={link.to}
@@ -48,7 +49,7 @@ export default function TeacherHeader() {
       </div>
       {/* Liens de droite */}
       <nav className="flex gap-8 items-center">
-        {navLinks.slice(2).map(link => (
+        {navLinks.slice(3).map(link => (
           <NavLink
             key={link.to}
             to={link.to}
