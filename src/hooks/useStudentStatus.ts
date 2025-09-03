@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent, getCurrentStudentInfo } from '../api/studentApi';
+import { getPendingApplicationsOfStudent, getApplicationsApprovedOfStudent, getStudentStatus } from '../api/studentApi';
 
 interface StudentStatus {
   isOnInternship: boolean;
@@ -23,26 +23,25 @@ export const useStudentStatus = (): StudentStatus => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const [pendingRes, approvedRes, studentRes] = await Promise.all([
+      const [pendingRes, approvedRes, statusRes] = await Promise.all([
         getPendingApplicationsOfStudent(),
         getApplicationsApprovedOfStudent(),
-        getCurrentStudentInfo()
+        getStudentStatus()
       ]);
       
       const pendingData = pendingRes.data || [];
       const approvedData = approvedRes.data || [];
-      const studentData = studentRes.data;
+      const statusData = statusRes.data;
       
       setPendingApplications(pendingData);
       setApprovedApplications(approvedData);
       setAcceptedApplications([]);
       
-      // Vérifier le statut onInternship depuis le backend
-      setIsOnInternship(studentData.onInternship || false);
+      // Utiliser le statut depuis l'endpoint /status
+      setIsOnInternship(statusData.onInternship || false);
       
     } catch (error) {
       console.error('Erreur lors du chargement des candidatures:', error);
-      // En cas d'erreur, ne pas considérer l'étudiant comme en stage
       setIsOnInternship(false);
       setPendingApplications([]);
       setApprovedApplications([]);

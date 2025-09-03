@@ -28,7 +28,7 @@ export default function EtudiantHeader() {
   };
 
   return (
-    <header className="w-full flex items-end justify-center gap-8 px-8 pt-3 bg-transparent select-none">
+    <header className="w-full flex items-end justify-center mb-7  gap-8 px-8 pt-3 bg-transparent select-none">
       {/* Liens de gauche */}
       <nav className="flex gap-8 items-center">
         {navLinks.map(link => (

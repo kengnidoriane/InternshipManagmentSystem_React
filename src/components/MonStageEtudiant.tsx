@@ -21,10 +21,22 @@ export default function MonStageEtudiant() {
         const statusResponse = await getStudentStatus();
         setInternshipStatus(statusResponse.data);
         
-        // Si l'étudiant est en stage, récupérer les infos depuis localStorage ou autre source
+        console.log('Student status from backend:', statusResponse.data);
+        
+        // Si l'étudiant est en stage, récupérer les infos depuis localStorage
         const savedInternship = localStorage.getItem('currentInternship');
-        if (statusResponse.data.inInternship && savedInternship) {
-          setCurrentInternship(JSON.parse(savedInternship));
+        if ((statusResponse.data.onInternship || statusResponse.data.inInternship) && savedInternship) {
+          try {
+            const parsedInternship = JSON.parse(savedInternship);
+            setCurrentInternship(parsedInternship);
+            console.log('Loaded internship from localStorage:', parsedInternship);
+          } catch (e) {
+            console.error('Error parsing saved internship:', e);
+            localStorage.removeItem('currentInternship');
+          }
+        } else if (statusResponse.data.onInternship || statusResponse.data.inInternship) {
+          // Si en stage mais pas d'infos sauvegardées, essayer de récupérer depuis les candidatures approuvées
+          console.log('Student is in internship but no saved data, checking approved applications...');
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du statut:', error);
@@ -43,15 +55,27 @@ export default function MonStageEtudiant() {
     setAcceptingApplication(applicationId);
     try {
       const response = await updateStudentStatus(applicationId, true);
-      // Stocker les informations du stage accepté directement depuis la réponse
+      // Stocker les informations du stage accepté
       setCurrentInternship(response.data);
       localStorage.setItem('currentInternship', JSON.stringify(response.data));
-      setInternshipStatus({ inInternship: true, message: 'Vous êtes en stage', canApply: false });
+      
+      // Mettre à jour le statut local
+      setInternshipStatus({ 
+        inInternship: true, 
+        onInternship: true,
+        message: 'Vous êtes en stage', 
+        canApply: false 
+      });
+      
       setShowCongratulations(true);
       
+      // Rafraîchir le statut après un délai
       setTimeout(async () => {
         setShowCongratulations(false);
         await studentStatus.refresh();
+        // Recharger le statut depuis le serveur
+        const newStatus = await getStudentStatus();
+        setInternshipStatus(newStatus.data);
       }, 3000);
     } catch (error) {
       console.error('Erreur lors de l\'acceptation:', error);
@@ -101,7 +125,7 @@ export default function MonStageEtudiant() {
   }
 
   // Si l'étudiant est en stage, afficher les informations du stage
-  if (internshipStatus?.inInternship && currentInternship) {
+  if ((internshipStatus?.inInternship || internshipStatus?.onInternship || studentStatus.isOnInternship) && currentInternship) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
         <EtudiantHeader />

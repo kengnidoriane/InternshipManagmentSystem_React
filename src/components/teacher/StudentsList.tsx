@@ -25,24 +25,6 @@ export default function StudentsList() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleDownloadCV = async (studentId: number, studentName: string) => {
-    try {
-      const response = await downloadStudentCV(studentId.toString());
-      
-      // Créer un URL pour le blob et déclencher le téléchargement
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `CV_${studentName.replace(' ', '_')}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      console.error('Erreur lors du téléchargement du CV:', err);
-      alert('Impossible de télécharger le CV. Veuillez réessayer plus tard.');
-    }
-  };
-
   const handleStudentClick = (studentId: number) => {
     navigate(`/enseignant/etudiants/${studentId}`);
   };
@@ -89,20 +71,7 @@ export default function StudentsList() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-gray-50 px-4 py-2 flex justify-end items-center border-t border-gray-100">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDownloadCV(student.id, `${student.name}_${student.firstName}`);
-                      }}
-                      className="text-xs bg-[#e1d3c1] text-[var(--color-vert)] px-3 py-1 rounded font-medium hover:bg-[#d6c4af] transition flex items-center"
-                    >
-                      <span>Télécharger CV</span>
-                      <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                    </button>
-                  </div>
+            
                 </motion.div>
               ))}
             </div>

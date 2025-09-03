@@ -46,7 +46,7 @@ const TeacherOfferCard: React.FC<TeacherOfferCardProps> = ({ offer, onClick }) =
           enterpriseName={offer.enterprise?.name || 'Entreprise'}
           enterpriseId={offer.enterprise?.id}
           hasLogo={offer.enterprise?.hasLogo?.hasLogo}
-          size="md"
+          size="xl"
           className="mb-2"
         />
         <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise?.name || 'Entreprise'}</div>
@@ -59,13 +59,13 @@ const TeacherOfferCard: React.FC<TeacherOfferCardProps> = ({ offer, onClick }) =
         <div className="flex flex-col pb-2">
           <div className="flex items-center gap-3 mb-1">
             <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(offer.status)}`}>
-              {getStatusText(offer.status)}
-            </span>
-          </div>
-          <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>{formatDate(offer.endDate)}</b></span>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(offer.status)}`}>
+                {getStatusText(offer.status)}
+              </span>
+           </div>
         </div>
-        <div className="flex flex-col mt-2 mb-2 flex-wrap">
+        <div className="flex flex-col gap-1 mt-2 mb-2 flex-wrap">
+          <span className="text-xs text-[var(--color-dark)]">Délai de candidature <b>{formatDate(offer.startDate)}</b></span>
           <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship || 'Non spécifié'}</b></div>
           <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
           <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{formatDate(offer.startDate)} - {formatDate(offer.endDate)}</b></div>
@@ -81,15 +81,13 @@ const TeacherOfferCard: React.FC<TeacherOfferCardProps> = ({ offer, onClick }) =
       </div>
 
       {/* Colonne droite : places, postulants, domaine, stats */}
-      <div className="flex flex-col justify-between items-end max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
+      <div className="flex flex-col gap-1 justify-between items-end max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
         <div className="mb-2">
-          <div className="text-xs text-[var(--color-dark)]">Nombre de place <b>{offer.numberOfPlaces || '1'}</b></div>
-          <div className="text-xs text-[var(--color-dark)]">Nombre de postulants <b>-</b></div>
-          <div className="text-xs text-[var(--color-dark)]">Domaine <b>{offer.domain}</b></div>
-        </div>
-        <div className="text-sm text-[#2d2d2d]">
-          <span className="font-medium">Durée:</span>
-          <div className="mt-1">
+          <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de place:  <b>{offer.numberOfPlaces || '1'}</b></div>
+          {/* <div className="text-xs text-[var(--color-dark)]">Nombre de postulants <b>-</b></div> */}
+          <div className="text-xs text-[var(--color-dark)] mb-1">Domaine:  <b>{offer.domain}</b></div>
+          <div className="text-sm text-[#2d2d2d]">
+          <span className="font-medium">Durée:  </span>
             <span className="text-xs">
               {(() => {
                 const start = new Date(offer.startDate).getTime();
@@ -98,7 +96,7 @@ const TeacherOfferCard: React.FC<TeacherOfferCardProps> = ({ offer, onClick }) =
                 return `${diffDays} jours`;
               })()}
             </span>
-          </div>
+        </div>
         </div>
       </div>
     </motion.div>

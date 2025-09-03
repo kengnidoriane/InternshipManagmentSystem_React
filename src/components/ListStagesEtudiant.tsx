@@ -97,7 +97,7 @@ export default function ListStagesEtudiant() {
   return (
     <div className="min-h-screen bg-login-gradient flex flex-col">
       <EtudiantHeader />
-      <main className="flex flex-row items-start justify-center flex-1 px-4 pb-12 gap-8">
+      <main className="mt-5 flex flex-row items-start justify-center flex-1 px-4 gap-8">
         {/* Sidebar de filtres */}
         <aside className="hidden md:flex flex-col items-start min-w-[210px] max-w-[260px] mt-12 mr-4 rounded-xl shadow-lg px-7 py-8 gap-6">
           <div className="flex items-center gap-2 mb-4">
@@ -195,7 +195,7 @@ export default function ListStagesEtudiant() {
               placeholder="Saisir ici pour rechercher un stage"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full mb-5 px-4 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)]"
+              className="w-full mb-5 px-2 py-1 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)]"
               style={{ fontFamily: 'inherit', letterSpacing: '0.01em' }}
             />
             <div className="flex flex-col gap-7">
@@ -225,7 +225,7 @@ export default function ListStagesEtudiant() {
                       enterpriseName={offer.enterprise.name}
                       enterpriseId={offer.enterprise.id}
                       hasLogo={offer.enterprise.hasLogo?.hasLogo}
-                      size="md"
+                      size="xl"
                       className="mb-2"
                     />
                     <div className="text-xs text-[var(--color-dark)] font-semibold text-center">{offer.enterprise?.name || 'Entreprise'}</div>
@@ -236,9 +236,9 @@ export default function ListStagesEtudiant() {
                   <div className="flex-1 flex flex-col justify-between py-4">
                     <div className="flex flex-col pb-2">
                       <div className="font-semibold text-[var(--color-dark)] text-lg md:text-lg">{offer.title}</div>
-                      <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span>
+                      {/* <span className="ml-2 text-xs text-[var(--color-dark)]">Délai de candidature <b>2 mars 2025</b></span> */}
                     </div>
-                    <div className="flex flex-col mt-2 mb-2 flex-wrap">
+                    <div className="flex flex-col gap-1 mt-2 mb-2 flex-wrap">
                       <div className="text-xs text-[var(--color-dark)]">Type de stage : <b>{offer.typeOfInternship || 'Non spécifié'}</b></div>
                       <div className="text-xs text-[var(--color-dark)]">Stage payant : <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
                       <div className="text-xs text-[var(--color-dark)]">Période du stage : <b>{offer.startDate} - {offer.endDate}</b></div>
@@ -253,12 +253,11 @@ export default function ListStagesEtudiant() {
                     </div>
                   </div>
                   {/* Colonne droite : places, postulants, domaine, tags */}
-                  <div className="flex flex-col justify-between items-end max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
-                    <div className="mb-2">
-                      <div className="text-xs text-[var(--color-dark)]">Nombre de place <b>2</b></div>
-                      <div className="text-xs text-[var(--color-dark)]">Nombre de postulants <b>5</b></div>
-                      <div className="text-xs text-[var(--color-dark)]">Domaine <b>{offer.domain}</b></div>
-                    </div>
+                  <div className="flex flex-col max-w-[243px] bg-[var(--color-light)] p-4 border-l border-dashed border-[var(--color-neutre6-placeholder)]">
+              
+                      <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de place: <b>{offer.numberOfPlaces}</b></div>
+                      <div className="text-xs text-[var(--color-dark)] mb-1">Domaine: <b>{offer.domain}</b></div>
+                    
                   </div>
                 </motion.div>
                 ))

@@ -49,9 +49,6 @@ const StageDetail: React.FC = () => {
   if (loading) return <div className="py-16 text-center text-[var(--color-jaune)] text-lg">Chargement...</div>;
   if (error || !offer) return <div className="py-16 text-center text-red-600 text-lg">{error || "Stage introuvable."}</div>;
 
-  // Données dynamiques basées sur l'offre
-  const postulants = 0; // TODO: implémenter le comptage des candidatures
-  const places = offer.numberOfPlaces || '1';
   const tags = [offer.domain, offer.typeOfInternship].filter(Boolean);
   const exigences = offer.requirements || 'Aucune exigence spécifiée';
 
@@ -162,7 +159,8 @@ const StageDetail: React.FC = () => {
                 {!isApplicationButtonDisabled(Number(id || 0), studentStatus) ? (
                   <button 
                     onClick={handleCandidaterClick}
-                    className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
+                    className="bg-[var(--color-vert)] text-[var(--color-light)] px-5 py-2 rounded-lg font-semibold transition cursor-pointer"
+
                   >
                     {showCandidatureForm ? 'Annuler' : 'Candidater'}
                   </button>
@@ -178,10 +176,10 @@ const StageDetail: React.FC = () => {
                   <div className="text-2xl font-semibold text-[var(--color-dark)] mb-4">{offer.title}</div>
                   
                   <div className="mb-5">
-                    <div className="flex flex-row flex-wrap gap-8 items-center mb-2">
-                      <div className="text-base text-[var(--color-dark)]">Type de stage <b>{offer.typeOfInternship || 'Non spécifié'}</b></div>
-                      <div className="text-base text-[var(--color-dark)]">Stage payant <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
-                      <div className="text-base text-[var(--color-dark)]">🗓️ Période du stage <b>{offer.startDate} - {offer.endDate}</b></div>
+                    <div className="flex flex-col gap-2 mb-2">
+                      <div className="text-base text-[var(--color-dark)]">Type de stage: <b>{offer.typeOfInternship || 'Non spécifié'}</b></div>
+                      <div className="text-base text-[var(--color-dark)]">Stage payant: <b>{offer.paying ? 'OUI' : 'NON'}</b></div>
+                      <div className="text-base text-[var(--color-dark)]">🗓️ Période du stage: <b>{offer.startDate} - {offer.endDate}</b></div>
                     </div>
                     <div className="flex flex-row flex-wrap gap-2 mb-2">
                       <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#e1d3c1] text-[var(--color-vert)] border border-[var(--color-vert)]">
@@ -194,12 +192,12 @@ const StageDetail: React.FC = () => {
                   </div>
                   
                   <div className="mb-6">
-                    <div className="text-lg font-semibold text-[var(--color-dark)] mb-1">Description de la mission</div>
+                    <div className="text-lg font-semibold text-[var(--color-dark)] mb-1">Description de la mission:</div>
                     <div className="text-base text-[var(--color-dark)] whitespace-pre-line">{offer.description}</div>
                   </div>
                   
                   <div className="mb-6">
-                    <div className="text-lg font-semibold text-[var(--color-dark)] mb-1">Convention de stage</div>
+                    <div className="text-lg font-semibold text-[var(--color-dark)] mb-1">Convention de stage:</div>
                     <button
                       onClick={handleDownloadConvention}
                       className="inline-flex items-center gap-2 mt-1 px-4 py-2 bg-[var(--color-vert)] text-white rounded shadow hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] cursor-pointer"
@@ -220,7 +218,7 @@ const StageDetail: React.FC = () => {
                     {!isApplicationButtonDisabled(Number(id || 0), studentStatus) ? (
                       <button 
                         onClick={handleCandidaterClick}
-                        className="bg-[#e1d3c1] text-[var(--color-vert)] px-5 py-2 rounded-lg font-semibold hover:bg-[var(--color-jaune)] transition cursor-pointer"
+                        className="bg-[var(--color-vert)] text-[var(--color-light)] px-5 py-2 rounded-lg font-semibold cursor-pointer"
                       >
                         {showCandidatureForm ? 'Annuler' : 'Candidater'}
                       </button>
@@ -240,17 +238,15 @@ const StageDetail: React.FC = () => {
                     enterpriseName={offer.enterprise.name}
                     enterpriseId={offer.enterprise.id}
                     hasLogo={offer.enterprise.hasLogo?.hasLogo}
-                    size="lg"
+                    size="xl"
                     className="mb-2"
                   />
                   <div className="text-base font-bold text-[var(--color-dark)] text-center mb-1">{offer.enterprise?.name || 'Entreprise'}</div>
                   <div className="flex flex-row gap-2 mb-1">
-                    <span role="img" aria-label="flag" className="text-xl">🇨🇲</span>
                     <span className="text-xs text-[var(--color-dark)]">{offer.enterprise?.country || 'Pays'} • {offer.enterprise?.city || 'Ville'}</span>
                   </div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">{offer.enterprise?.sectorOfActivity || 'Secteur d\'activité'}</div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de place <b>{offer.numberOfPlaces || '1'}</b></div>
-                  <div className="text-xs text-[var(--color-dark)] mb-1">Nombre de postulants <b>{postulants}</b></div>
                   <div className="text-xs text-[var(--color-dark)] mb-1">Domaine <b>{offer.domain || 'Non spécifié'}</b></div>
                   <div className="flex flex-wrap gap-2 mt-2 mb-1 justify-center">
                     {tags.map((t, index) => (

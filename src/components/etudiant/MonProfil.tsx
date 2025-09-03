@@ -246,18 +246,6 @@ export default function MonProfil() {
             </motion.div>
           </div>
 
-          <div className="mx-auto max-w-md border border-[var(--color-jaune)] rounded-lg py-7 px-6 bg-transparent flex flex-col items-center" style={{boxShadow: '0 0 0 2px #e1d3c1'}}>
-            <div className="text-[var(--color-light)] text-sm text-left mb-6 w-full">
-              Vous n’avez pas encore de stage.<br />
-              Cliquez ci-dessous pour choisir un qui correspond à votre profil
-            </div>
-            <Link
-              to="/etudiant/stages"
-              className="w-full block bg-[var(--color-vert)] text-[var(--color-light)] text-base font-medium rounded px-4 py-2 mt-2 text-center hover:bg-[#6b7d4b] transition-colors cursor-pointer"
-            >
-              Liste des offres
-            </Link>
-          </div>
         </motion.div>
         
         {/* Modal de modification du profil */}

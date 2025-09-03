@@ -96,21 +96,21 @@ const ListeOffresEntreprise: React.FC = () => {
   return (
     <div className="min-h-screen bg-login-gradient flex gap-4 flex-col">
       <EntrepriseHeader />
-      <main className="mt-7 flex flex-col items-center flex-1 px-4 pb-12">
+      <main className="mt-5 flex flex-col items-center flex-1 px-4 pb-12">
         <div className="w-full max-w-3xl mt-8">
           {/* Barre de recherche */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
+            className="mb-5"
           >
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-3xl font-bold text-[var(--color-light)]">Mes offres de stage</h1>
+              <h1 className="text-2xl font-bold text-[var(--color-light)]">Mes offres de stage</h1>
               <div className="flex gap-2">
                 <button
                   onClick={handleCreateOffer}
                   disabled={partnershipLoading || !isPartner}
-                  className={`px-6 py-3 rounded-lg font-semibold transition ${
+                  className={`px-2 py-1 rounded-lg font-semibold transition ${
                     !partnershipLoading && isPartner 
                       ? 'bg-[var(--color-vert)] text-white hover:bg-[var(--color-jaune)] hover:text-[var(--color-dark)] cursor-pointer'
                       : 'bg-gray-400 text-gray-600 cursor-not-allowed'
@@ -135,7 +135,7 @@ const ListeOffresEntreprise: React.FC = () => {
               placeholder="Rechercher une offre par titre ou domaine..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full px-4 py-3 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)] rounded-lg"
+              className="w-full px-2 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)] rounded-lg"
             />
           </motion.div>
 

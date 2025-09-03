@@ -78,7 +78,7 @@ export default function OffersList() {
   };
 
   return (
-    <div className="min-h-screen bg-login-gradient flex flex-col">
+    <div className="min-h-screen bg-login-gradient flex flex-col gap-5">
       <TeacherHeader />
       <main className="flex flex-row items-start justify-center flex-1 px-4 pb-12 gap-8">
         {/* Sidebar de filtres */}
@@ -188,7 +188,7 @@ export default function OffersList() {
             placeholder="Saisir ici pour rechercher une offre"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full mb-5 px-4 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)] rounded-lg"
+            className="w-full mb-5 px-2 py-2 border-none bg-[var(--color-neutre95)] text-[var(--color-neutre2-paragraphe)] text-base text-center shadow focus:outline-none focus:ring-2 focus:ring-[#b79056] placeholder-[var(--color-neutre2-paragraphe)] rounded-lg"
             style={{ fontFamily: 'inherit', letterSpacing: '0.01em' }}
           />
           <div className="space-y-4">

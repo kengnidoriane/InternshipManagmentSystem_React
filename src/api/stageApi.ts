@@ -80,33 +80,42 @@ export async function submitApplication(offerId: number, cvFile: File, coverLett
     if (!coverLetterFile || coverLetterFile.size === 0) {
       throw new Error('Fichier lettre de motivation requis et non vide');
     }
-    if (cvFile.type !== 'application/pdf') {
-      throw new Error('Le CV doit être au format PDF');
-    }
-    if (coverLetterFile.type !== 'application/pdf') {
-      throw new Error('La lettre de motivation doit être au format PDF');
-    }
 
     const formData = new FormData();
     formData.append('cv', cvFile);
     formData.append('coverLetter', coverLetterFile);
 
+    console.log('Submitting application:', {
+      offerId,
+      cvFile: cvFile.name,
+      coverLetterFile: coverLetterFile.name,
+      cvSize: cvFile.size,
+      coverLetterSize: coverLetterFile.size
+    });
+
     await api.post(`/api/student/${offerId}/createApplication`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
         ...getAuthHeaders()
+        // Ne pas définir Content-Type manuellement pour multipart/form-data
       },
     });
   } catch (error: any) {
+    console.error('Application submission error:', error.response?.data || error.message);
     if (error.response?.status === 400) {
-      throw new Error('Données de candidature invalides');
+      throw new Error(error.response?.data || 'Données de candidature invalides');
     }
     if (error.response?.status === 401) {
       throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
+    if (error.response?.status === 403) {
+      throw new Error('Vous ne pouvez plus candidater car vous êtes déjà en stage.');
+    }
     if (error.response?.status === 409) {
       throw new Error('Vous avez déjà postulé pour cette offre');
     }
-    throw new Error(error.response?.data?.message || 'Erreur lors de la soumission de la candidature');
+    if (error.response?.status === 500) {
+      throw new Error(error.response?.data || 'Erreur serveur lors de la soumission');
+    }
+    throw new Error(error.response?.data || error.message || 'Erreur lors de la soumission de la candidature');
   }
 }

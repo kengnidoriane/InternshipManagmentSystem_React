@@ -25,7 +25,7 @@ export default function TeacherHeader() {
   };
 
   return (
-    <header className="w-full flex items-end justify-center gap-8 px-8 pt-3 bg-transparent select-none">
+    <header className="w-full flex items-end justify-center gap-8 mb-7  px-8 pt-3 bg-transparent select-none">
       {/* Liens de gauche */}
       <nav className="flex gap-8 items-center">
         {navLinks.slice(0, 3).map(link => (
@@ -44,9 +44,9 @@ export default function TeacherHeader() {
         ))}
       </nav>
       {/* Logo central */}
-      <div className="mx-10 flex-shrink-0 flex items-center">
-        <img src={logo} alt="Logo" className="h-12 w-12 object-contain" />
-      </div>
+      <NavLink to="/">
+        <img src={logo} alt="Logo" className="h-12 w-auto" />
+      </NavLink>
       {/* Liens de droite */}
       <nav className="flex gap-8 items-center">
         {navLinks.slice(3).map(link => (
