@@ -7,7 +7,7 @@ const navLinks = [
   { to: '/enseignant/entreprises', label: 'Entreprises' },
   { to: '/enseignant/offres', label: 'Offres' },
   { to: '/enseignant/etudiants', label: 'Etudiants' },
-  { to: '/enseignant/debug', label: 'Debug' },
+  // { to: '/enseignant/debug', label: 'Debug' },
   { to: '/enseignant/parametres', label: 'Paramètres' },
 ];
 

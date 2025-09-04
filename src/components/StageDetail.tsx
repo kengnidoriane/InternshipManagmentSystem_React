@@ -65,7 +65,7 @@ const StageDetail: React.FC = () => {
       link.click();
       link.parentNode?.removeChild(link);
     } catch {
-      alert('Erreur lors du téléchargement de la convention.');
+      console.error('Erreur lors du téléchargement de la convention.');
     }
   };
 
@@ -77,7 +77,7 @@ const StageDetail: React.FC = () => {
     const validation = validateApplicationEligibility(offerId, studentStatus);
     
     if (!validation.canApply) {
-      alert(validation.message);
+      console.log(validation.message);
       return;
     }
     
@@ -102,7 +102,7 @@ const StageDetail: React.FC = () => {
   const handleSubmitApplication = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || !cvFile || !coverLetterFile) {
-      alert('Veuillez sélectionner un CV et une lettre de motivation.');
+      console.log('Veuillez sélectionner un CV et une lettre de motivation.');
       return;
     }
 
@@ -110,7 +110,7 @@ const StageDetail: React.FC = () => {
     
     // Vérification finale avant soumission
     if (studentStatus.hasApplicationForOffer(offerId)) {
-      alert('Vous avez déjà candidaté pour cette offre.');
+      console.log('Vous avez déjà candidaté pour cette offre.');
       setShowCandidatureForm(false);
       return;
     }
@@ -132,15 +132,15 @@ const StageDetail: React.FC = () => {
       console.error('Erreur lors de la soumission:', error);
       // Gestion d'erreurs spécifiques
       if (error?.response?.status === 409) {
-        alert('Vous avez déjà candidaté pour cette offre.');
-        await studentStatus.refresh(); // Rafraîchir pour mettre à jour l'état
+        console.log('Vous avez déjà candidaté pour cette offre.');
+        await studentStatus.refresh();
         setShowCandidatureForm(false);
       } else if (error?.response?.status === 403) {
-        alert('Vous ne pouvez plus candidater car vous êtes déjà en stage.');
+        console.log('Vous ne pouvez plus candidater car vous êtes déjà en stage.');
         await studentStatus.refresh();
         setShowCandidatureForm(false);
       } else {
-        alert('Erreur lors de la soumission de votre candidature.');
+        console.error('Erreur lors de la soumission de votre candidature.');
       }
     } finally {
       setSubmitting(false);

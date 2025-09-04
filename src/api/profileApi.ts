@@ -2,24 +2,30 @@ import { api, getAuthHeaders } from './api';
 
 // Mettre à jour le mot de passe
 export const updatePassword = async (password: string) => {
+  if (!password || password.trim() === '') {
+    throw new Error('Mot de passe requis');
+  }
+  if (password.length < 6) {
+    throw new Error('Le mot de passe doit contenir au moins 6 caractères');
+  }
+  
   try {
-    if (!password || password.trim() === '') {
-      throw new Error('Mot de passe requis');
-    }
-    if (password.length < 6) {
-      throw new Error('Le mot de passe doit contenir au moins 6 caractères');
-    }
-    return await api.patch('/updateProfile/updatePassword', { password }, {
-      headers: getAuthHeaders()
+    const headers = getAuthHeaders();
+    console.log('Headers pour updatePassword:', headers);
+    
+    const response = await api.patch('/updateProfile/updatePassword', { password }, {
+      headers
     });
+    return response;
   } catch (error: any) {
-    if (error.response?.status === 400) {
-      throw new Error('Mot de passe invalide ou trop faible');
-    }
-    if (error.response?.status === 401) {
+    console.error('Erreur updatePassword:', error);
+    console.error('Status:', error.response?.status);
+    console.error('Data:', error.response?.data);
+    
+    if (error.response?.status === 401 || error.response?.status === 403) {
       throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
-    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du mot de passe');
+    throw new Error(error.response?.data?.message || error.message || 'Erreur lors de la mise à jour du mot de passe');
   }
 };
 

@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import logo from '../assets/logo.png';
 import { login } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 interface LoginState {
   error: string;
@@ -26,10 +26,12 @@ interface LoginFormInputs {
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register, handleSubmit } = useForm<LoginFormInputs>();
   const [showPassword, setShowPassword] = useState(false);
   const { error, setError, clearError } = useLoginStore();
   const setAuth = useAuthStore((state) => state.login);
+
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {

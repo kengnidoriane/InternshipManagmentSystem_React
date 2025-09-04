@@ -82,17 +82,17 @@ export default function OffersList() {
       <TeacherHeader />
       <main className="flex flex-row items-start justify-center flex-1 px-4 pb-12 gap-8">
         {/* Sidebar de filtres */}
-        <aside className="hidden md:flex flex-col items-start min-w-[210px] max-w-[260px] mt-12 mr-4 rounded-xl shadow-lg px-7 py-8 gap-6">
+        <aside className="hidden md:flex flex-col items-start min-w-[210px] max-w-[260px] mr-4 rounded-xl shadow-lg px-7 py-8 gap-6">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[var(--color-neutre9)] text-base">Filter</span>
-            <label className="inline-flex relative items-center cursor-pointer ml-2">
+            {/* <label className="inline-flex relative items-center cursor-pointer ml-2">
               <input type="checkbox" className="sr-only peer" disabled />
               <div className="w-7 h-3 bg-gray-200 rounded-full peer peer-focus:ring-1 peer-focus:ring-[#b79056] dark:bg-gray-700 peer-checked:bg-[#b79056] after:content-[''] after:absolute after:top-0.8 after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-[#b79056]" />
-            </label>
+            </label> */}
           </div>
           
           {/* Filtre par statut */}
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Statut</div>
             <div className="flex flex-col gap-1">
               {[
@@ -113,7 +113,7 @@ export default function OffersList() {
                 </label>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="mb-4">
             <div className="text-xs text-[var(--color-neutre9)] font-semibold mb-2">Location</div>

@@ -79,7 +79,6 @@ export default function MonStageEtudiant() {
       }, 3000);
     } catch (error) {
       console.error('Erreur lors de l\'acceptation:', error);
-      alert('Erreur lors de l\'acceptation de l\'offre');
       setAcceptingApplication(null);
     }
   };
@@ -95,7 +94,6 @@ export default function MonStageEtudiant() {
       await studentStatus.refresh();
     } catch (error) {
       console.error('Erreur lors du refus:', error);
-      alert('Erreur lors du refus de l\'offre');
     }
   };
 
@@ -109,7 +107,6 @@ export default function MonStageEtudiant() {
       await studentStatus.refresh();
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      alert('Erreur lors de la suppression de la candidature');
     }
   };
 

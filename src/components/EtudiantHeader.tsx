@@ -7,10 +7,10 @@ import { useAuthStore } from '../store/authStore';
 const navLinks = [
   { to: '/etudiant/stages', label: 'Liste des stages' },
   { to: '/etudiant/mon-stage', label: 'Mon stage' },
+  { to: '/etudiant/profil', label: 'Mon profil' }
 ];
 
 const rightLinks = [
-  { to: '/etudiant/profil', label: 'Mon profil' },
   { to: '/etudiant/parametres', label: 'Paramètres' },
 ];
 
