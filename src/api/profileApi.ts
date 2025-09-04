@@ -6,8 +6,8 @@ export const updatePassword = async (password: string) => {
     if (!password || password.trim() === '') {
       throw new Error('Mot de passe requis');
     }
-    if (password.length < 8) {
-      throw new Error('Le mot de passe doit contenir au moins 8 caractères');
+    if (password.length < 6) {
+      throw new Error('Le mot de passe doit contenir au moins 6 caractères');
     }
     return await api.patch('/updateProfile/updatePassword', { password }, {
       headers: getAuthHeaders()

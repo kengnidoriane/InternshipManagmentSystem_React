@@ -206,7 +206,7 @@ const ProfilEntreprise: React.FC = () => {
                     <img 
                       src={logoUrl} 
                       alt="Logo entreprise" 
-                      className="w-24 h-24 object-contain bg-white rounded p-2"
+                      className="w-24 h-auto object-contain bg-white rounded"
                     />
                   ) : (
                     <div className="w-24 h-24 bg-white rounded flex items-center justify-center text-black font-bold text-xl">

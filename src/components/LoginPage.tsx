@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import logo from '../assets/logo.png';
 import { login } from '../api/authApi';
 import { useAuthStore } from '../store/authStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 interface LoginState {
   error: string;
@@ -74,6 +74,9 @@ const LoginPage = () => {
         <p className='text-[#e1d3c1] text-center mx-auto space'>ELITE</p>
       </div>
         <form className="max-w-80 mx-auto" onSubmit={handleSubmit(onSubmit)}>
+           <div className="text-xs text-red-600 min-h-[1.5em] text-left">
+              {error && 'Identifiants incorrects'}
+            </div>
           <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="email">
             <span>Email</span>
             <FiMail className="text-xl" />
@@ -113,20 +116,19 @@ const LoginPage = () => {
             Se connecter
           </button>
             <div className="flex justify-between items-center mt-2 mb-4">
-            <div className="text-xs text-red-600 min-h-[1.5em] text-left">
-              {error && 'Identifiants incorrects'}
-            </div>
+              <div className="">
+            <Link to="/reset-password" className="text-xs text-[#e1d3c1] hover:text-white hover:underline transition-colors">
+              Mot de passe oublié ?
+            </Link>
+          </div>
+           
             <div className="text-xs text-white hover:underline">
-              <a href="/register" className="text-xs text-white hover:underline">Créer un compte?</a>
+              <Link to="/register" className="text-xs text-white hover:underline">Créer un compte?</Link>
             </div>
           </div>
           
           {/* Lien mot de passe oublié */}
-          <div className="text-center mt-2">
-            <a href="/reset-password" className="text-xs text-[#e1d3c1] hover:text-white hover:underline transition-colors">
-              Mot de passe oublié ?
-            </a>
-          </div>
+          
         </form>
     </div>
   );

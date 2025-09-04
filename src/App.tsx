@@ -1,6 +1,7 @@
 
 import './App.css'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import OffersList from './components/teacher/OffersList';
 import EntreprisesList from './components/teacher/EntreprisesList';
 import EnterpriseDetail from './components/teacher/EnterpriseDetail';
@@ -37,22 +38,24 @@ import Felicitations from './components/Felicitations';
 // Les dashboards spécifiques n'existent pas, routes simplifiées
 
 
-const App = () => {
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<RoleRedirector />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/register" element={<RegisterStepper />} />
-        <Route path="/register-success" element={<RegisterSuccess />} />
-        <Route path="/stage/:id" element={<StageDetail />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageWrapper><RoleRedirector /></PageWrapper>} />
+        <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
+        <Route path="/reset-password" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+        <Route path="/register" element={<PageWrapper><RegisterStepper /></PageWrapper>} />
+        <Route path="/register-success" element={<PageWrapper><RegisterSuccess /></PageWrapper>} />
+        <Route path="/stage/:id" element={<PageWrapper><StageDetail /></PageWrapper>} />
 
         <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']} />}> 
-          <Route path="/etudiant/stages" element={<ListStagesEtudiant />} />
-          <Route path="/etudiant/mon-stage" element={<MonStageEtudiant />} />
-          <Route path="/etudiant/profil" element={<MonProfil />} />
-          <Route path="/etudiant/parametres" element={<UserSettings />} />
+          <Route path="/etudiant/stages" element={<PageWrapper><ListStagesEtudiant /></PageWrapper>} />
+          <Route path="/etudiant/mon-stage" element={<PageWrapper><MonStageEtudiant /></PageWrapper>} />
+          <Route path="/etudiant/profil" element={<PageWrapper><MonProfil /></PageWrapper>} />
+          <Route path="/etudiant/parametres" element={<PageWrapper><UserSettings /></PageWrapper>} />
         </Route>
 
         <Route path="/felicitations" element={<Felicitations />} />
@@ -96,6 +99,27 @@ const App = () => {
 
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+    </AnimatePresence>
+  );
+};
+
+const PageWrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const App = () => {
+  return (
+    <Router>
+      <AnimatedRoutes />
     </Router>
   );
 };

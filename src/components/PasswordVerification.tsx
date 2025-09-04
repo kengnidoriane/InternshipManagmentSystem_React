@@ -37,11 +37,18 @@ const PasswordVerification: React.FC<PasswordVerificationProps> = ({ onVerified,
   };
 
   return (
-    <div className="fixed inset-0 bg-login-gradient flex items-center justify-center z-50">
-        <h2 className="text-xl text-[var(--color-jaune)] text-center font-bold mb-4">Vérification</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-[#2d2d2d] border-2 border-[var(--color-jaune)] rounded-lg p-8 shadow-xl w-full max-w-md mx-4">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-[var(--color-jaune)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-[#2d2d2d]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h2 className="text-2xl text-[var(--color-jaune)] font-light mb-2">Vérification de sécurité</h2>
+          <p className="text-[var(--color-light)] text-sm">Pour continuer, veuillez confirmer votre mot de passe</p>
+        </div>
 
-      <div className="rounded-lg p-6 shadow-lg w-full max-w-sm">
-        <p className="mb-4 text-[var(--color-light)]">Pour continuer Veuillez inserer votre mot de passe </p>
         
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -64,26 +71,38 @@ const PasswordVerification: React.FC<PasswordVerificationProps> = ({ onVerified,
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           placeholder="Entrez votre mot de passe"
-          className="w-full mb-2 border text-center border-gray-300 bg-[#e1d3c1] rounded outline-none"
+          className="w-full px-4 py-3 border border-gray-600 bg-[#1a1a1a] text-white rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-jaune)] focus:border-transparent transition-all"
           disabled={loading}
         />
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+            {error && (
+              <div className="mt-3 p-3 bg-red-900 border border-red-600 rounded-lg">
+                <p className="text-red-300 text-sm flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {error}
+                </p>
+              </div>
+            )}
           </div>
           
-          <div className="flex gap-2 w-full justify-between mt-4">
+          <div className="flex gap-3 mt-6">
             <button
               type="button"
               onClick={onCancel}
-              className="border w-full border-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors cursor-pointer"
+              className="flex-1 border border-gray-600 text-[var(--color-light)] py-3 px-6 rounded-lg hover:bg-gray-700 transition-all cursor-pointer"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="bg-[var(--color-vert)] w-full text-[var(--color-light)] py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex-1 bg-[var(--color-vert)] text-white py-3 px-6 rounded-lg hover:bg-[#6b7d4b] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
             >
-              {loading ? 'Vérification...' : 'Valider'}
+              {loading && (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              )}
+              {loading ? 'Vérification...' : 'Confirmer'}
             </button>
           </div>
         </form>

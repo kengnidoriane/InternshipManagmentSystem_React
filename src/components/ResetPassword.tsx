@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FiMail, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logo.png';
 import { sendResetToken, verifyResetToken, resetPassword } from '../api/authApi';
 
@@ -105,141 +105,162 @@ const ResetPassword = () => {
       </div>
 
       {/* Formulaire */}
-      <div className="max-w-80 mx-auto">
-        {/* Header avec bouton retour */}
-        <div className="flex items-center mb-6">
-          {step > 1 ? (
-            <button 
-              onClick={() => setStep(step - 1)}
-              className="text-[#e1d3c1] hover:text-white transition-colors mr-3"
-            >
-              <FiArrowLeft className="text-xl" />
-            </button>
-          ) : (
-            <Link 
-              to="/login" 
-              className="text-[#e1d3c1] hover:text-white transition-colors mr-3"
-            >
-              <FiArrowLeft className="text-xl" />
-            </Link>
-          )}
-          <h2 className="text-[#e1d3c1] text-lg font-medium">
-            {step === 1 ? 'Réinitialiser le mot de passe' :
-             step === 2 ? 'Vérification par email' :
-             'Nouveau mot de passe'}
-          </h2>
-        </div>
+      <div className="max-w-md mx-auto">
+        <div className="border-2 border-[var(--color-jaune)] rounded-lg p-8 bg-[#2d2d2d] shadow-xl">
+          {/* Header avec bouton retour */}
+          <div className="flex items-center mb-6">
+            {step > 1 ? (
+              <button 
+                onClick={() => setStep(step - 1)}
+                className="text-[#e1d3c1] hover:text-white transition-colors mr-3"
+              >
+                <FiArrowLeft className="text-xl" />
+              </button>
+            ) : (
+              <Link 
+                to="/login" 
+                className="text-[#e1d3c1] hover:text-white transition-colors mr-3"
+              >
+                <FiArrowLeft className="text-xl" />
+              </Link>
+            )}
+            <h2 className="text-[var(--color-jaune)] text-xl font-light">
+              {step === 1 ? 'Réinitialiser le mot de passe' :
+               step === 2 ? 'Vérification par email' :
+               'Nouveau mot de passe'}
+            </h2>
+          </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Étape 1: Email */}
-          {step === 1 && (
-            <>
-              <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="email">
-                <span>Email</span>
-                <FiMail className="text-xl" />
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder='-'
-                className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none py-2"
-                {...register('email', { 
-                  required: 'Email requis',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Email invalide'
-                  }
-                })}
-              />
-              {errors.email && (
-                <p className="text-red-400 text-xs mb-2 text-center">{errors.email.message}</p>
-              )}
-            </>
-          )}
+          <AnimatePresence mode="wait">
+            {/* Étape 1: Email */}
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="email">
+                  <span>Email</span>
+                  <FiMail className="text-xl" />
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder='Entrez votre email'
+                  className="w-full mb-4 px-4 py-3 border border-gray-600 bg-[#1a1a1a] text-white rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-jaune)] focus:border-transparent transition-all"
+                  {...register('email', { 
+                    required: 'Email requis',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Email invalide'
+                    }
+                  })}
+                />
+                {errors.email && (
+                  <p className="text-red-400 text-xs mb-2 text-center">{errors.email.message}</p>
+                )}
+              </motion.div>
+            )}
 
-          {/* Étape 2: Code de vérification */}
-          {step === 2 && (
-            <>
-              <div className="text-center mb-4">
-                <p className="text-[#e2e2e2] text-sm mb-2">Un code a été envoyé à :</p>
-                <p className="text-[var(--color-jaune)] font-medium">{email}</p>
-              </div>
-              <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="token">
-                <span>Code de vérification</span>
-              </label>
-              <input
-                id="token"
-                type="text"
-                placeholder="Entrez le code reçu"
-                className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none py-2"
-                {...register('token', { required: 'Code requis' })}
-              />
-              {errors.token && (
-                <p className="text-red-400 text-xs mb-2 text-center">{errors.token.message}</p>
-              )}
-            </>
-          )}
+            {/* Étape 2: Code de vérification */}
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <div className="text-center mb-4">
+                  <p className="text-[#e2e2e2] text-sm mb-2">Un code a été envoyé à :</p>
+                  <p className="text-[var(--color-jaune)] font-medium">{email}</p>
+                </div>
+                <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="token">
+                  <span>Code de vérification</span>
+                </label>
+                <input
+                  id="token"
+                  type="text"
+                  placeholder="Entrez le code reçu"
+                  className="w-full mb-4 px-4 py-3 border border-gray-600 bg-[#1a1a1a] text-white rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-jaune)] focus:border-transparent transition-all text-center"
+                  {...register('token', { required: 'Code requis' })}
+                />
+                {errors.token && (
+                  <p className="text-red-400 text-xs mb-2 text-center">{errors.token.message}</p>
+                )}
+              </motion.div>
+            )}
 
-          {/* Étape 3: Nouveau mot de passe */}
-          {step === 3 && (
-            <>
-              <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="password">
-                <span>Nouveau mot de passe</span>
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  className="focus:outline-none cursor-pointer"
-                  onClick={() => setShowPassword((v) => !v)}
-                >
-                  {showPassword ? <FiEyeOff className="text-xl" /> : <FiEye className="text-xl" />}
-                </button>
-              </label>
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="new-password"
-                placeholder='-'
-                className="w-full mb-4 bg-[#e1d3c1] text-center border border-gray-300 rounded focus:outline-none py-2"
-                {...register('password', { 
-                  required: 'Mot de passe requis',
-                  minLength: {
-                    value: 6,
-                    message: 'Le mot de passe doit contenir au moins 6 caractères'
-                  }
-                })}
-              />
-              {errors.password && (
-                <p className="text-red-400 text-xs mb-2 text-center">{errors.password.message}</p>
-              )}
+            {/* Étape 3: Nouveau mot de passe */}
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="password">
+                  <span>Nouveau mot de passe</span>
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className="focus:outline-none cursor-pointer"
+                    onClick={() => setShowPassword((v) => !v)}
+                  >
+                    {showPassword ? <FiEyeOff className="text-xl" /> : <FiEye className="text-xl" />}
+                  </button>
+                </label>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  placeholder='Nouveau mot de passe'
+                  className="w-full mb-4 px-4 py-3 border border-gray-600 bg-[#1a1a1a] text-white rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-jaune)] focus:border-transparent transition-all"
+                  {...register('password', { 
+                    required: 'Mot de passe requis',
+                    minLength: {
+                      value: 6,
+                      message: 'Le mot de passe doit contenir au moins 6 caractères'
+                    }
+                  })}
+                />
+                {errors.password && (
+                  <p className="text-red-400 text-xs mb-2 text-center">{errors.password.message}</p>
+                )}
 
-              <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="confirmPassword">
-                <span>Confirmer le mot de passe</span>
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  className="focus:outline-none cursor-pointer"
-                  onClick={() => setShowConfirmPassword((v) => !v)}
-                >
-                  {showConfirmPassword ? <FiEyeOff className="text-xl" /> : <FiEye className="text-xl" />}
-                </button>
-              </label>
-              <input
-                id="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                autoComplete="new-password"
-                placeholder='-'
-                className="w-full mb-2 bg-[#e1d3c1] text-center border border-gray-300 rounded focus:outline-none py-2"
-                {...register('confirmPassword', { 
-                  required: 'Confirmation requise',
-                  validate: value => value === password || 'Les mots de passe ne correspondent pas'
-                })}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-400 text-xs mb-2 text-center">{errors.confirmPassword.message}</p>
-              )}
-            </>
-          )}
+                <label className="flex justify-between items-center text-[#e2e2e2] mb-1" htmlFor="confirmPassword">
+                  <span>Confirmer le mot de passe</span>
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    className="focus:outline-none cursor-pointer"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                  >
+                    {showConfirmPassword ? <FiEyeOff className="text-xl" /> : <FiEye className="text-xl" />}
+                  </button>
+                </label>
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  placeholder='Confirmez le mot de passe'
+                  className="w-full mb-2 px-4 py-3 border border-gray-600 bg-[#1a1a1a] text-white rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-jaune)] focus:border-transparent transition-all"
+                  {...register('confirmPassword', { 
+                    required: 'Confirmation requise',
+                    validate: value => value === password || 'Les mots de passe ne correspondent pas'
+                  })}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-400 text-xs mb-2 text-center">{errors.confirmPassword.message}</p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Bouton submit */}
           <button
@@ -269,26 +290,32 @@ const ResetPassword = () => {
         {/* Indicateur d'étape */}
         <div className="mt-6 flex justify-center space-x-2">
           {[1, 2, 3].map((stepNum) => (
-            <div
+            <motion.div
               key={stepNum}
               className={`w-3 h-3 rounded-full ${
                 stepNum <= step ? 'bg-[var(--color-vert)]' : 'bg-gray-300'
               }`}
+              animate={{
+                scale: stepNum === step ? 1.2 : 1,
+                backgroundColor: stepNum <= step ? 'var(--color-vert)' : '#d1d5db'
+              }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             />
           ))}
         </div>
         
         {/* Message informatif */}
         {step === 1 && (
-          <div className="mt-4 p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded text-xs text-center">
+          <div className="mt-4 p-3 bg-blue-900 border border-blue-600 rounded-lg text-blue-300 text-xs text-center">
             <p>Un code de vérification sera envoyé à votre adresse email.</p>
           </div>
         )}
         {step === 2 && (
-          <div className="mt-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded text-xs text-center">
+          <div className="mt-4 p-3 bg-yellow-900 border border-yellow-600 rounded-lg text-yellow-300 text-xs text-center">
             <p>Vérifiez votre boîte mail et saisissez le code reçu.</p>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

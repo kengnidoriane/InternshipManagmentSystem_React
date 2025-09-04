@@ -21,6 +21,16 @@ export default function MonProfil() {
   const [editForm, setEditForm] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [newLanguage, setNewLanguage] = useState('');
+  const [loadingStates, setLoadingStates] = useState({
+    github: false,
+    linkedin: false,
+    language: false
+  });
+  const [successStates, setSuccessStates] = useState({
+    github: false,
+    linkedin: false,
+    language: false
+  });
 
   useEffect(() => {
     const fetchStudentProfile = async () => {
@@ -53,17 +63,55 @@ export default function MonProfil() {
 
   const handleAddLanguage = async () => {
     if (newLanguage.trim() && editForm) {
+      setLoadingStates(prev => ({ ...prev, language: true }));
       try {
         await updateLanguages(newLanguage);
         setEditForm(prev => prev ? {
           ...prev,
           languages: [...prev.languages, newLanguage]
         } : null);
+        setProfile(prev => prev ? {
+          ...prev,
+          languages: [...prev.languages, newLanguage]
+        } : null);
         setNewLanguage('');
-        alert('Langue ajoutée avec succès!');
+        setSuccessStates(prev => ({ ...prev, language: true }));
+        setTimeout(() => setSuccessStates(prev => ({ ...prev, language: false })), 2000);
       } catch (error: any) {
-        alert(error.message || 'Erreur lors de l\'ajout de la langue');
+        console.error('Erreur lors de l\'ajout de la langue:', error);
+      } finally {
+        setLoadingStates(prev => ({ ...prev, language: false }));
       }
+    }
+  };
+
+  const handleUpdateGithub = async () => {
+    if (!editForm?.githubLink.trim()) return;
+    setLoadingStates(prev => ({ ...prev, github: true }));
+    try {
+      await updateGithubLink(editForm.githubLink);
+      setProfile(prev => prev ? { ...prev, githubLink: editForm.githubLink } : null);
+      setSuccessStates(prev => ({ ...prev, github: true }));
+      setTimeout(() => setSuccessStates(prev => ({ ...prev, github: false })), 2000);
+    } catch (error: any) {
+      console.error('Erreur lors de la mise à jour du lien GitHub:', error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, github: false }));
+    }
+  };
+
+  const handleUpdateLinkedin = async () => {
+    if (!editForm?.linkedinLink.trim()) return;
+    setLoadingStates(prev => ({ ...prev, linkedin: true }));
+    try {
+      await updateLinkedinLink(editForm.linkedinLink);
+      setProfile(prev => prev ? { ...prev, linkedinLink: editForm.linkedinLink } : null);
+      setSuccessStates(prev => ({ ...prev, linkedin: true }));
+      setTimeout(() => setSuccessStates(prev => ({ ...prev, linkedin: false })), 2000);
+    } catch (error: any) {
+      console.error('Erreur lors de la mise à jour du lien LinkedIn:', error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, linkedin: false }));
     }
   };
 
@@ -94,38 +142,7 @@ export default function MonProfil() {
     setShowEditModal(true);
   };
 
-  const handleSaveProfile = async () => {
-    if (!editForm) return;
-    
-    try {
-      // Mettre à jour le profil complet
-      await updateStudentProfile({
-        name: editForm.name,
-        firstName: editForm.firstName,
-        sector: editForm.sector,
-        department: editForm.department
-      });
-      
-      // Mettre à jour l'email si changé
-      if (editForm.email !== profile?.email) {
-        await updateEmail(editForm.email);
-      }
-      
-      // Mettre à jour les liens
-      if (editForm.githubLink !== profile?.githubLink) {
-        await updateGithubLink(editForm.githubLink);
-      }
-      if (editForm.linkedinLink !== profile?.linkedinLink) {
-        await updateLinkedinLink(editForm.linkedinLink);
-      }
-      
-      setProfile(editForm);
-      setShowEditModal(false);
-      alert('Profil mis à jour avec succès!');
-    } catch (error: any) {
-      alert(error.message || 'Erreur lors de la mise à jour du profil');
-    }
-  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -270,99 +287,70 @@ export default function MonProfil() {
                     </button>
                   </div>
                   
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[var(--color-dark)] text-sm font-medium mb-1">Nom</label>
-                        <input
-                          type="text"
-                          name="name"
-                          value={editForm.name}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[var(--color-dark)] text-sm font-medium mb-1">Prénom</label>
-                        <input
-                          type="text"
-                          name="firstName"
-                          value={editForm.firstName}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
-                        />
-                      </div>
-                    </div>
-                    
+                  <div className="space-y-6">
                     <div>
-                      <label className="block text-[var(--color-dark)] text-sm font-medium mb-1">Email</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={editForm.email}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[var(--color-dark)] text-sm font-medium mb-1">Département</label>
-                        <select
-                          name="department"
-                          value={editForm.department}
+                      <label className="block text-[var(--color-dark)] text-sm font-medium mb-2">Lien GitHub</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          name="githubLink"
+                          value={editForm.githubLink}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
+                          placeholder="https://github.com/username"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
+                        />
+                        <button
+                          onClick={handleUpdateGithub}
+                          disabled={loadingStates.github}
+                          className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-lg hover:bg-[#6b7d4b] transition-all duration-700 ease-out font-medium cursor-pointer disabled:opacity-50 flex items-center gap-2"
                         >
-                          <option value="Informatique">Informatique</option>
-                          <option value="Génie mécanique">Génie mécanique</option>
-                          <option value="Administration des affaires">Administration des affaires</option>
-                          <option value="Psychologie">Psychologie</option>
-                          <option value="Biologie">Biologie</option>
-                          <option value="Droit">Droit</option>
-                          <option value="Économie">Économie</option>
-                          <option value="Architecture">Architecture</option>
-                        </select>
+                          <div className="transition-all duration-700 ease-out">
+                            {loadingStates.github ? (
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : successStates.github ? (
+                              <svg className="w-4 h-4 transition-all duration-700 ease-out" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            ) : null}
+                          </div>
+                          {loadingStates.github ? 'Mise à jour...' : successStates.github ? 'Mis à jour !' : 'Mettre à jour'}
+                        </button>
                       </div>
-                      <div>
-                        <label className="block text-[var(--color-dark)] text-sm font-medium mb-1">Secteur</label>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-[var(--color-dark)] text-sm font-medium mb-2">Lien LinkedIn</label>
+                      <div className="flex gap-2">
                         <input
-                          type="text"
-                          name="sector"
-                          value={editForm.sector}
+                          type="url"
+                          name="linkedinLink"
+                          value={editForm.linkedinLink}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
+                          placeholder="https://linkedin.com/in/username"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
                         />
+                        <button
+                          onClick={handleUpdateLinkedin}
+                          disabled={loadingStates.linkedin}
+                          className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-lg hover:bg-[#6b7d4b] transition-all duration-700 ease-out font-medium cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                        >
+                          <div className="transition-all duration-700 ease-out">
+                            {loadingStates.linkedin ? (
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : successStates.linkedin ? (
+                              <svg className="w-4 h-4 transition-all duration-700 ease-out" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            ) : null}
+                          </div>
+                          {loadingStates.linkedin ? 'Mise à jour...' : successStates.linkedin ? 'Mis à jour !' : 'Mettre à jour'}
+                        </button>
                       </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-[var(--color-dark)] text-sm font-medium mb-1">Lien GitHub</label>
-                      <input
-                        type="url"
-                        name="githubLink"
-                        value={editForm.githubLink}
-                        onChange={handleInputChange}
-                        placeholder="https://github.com/username"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-[var(--color-dark)] text-sm font-medium mb-1">Lien LinkedIn</label>
-                      <input
-                        type="url"
-                        name="linkedinLink"
-                        value={editForm.linkedinLink}
-                        onChange={handleInputChange}
-                        placeholder="https://linkedin.com/in/username"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-[var(--color-vert)] bg-white text-[var(--color-dark)]"
-                      />
                     </div>
                     
                     <div>
                       <label className="block text-[var(--color-dark)] text-sm font-medium mb-2">Ajouter une langue</label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 mb-3">
                         <input
                           type="text"
                           value={newLanguage}
@@ -372,12 +360,22 @@ export default function MonProfil() {
                         />
                         <button
                           onClick={handleAddLanguage}
-                          className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-lg hover:bg-[#6b7d4b] transition-colors font-medium cursor-pointer"
+                          disabled={loadingStates.language}
+                          className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-lg hover:bg-[#6b7d4b] transition-all duration-700 ease-out font-medium cursor-pointer disabled:opacity-50 flex items-center gap-2"
                         >
-                          Ajouter
+                          <div className="transition-all duration-700 ease-out">
+                            {loadingStates.language ? (
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : successStates.language ? (
+                              <svg className="w-4 h-4 transition-all duration-700 ease-out" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            ) : null}
+                          </div>
+                          {loadingStates.language ? 'Ajout...' : successStates.language ? 'Ajouté !' : 'Ajouter'}
                         </button>
                       </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2">
                         {editForm.languages.map((lang, index) => (
                           <span key={index} className="px-3 py-1 bg-[var(--color-vert)] text-white rounded-full text-sm">
                             {lang}
@@ -387,18 +385,12 @@ export default function MonProfil() {
                     </div>
                   </div>
                   
-                  <div className="flex gap-4 mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex justify-center mt-6 pt-4 border-t border-gray-200">
                     <button
                       onClick={() => setShowEditModal(false)}
-                      className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                     >
-                      Annuler
-                    </button>
-                    <button
-                      onClick={handleSaveProfile}
-                      className="flex-1 px-6 py-3 bg-[var(--color-vert)] text-white rounded-lg hover:bg-[#6b7d4b] transition-colors cursor-pointer"
-                    >
-                      Sauvegarder
+                      Fermer
                     </button>
                   </div>
                 </div>
