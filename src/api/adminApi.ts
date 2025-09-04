@@ -83,3 +83,17 @@ export const verifyPassword = async (password: string) => {
     headers: getAuthHeaders()
   });
 };
+
+// Supprimer une entreprise (admin)
+export const deleteEnterprise = async (enterpriseId: number) => {
+  return api.delete(`/updateProfile/deleteAccount/${enterpriseId}`, {
+    headers: getAuthHeaders()
+  });
+};
+
+// Supprimer un étudiant (admin)
+export const deleteStudent = async (studentId: number) => {
+  return api.delete(`/updateProfile/deleteAccount/${studentId}`, {
+    headers: getAuthHeaders()
+  });
+};

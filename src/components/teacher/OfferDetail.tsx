@@ -60,11 +60,11 @@ const TeacherOfferDetail = () => {
         conventionApproved: true
       });
       setOffer({ ...offer, status: 'APPROVED' });
-      alert('Offre approuvée avec succès');
+      console.log('Offre approuvée avec succès');
       setTimeout(() => navigate(isAdminRoute ? '/admin/offres' : '/enseignant/offres'), 1000);
     } catch (error: any) {
       console.error('Erreur:', error);
-      alert(error.message || 'Erreur lors de l\'approbation');
+      console.error(error.message || 'Erreur lors de l\'approbation');
     } finally {
       setProcessingAction(false);
     }
@@ -80,11 +80,11 @@ const TeacherOfferDetail = () => {
         conventionApproved: false
       });
       setOffer({ ...offer, status: 'REJECTED' });
-      alert('Offre refusée');
+      console.log('Offre refusée');
       setTimeout(() => navigate(isAdminRoute ? '/admin/offres' : '/enseignant/offres'), 1000);
     } catch (error: any) {
       console.error('Erreur:', error);
-      alert(error.message || 'Erreur lors du refus');
+      console.error(error.message || 'Erreur lors du refus');
     } finally {
       setProcessingAction(false);
     }
@@ -107,17 +107,17 @@ const TeacherOfferDetail = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Erreur lors du téléchargement:', error);
-      alert('Erreur lors du téléchargement de la convention');
+      console.error('Erreur lors du téléchargement de la convention');
     }
   };
 
   // Note: Les enseignants ne gèrent pas les candidatures - c'est le rôle des entreprises
   const handleAcceptApplication = async (applicationId: number) => {
-    alert('Les candidatures sont gérées par les entreprises, pas les enseignants.');
+    console.log('Les candidatures sont gérées par les entreprises, pas les enseignants.');
   };
   
   const handleRejectApplication = async (applicationId: number) => {
-    alert('Les candidatures sont gérées par les entreprises, pas les enseignants.');
+    console.log('Les candidatures sont gérées par les entreprises, pas les enseignants.');
   };
 
   const handleToggleApplications = () => {

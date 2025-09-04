@@ -227,5 +227,28 @@ export const getCurrentEnterpriseInfo = async () => {
   }
 };
 
+// Mettre à jour le contact
+export const updateContact = async (contact: string) => {
+  return await api.patch('/api/enterprise/updateContact', { contact }, {
+    headers: getAuthHeaders()
+  });
+};
+
+// Mettre à jour la localisation
+export const updateLocation = async (location: string) => {
+  return await api.patch('/api/enterprise/updateLocation', { location }, {
+    headers: getAuthHeaders()
+  });
+};
+
+// Mettre à jour le logo
+export const updateLogo = async (enterpriseId: number, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return await api.put(`/api/enterprise/updateLogo/${enterpriseId}`, formData, {
+    headers: getAuthHeaders()
+  });
+};
+
 
 

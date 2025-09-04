@@ -58,7 +58,7 @@ const AnimatedRoutes = () => {
           <Route path="/etudiant/parametres" element={<PageWrapper><UserSettings /></PageWrapper>} />
         </Route>
 
-        <Route path="/felicitations" element={<Felicitations />} />
+        <Route path="/felicitations" element={<PageWrapper><Felicitations /></PageWrapper>} />
 
         <Route element={<ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']} />}>
           <Route path="/enseignant/debug" element={<DebugTeacher />} />
@@ -106,10 +106,11 @@ const AnimatedRoutes = () => {
 const PageWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="min-h-screen"
     >
       {children}
     </motion.div>

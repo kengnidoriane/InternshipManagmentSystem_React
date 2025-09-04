@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AdminHeader from './AdminHeader';
+import ConfirmationModal from './ConfirmationModal';
 import { getAllStudents } from '../../api/adminApi';
 import type { StudentResponseDto } from '../../types/student';
 
@@ -20,6 +21,7 @@ export default function TeacherDetail() {
   const [students, setStudents] = useState<StudentResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [studentsLoading, setStudentsLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     // TODO: Remplacer par l'API réelle
@@ -63,10 +65,13 @@ export default function TeacherDetail() {
   };
 
   const handleDeleteAccount = () => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce compte enseignant ?')) {
-      // TODO: Implémenter la suppression
-      console.log('Suppression du compte enseignant:', teacher?.id);
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    // TODO: Implémenter la suppression
+    console.log('Suppression du compte enseignant:', teacher?.id);
+    setShowDeleteModal(false);
   };
 
   if (loading) {
@@ -178,6 +183,15 @@ export default function TeacherDetail() {
           </button>
         </div>
       </main>
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Supprimer le compte enseignant"
+        message="Êtes-vous sûr de vouloir supprimer ce compte enseignant ? Cette action est irréversible."
+        type="danger"
+      />
     </div>
   );
 }

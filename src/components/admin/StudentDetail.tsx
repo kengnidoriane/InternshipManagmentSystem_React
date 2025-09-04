@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
+import { deleteStudent } from '../../api/adminApi';
 import type { StudentResponseDto } from '../../types/student';
+import ConfirmationModal from './ConfirmationModal';
 
 const StudentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -9,6 +11,7 @@ const StudentDetail: React.FC = () => {
   const [student, setStudent] = useState<StudentResponseDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const location = useLocation();
 
@@ -41,11 +44,16 @@ const StudentDetail: React.FC = () => {
   }, [id, location.state]);
 
   const handleDeleteAccount = async () => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce compte étudiant ?')) {
-      // TODO: Implémenter la suppression quand l'endpoint sera disponible
-      console.log('Suppression du compte étudiant:', student?.id);
+    if (!student) return;
+    
+    try {
+      await deleteStudent(student.id);
       navigate('/admin/students');
+    } catch (err) {
+      setError('Erreur lors de la suppression de l\'\u00e9tudiant');
+      console.error(err);
     }
+    setShowDeleteModal(false);
   };
 
   const getInitials = (name: string, firstName: string) => {
@@ -135,10 +143,10 @@ const StudentDetail: React.FC = () => {
                       )}
                       
                       {/* Debug: Afficher toutes les propriétés disponibles */}
-                      <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
+                      {/* <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
                         <h4 className="font-semibold mb-1">Données disponibles:</h4>
                         <pre className="text-xs overflow-auto">{JSON.stringify(student, null, 2)}</pre>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -151,7 +159,7 @@ const StudentDetail: React.FC = () => {
                   La suppression du compte étudiant est irréversible. Toutes les données associées seront perdues.
                 </p>
                 <button
-                  onClick={handleDeleteAccount}
+                  onClick={() => setShowDeleteModal(true)}
                   className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 >
                   Supprimer le compte
@@ -163,6 +171,17 @@ const StudentDetail: React.FC = () => {
           )}
         </div>
       </main>
+      
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title="Supprimer l'étudiant"
+        message={`Êtes-vous sûr de vouloir supprimer le compte de l'étudiant "${student?.firstName} ${student?.name}" ? Cette action est irréversible et toutes les données associées seront perdues.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setShowDeleteModal(false)}
+        type="danger"
+      />
     </div>
   );
 };

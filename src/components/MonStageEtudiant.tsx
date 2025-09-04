@@ -1,6 +1,7 @@
 import { useState, useEffect} from 'react';
 import { motion } from 'framer-motion';
 import EtudiantHeader from './EtudiantHeader';
+import ConfirmationModal from './admin/ConfirmationModal';
 import { updateStudentStatus, deleteApplication, getStudentStatus } from '../api';
 import { useStudentStatus } from '../hooks/useStudentStatus';
 import EnterpriseLogo from './EnterpriseLogo';
@@ -14,6 +15,13 @@ export default function MonStageEtudiant() {
   const [internshipStatus, setInternshipStatus] = useState<any>(null);
   const [statusLoading, setStatusLoading] = useState(true);
   const [currentInternship, setCurrentInternship] = useState<any>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    type: 'accept' | 'reject' | 'delete';
+    applicationId: number | null;
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: 'accept', applicationId: null, title: '', message: '' });
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -47,12 +55,20 @@ export default function MonStageEtudiant() {
     fetchStatus();
   }, []);
 
-  const handleAcceptOffer = async (applicationId: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir accepter cette offre de stage ? Cette action est irréversible.')) {
-      return;
-    }
-    
+  const handleAcceptOffer = (applicationId: number) => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'accept',
+      applicationId,
+      title: 'Accepter l\'offre de stage',
+      message: 'Êtes-vous sûr de vouloir accepter cette offre de stage ? Cette action est irréversible.'
+    });
+  };
+
+  const confirmAcceptOffer = async () => {
+    const applicationId = confirmModal.applicationId!;
     setAcceptingApplication(applicationId);
+    setConfirmModal({ isOpen: false, type: 'accept', applicationId: null, title: '', message: '' });
     try {
       const response = await updateStudentStatus(applicationId, true);
       // Stocker les informations du stage accepté
@@ -83,10 +99,19 @@ export default function MonStageEtudiant() {
     }
   };
 
-  const handleRejectOffer = async (applicationId: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir refuser cette offre ?')) {
-      return;
-    }
+  const handleRejectOffer = (applicationId: number) => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'reject',
+      applicationId,
+      title: 'Refuser l\'offre',
+      message: 'Êtes-vous sûr de vouloir refuser cette offre ?'
+    });
+  };
+
+  const confirmRejectOffer = async () => {
+    const applicationId = confirmModal.applicationId!;
+    setConfirmModal({ isOpen: false, type: 'reject', applicationId: null, title: '', message: '' });
     
     try {
       await updateStudentStatus(applicationId, false);
@@ -97,10 +122,20 @@ export default function MonStageEtudiant() {
     }
   };
 
-  const handleDeleteApplication = async (applicationId: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
-      return;
-    }
+  const handleDeleteApplication = (applicationId: number) => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'delete',
+      applicationId,
+      title: 'Supprimer la candidature',
+      message: 'Êtes-vous sûr de vouloir supprimer cette candidature ?'
+    });
+  };
+
+  const confirmDeleteApplication = async () => {
+    const applicationId = confirmModal.applicationId!;
+    setConfirmModal({ isOpen: false, type: 'delete', applicationId: null, title: '', message: '' });
+    
     try {
       await deleteApplication(applicationId);
       // Rafraîchir le statut après suppression
@@ -341,6 +376,19 @@ export default function MonStageEtudiant() {
           </div>
         )}
       </main>
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onCancel={() => setConfirmModal({ isOpen: false, type: 'accept', applicationId: null, title: '', message: '' })}
+        onConfirm={() => {
+          if (confirmModal.type === 'accept') confirmAcceptOffer();
+          else if (confirmModal.type === 'reject') confirmRejectOffer();
+          else if (confirmModal.type === 'delete') confirmDeleteApplication();
+        }}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type === 'delete' ? 'danger' : 'warning'}
+      />
     </div>
   );
 }

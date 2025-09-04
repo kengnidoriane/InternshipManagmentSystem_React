@@ -6,6 +6,7 @@ import { useApplicationsStore } from '../store/applicationsStore';
 import type { OfferResponseDto } from '../types/offer';
 import EntrepriseHeader from './EnterpriseHeader';
 import OfferCard from './OfferCard';
+import ConfirmationModal from './admin/ConfirmationModal';
 
 const ListeOffresEntreprise: React.FC = () => {
   const [offers, setOffers] = useState<OfferResponseDto[]>([]);
@@ -13,6 +14,7 @@ const ListeOffresEntreprise: React.FC = () => {
   const [search, setSearch] = useState('');
   const [isPartner, setIsPartner] = useState(false);
   const [partnershipLoading, setPartnershipLoading] = useState(true);
+  const [showPartnerModal, setShowPartnerModal] = useState(false);
   const navigate = useNavigate();
   const setApplicationsCount = useApplicationsStore((state) => state.setApplicationsCount);
 
@@ -81,7 +83,7 @@ const ListeOffresEntreprise: React.FC = () => {
 
   const handleCreateOffer = () => {
     if (!isPartner) {
-      alert('Votre entreprise doit être approuvée comme partenaire pour créer des offres de stage.');
+      setShowPartnerModal(true);
       return;
     }
     navigate('/entreprise/creer-offre');
@@ -181,6 +183,16 @@ const ListeOffresEntreprise: React.FC = () => {
           )}
         </div>
       </main>
+      
+      <ConfirmationModal
+        isOpen={showPartnerModal}
+        title="Partenariat requis"
+        message="Votre entreprise doit être approuvée comme partenaire pour créer des offres de stage. Veuillez attendre l'approbation de l'administration."
+        confirmText="Compris"
+        onConfirm={() => setShowPartnerModal(false)}
+        onCancel={() => setShowPartnerModal(false)}
+        type="info"
+      />
     </div>
   );
 };

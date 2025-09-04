@@ -126,23 +126,13 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
         {errors.city && <span className="text-xs text-red-600 mb-2">{errors.city.message}</span>}
 
         <label htmlFor="sectorOfActivity" className="text-[#e2e2e2] text-2xl font-light mb-1">Secteur d'activité</label>
-        <select
+        <input
           id="sectorOfActivity"
+          type="text"
+          placeholder="Ex: Informatique, Commerce, Santé..."
           className="w-full mb-4 border text-center border-gray-300 bg-[#e1d3c1] focus:outline-none"
           {...register('sectorOfActivity', { required: 'Le secteur d\'activité est requis.' })}
-        >
-          <option value="">-- Sélectionnez un secteur --</option>
-          <option value="Informatique">Informatique</option>
-          <option value="Génie mécanique">Génie mécanique</option>
-          <option value="Administration des affaires">Administration des affaires</option>
-          <option value="Psychologie">Psychologie</option>
-          <option value="Biologie">Biologie</option>
-          <option value="Droit">Droit</option>
-          <option value="Économie">Économie</option>
-          <option value="Architecture">Architecture</option>
-          <option value="Sciences politiques">Sciences politiques</option>
-          <option value="Sciences environnementales">Sciences environnementales</option>
-        </select>
+        />
         {errors.sectorOfActivity && <span className="text-xs text-red-600 mb-2">{errors.sectorOfActivity.message}</span>}
 
         <label htmlFor="logo" className="text-[#e2e2e2] text-2xl font-light mb-1">Logo (facultatif)</label>

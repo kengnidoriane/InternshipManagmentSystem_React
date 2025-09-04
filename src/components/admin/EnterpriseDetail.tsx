@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
-import { approveEnterprise } from '../../api/adminApi';
+import { approveEnterprise, deleteEnterprise } from '../../api/adminApi';
 import { getEnterpriseById } from '../../api/enterpriseApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
+import ConfirmationModal from './ConfirmationModal';
 
 interface OfferInEnterprise {
   id: number;
@@ -26,6 +27,7 @@ const EnterpriseDetail: React.FC = () => {
   const [enterprise, setEnterprise] = useState<EnterpriseResponseDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   // Logo non utilisé pour l'instant
 
   // Pas de ressource à nettoyer pour le moment
@@ -107,11 +109,17 @@ const EnterpriseDetail: React.FC = () => {
     }
   };
 
-  const handleDeleteAccount = () => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce compte entreprise ?')) {
-      // TODO: Implémenter la suppression
-      console.log('Suppression du compte entreprise:', enterprise?.id);
+  const handleDeleteAccount = async () => {
+    if (!enterprise) return;
+    
+    try {
+      await deleteEnterprise(enterprise.id);
+      navigate('/admin/enterprises');
+    } catch (err) {
+      setError('Erreur lors de la suppression de l\'entreprise');
+      console.error(err);
     }
+    setShowDeleteModal(false);
   };
 
   return (
@@ -269,7 +277,7 @@ const EnterpriseDetail: React.FC = () => {
                   La suppression du compte entreprise est irréversible. Toutes les données associées seront perdues.
                 </p>
                 <button
-                  onClick={handleDeleteAccount}
+                  onClick={() => setShowDeleteModal(true)}
                   className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 >
                   Supprimer le compte
@@ -281,6 +289,17 @@ const EnterpriseDetail: React.FC = () => {
           )}
         </div>
       </main>
+      
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title="Supprimer l'entreprise"
+        message={`Êtes-vous sûr de vouloir supprimer le compte de l'entreprise "${enterprise?.name}" ? Cette action est irréversible et toutes les données associées seront perdues.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setShowDeleteModal(false)}
+        type="danger"
+      />
     </div>
   );
 };

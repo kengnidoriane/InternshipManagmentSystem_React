@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEnterpriseLogo, uploadProfilePhoto, getCurrentEnterpriseInfo } from '../api/enterpriseApi';
-import { updateEmail } from '../api/profileApi';
+import { getEnterpriseLogo, uploadProfilePhoto, getCurrentEnterpriseInfo, updateContact, updateLocation, updateLogo } from '../api/enterpriseApi';
 import EnterpriseHeader from './EnterpriseHeader';
 
 interface EnterpriseProfile {
@@ -22,14 +21,16 @@ const ProfilEntreprise: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<EnterpriseProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loadingStates, setLoadingStates] = useState({
+    contact: false,
+    location: false,
+    logo: false
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Récupérer les vraies informations de l'entreprise
         const enterpriseResponse = await getCurrentEnterpriseInfo();
-        console.log('Données entreprise reçues:', enterpriseResponse.data);
         
         const profileData = {
           id: enterpriseResponse.data.id || 0,
@@ -46,7 +47,6 @@ const ProfilEntreprise: React.FC = () => {
         setProfile(profileData);
         setEditForm(profileData);
 
-        // Essayer de récupérer le logo
         try {
           const logoResponse = await getEnterpriseLogo();
           if (logoResponse.data && logoResponse.data.size > 0) {
@@ -55,15 +55,12 @@ const ProfilEntreprise: React.FC = () => {
             setLogoUrl(logoObjectUrl);
           }
         } catch (logoErr) {
-          // Pas de logo disponible ou erreur serveur
           console.log('Aucun logo disponible');
           setLogoUrl(null);
         }
       } catch (err: any) {
         console.error('Erreur lors du chargement du profil:', err);
-        console.error('Détails de l\'erreur:', err.response?.data);
         
-        // En cas d'erreur, créer un profil minimal
         const fallbackProfile = {
           id: 0,
           name: 'Mon Entreprise',
@@ -100,41 +97,40 @@ const ProfilEntreprise: React.FC = () => {
     setEditForm(prev => prev ? { ...prev, [name]: value } : null);
   };
 
-  const handleSave = async () => {
-    if (!editForm) return;
-    setSaving(true);
+  const handleUpdateContact = async () => {
+    if (!editForm?.contact) return;
+    setLoadingStates(prev => ({ ...prev, contact: true }));
     try {
-      // Note: Les endpoints pour mettre à jour les informations d'entreprise
-      // ne sont pas disponibles dans le backend. Seule la mise à jour d'email est possible.
-      if (editForm.email !== profile?.email) {
-        await updateEmail(editForm.email);
-      }
-      
-      // Sauvegarder localement les autres informations
-      setProfile(editForm);
-      setIsEditing(false);
-      alert('Profil mis à jour avec succès!');
+      await updateContact(editForm.contact);
+      setProfile(prev => prev ? { ...prev, contact: editForm.contact } : null);
     } catch (err: any) {
-      console.error('Erreur lors de la sauvegarde:', err);
-      const errorMessage = err?.response?.data?.message || 'Erreur lors de la mise à jour du profil';
-      alert(errorMessage);
+      console.error('Erreur lors de la mise à jour du contact:', err);
     } finally {
-      setSaving(false);
+      setLoadingStates(prev => ({ ...prev, contact: false }));
     }
   };
 
-  const handleCancel = () => {
-    setEditForm(profile);
-    setIsEditing(false);
+  const handleUpdateLocation = async () => {
+    if (!editForm?.location) return;
+    setLoadingStates(prev => ({ ...prev, location: true }));
+    try {
+      await updateLocation(editForm.location);
+      setProfile(prev => prev ? { ...prev, location: editForm.location } : null);
+    } catch (err: any) {
+      console.error('Erreur lors de la mise à jour de la localisation:', err);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, location: false }));
+    }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !profile?.id) return;
 
+    setLoadingStates(prev => ({ ...prev, logo: true }));
     try {
-      await uploadProfilePhoto(file);
-      // Recharger le logo
+      await updateLogo(profile.id, file);
+      
       try {
         const logoResponse = await getEnterpriseLogo();
         if (logoResponse.data && logoResponse.data.size > 0) {
@@ -146,11 +142,10 @@ const ProfilEntreprise: React.FC = () => {
       } catch (logoErr) {
         console.log('Erreur lors du rechargement du logo');
       }
-      alert('Logo mis à jour avec succès!');
     } catch (err: any) {
       console.error('Erreur lors de l\'upload du logo:', err);
-      const errorMessage = err?.response?.data?.message || 'Erreur lors de l\'upload du logo';
-      alert(errorMessage);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, logo: false }));
     }
   };
 
@@ -182,25 +177,23 @@ const ProfilEntreprise: React.FC = () => {
       <div className="flex justify-center items-center min-h-[80vh] p-8">
         <div className="bg-transparent border-2 border-[var(--color-jaune)] rounded-lg p-8 max-w-2xl w-full">
           {!isEditing ? (
-            // Vue d'affichage
             <>
               <h1 className="text-2xl font-light text-[var(--color-jaune)] text-center mb-8">
                 Profil de l'entreprise
               </h1>
               
               <div className="flex items-start gap-8">
-                {/* Informations à gauche */}
                 <div className="flex-grow text-white space-y-3">
                   <h2 className="text-xl font-light mb-6">{profile.name}</h2>
                   
                   <div><span className="font-medium">Email :</span> {profile.email || 'Non renseigné'}</div>
                   <div><span className="font-medium">Pays :</span> {profile.country || 'Non renseigné'}</div>
                   <div><span className="font-medium">Ville :</span> {profile.city || 'Non renseigné'}</div>
-                  <div><span className="font-medium">Domaine d'activé :</span> {profile.sectorOfActivity || 'Non renseigné'}</div>
-                  <div><span className="font-medium">Telephone :</span> {profile.contact || 'Non renseigné'}</div>
+                  <div><span className="font-medium">Domaine d'activité :</span> {profile.sectorOfActivity || 'Non renseigné'}</div>
+                  <div><span className="font-medium">Téléphone :</span> {profile.contact || 'Non renseigné'}</div>
+                  <div><span className="font-medium">Localisation :</span> {profile.location || 'Non renseigné'}</div>
                 </div>
 
-                {/* Logo à droite */}
                 <div className="flex-shrink-0">
                   {logoUrl ? (
                     <img 
@@ -226,140 +219,101 @@ const ProfilEntreprise: React.FC = () => {
               </div>
             </>
           ) : (
-            // Vue de modification
             <>
               <h1 className="text-2xl font-light text-[var(--color-jaune)] text-center mb-8">
                 Modification de profil
               </h1>
 
               <div className="bg-transparent border border-[var(--color-jaune)] rounded p-6">
-                <p className="text-white text-sm mb-6">Définissez les informations du profil</p>
+                <p className="text-white text-sm mb-6">Modification du profil entreprise</p>
                 
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* Contact */}
                   <div>
-                    <label className="block text-white text-sm mb-1">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={editForm?.email || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 bg-gray-200 rounded text-black outline-none"
-                    />
+                    <label className="block text-white text-sm mb-1">Contact</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        name="contact"
+                        value={editForm?.contact || ''}
+                        onChange={handleInputChange}
+                        className="flex-1 px-3 py-2 bg-gray-200 rounded text-black outline-none"
+                      />
+                      <button
+                        onClick={handleUpdateContact}
+                        disabled={loadingStates.contact}
+                        className="bg-[var(--color-vert)] text-white px-4 py-2 rounded hover:bg-[#6b7d4b] transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {loadingStates.contact ? 'Mise à jour...' : 'Mettre à jour'}
+                      </button>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-white text-sm mb-1">Pays</label>
-                    <input
-                      type="text"
-                      name="country"
-                      value={editForm?.country || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 bg-gray-200 rounded text-black outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white text-sm mb-1">Ville</label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={editForm?.city || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 bg-gray-200 rounded text-black outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white text-sm mb-1">Domaine d'activé</label>
-                    <select
-                      name="sectorOfActivity"
-                      value={editForm?.sectorOfActivity || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 bg-gray-200 rounded text-black outline-none"
-                    >
-                      <option value="">-- Sélectionnez un domaine --</option>
-                      <option value="Informatique">Informatique</option>
-                      <option value="Génie mécanique">Génie mécanique</option>
-                      <option value="Administration des affaires">Administration des affaires</option>
-                      <option value="Psychologie">Psychologie</option>
-                      <option value="Biologie">Biologie</option>
-                      <option value="Droit">Droit</option>
-                      <option value="Économie">Économie</option>
-                      <option value="Architecture">Architecture</option>
-                      <option value="Sciences politiques">Sciences politiques</option>
-                      <option value="Sciences environnementales">Sciences environnementales</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-white text-sm mb-1">Telephone</label>
-                    <input
-                      type="tel"
-                      name="contact"
-                      value={editForm?.contact || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 bg-gray-200 rounded text-black outline-none"
-                    />
-                  </div>
-
+                  {/* Location */}
                   <div>
                     <label className="block text-white text-sm mb-1">Localisation</label>
-                    <input
-                      type="text"
-                      name="location"
-                      value={editForm?.location || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 bg-gray-200 rounded text-black outline-none"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        name="location"
+                        value={editForm?.location || ''}
+                        onChange={handleInputChange}
+                        className="flex-1 px-3 py-2 bg-gray-200 rounded text-black outline-none"
+                      />
+                      <button
+                        onClick={handleUpdateLocation}
+                        disabled={loadingStates.location}
+                        className="bg-[var(--color-vert)] text-white px-4 py-2 rounded hover:bg-[#6b7d4b] transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {loadingStates.location ? 'Mise à jour...' : 'Mettre à jour'}
+                      </button>
+                    </div>
                   </div>
 
+                  {/* Logo */}
                   <div>
                     <label className="block text-white text-sm mb-2">Logo de l'entreprise</label>
-                    <div className="bg-white rounded p-4 w-32">
-                      {logoUrl ? (
-                        <img 
-                          src={logoUrl} 
-                          alt="Logo entreprise" 
-                          className="w-full h-20 object-contain"
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white rounded p-4 w-32">
+                        {logoUrl ? (
+                          <img 
+                            src={logoUrl} 
+                            alt="Logo entreprise" 
+                            className="w-full h-20 object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-20 bg-gray-300 rounded flex items-center justify-center text-black font-bold">
+                            {getInitials(profile.name)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                          id="logo-upload"
                         />
-                      ) : (
-                        <div className="w-full h-20 bg-gray-300 rounded flex items-center justify-center text-black font-bold">
-                          {getInitials(profile.name)}
-                        </div>
-                      )}
-                      <p className="text-xs text-gray-600 text-center mt-1">Photo de couverture</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                        id="logo-upload"
-                      />
-                      <label
-                        htmlFor="logo-upload"
-                        className="w-full bg-[var(--color-vert)] text-white text-xs py-1 rounded mt-2 cursor-pointer block text-center"
-                      >
-                        Importer un fichier
-                      </label>
+                        <button
+                          onClick={() => document.getElementById('logo-upload')?.click()}
+                          disabled={loadingStates.logo}
+                          className="bg-[var(--color-vert)] text-white px-4 py-2 rounded hover:bg-[#6b7d4b] transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                          {loadingStates.logo ? 'Upload...' : 'Changer le logo'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex justify-center mt-6">
                 <button
-                  onClick={handleCancel}
-                  disabled={saving}
-                  className="flex-1 text-[var(--color-light)] py-2 rounded border border-[var(--color-jaune)] cursor-pointer"
+                  onClick={() => setIsEditing(false)}
+                  className="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700 transition-colors cursor-pointer"
                 >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1 bg-[var(--color-vert)] text-[var(--color-light)] py-2 rounded cursor-pointer  disabled:opacity-60"
-                >
-                  {saving ? 'Enregistrement...' : 'Enregistrer'}
+                  Fermer
                 </button>
               </div>
             </>
