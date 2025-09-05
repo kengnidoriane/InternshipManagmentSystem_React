@@ -4,7 +4,7 @@ import AdminHeader from './AdminHeader';
 import { getPendingEnterprises, getEnterpriseInPartnership } from '../../api/adminApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import EnterpriseLogo from '../EnterpriseLogo';
+import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 
 const EnterprisesList: React.FC = () => {
   const navigate = useNavigate();
@@ -118,7 +118,8 @@ const EnterprisesList: React.FC = () => {
                         className="p-4 mx-2 w-1/3 cursor-pointer"
                         onClick={() => navigate(`/admin/enterprises/${enterprise.id}`, { state: { enterprise } })}
                       >
-                        <div className="flex">
+                        <div className="flex bg-[var(--color-neutre95)] p-4">
+
                           <div className="mr-4">
                             <EnterpriseLogo 
                               enterpriseName={enterprise.name}
@@ -129,11 +130,11 @@ const EnterprisesList: React.FC = () => {
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium">{enterprise.name}</h3>
-                            <div className="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs my-1">
+                            <div className="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 mb-2 rounded text-xs my-1">
                               En attente
                             </div>
-                            <p className="text-xs text-gray-600">Matriculation: {enterprise.matriculation}</p>
-                            <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
+                            <p className="text-xs text-gray-600 mb-1">Immatriculation: {enterprise.matriculation}</p>
+                            <p className="text-xs text-gray-700 mb-1">Secteur: {enterprise.sectorOfActivity}</p>
                           </div>
                         </div>
                       </div>
@@ -175,18 +176,18 @@ const EnterprisesList: React.FC = () => {
                         enterpriseName={enterprise.name}
                         enterpriseId={enterprise.id}
                         hasLogo={enterprise.hasLogo?.hasLogo}
-                        size="md"
+                        size="lg"
                         className="flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate">{enterprise.name}</h3>
-                        <div className="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs my-1">
+                        <div className="inline-block bg-green-100 text-green-800 px-2 py-0.5 mb-2 rounded text-xs my-1">
                           Partenaire
                         </div>
                         <p className="text-xs text-gray-600 mb-1">{enterprise.email}</p>
-                        <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
+                        <p className="text-xs text-gray-700">Secteur: {enterprise.sectorOfActivity}</p>
                         {enterprise.matriculation && (
-                          <p className="text-xs text-gray-500 mt-1">Mat: {enterprise.matriculation}</p>
+                          <p className="text-xs text-gray-500 mt-1">immatriculaion: {enterprise.matriculation}</p>
                         )}
                       </div>
                     </div>

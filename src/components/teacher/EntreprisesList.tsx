@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import TeacherHeader from '../TeacherHeader';
+import TeacherHeader from './TeacherHeader';
 import { getEnterpriseInPartnership } from '../../api/teacherApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
-import EnterpriseLogo from '../EnterpriseLogo';
+import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 
 const EntreprisesList: React.FC = () => {
   const navigate = useNavigate();
@@ -87,8 +87,9 @@ const EntreprisesList: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="font-medium">{enterprise.name}</h3>
-                        <p className="text-xs text-gray-600">{enterprise.country} • {enterprise.city}</p>
-                        <p className="text-xs text-gray-700">{enterprise.sectorOfActivity}</p>
+                        <p className="text-xs text-gray-600 mb-1">{enterprise.country} • {enterprise.city}</p>
+                        <p className="text-xs text-gray-700 mb-1">email: {enterprise.email}</p>
+                        <p className="text-xs text-gray-700">Secteur: {enterprise.sectorOfActivity}</p>
                       </div>
                     </div>
                   </motion.div>

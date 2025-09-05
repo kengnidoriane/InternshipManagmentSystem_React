@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png'; // Adapter le chemin si besoin
-import NotificationBell from './NotificationBell';
-import { useAuthStore } from '../store/authStore';
+import logo from '../../assets/logo.png';
+import NotificationBell from '../NotificationBell';
+import { useAuthStore } from '../../store/authStore';
 
 const navLinks = [
   { to: '/enseignant/entreprises', label: 'Entreprises' },

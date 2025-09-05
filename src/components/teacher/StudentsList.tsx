@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import TeacherHeader from '../TeacherHeader';
+import TeacherHeader from './TeacherHeader';
 import { getStudentsByDepartment, downloadStudentCV } from '../../api/teacherApi';
 import type { StudentResponseDto } from '../../types/student';
 
@@ -61,6 +61,7 @@ export default function StudentsList() {
                           {student.onInternship && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">En stage</span>}
                         </h3>
                         <p className="text-sm text-gray-600">{student.name} {student.firstName}</p>
+                        <p className="text-sm text-gray-600 mt-1">email: {student.email}</p>
                       </div>
                       <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden">
                         <img 

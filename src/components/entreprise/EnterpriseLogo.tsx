@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { generateEnterpriseInitials } from '../utils/enterpriseUtils';
-import { getEnterpriseLogo } from '../api/enterpriseApi';
+import { generateEnterpriseInitials } from '../../utils/enterpriseUtils';
+import { getEnterpriseLogo } from '../../api/enterpriseApi';
 
 interface EnterpriseLogoProps {
   enterpriseName: string;

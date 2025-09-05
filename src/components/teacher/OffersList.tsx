@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TeacherHeader from '../TeacherHeader';
+import TeacherHeader from './TeacherHeader';
 import { getOffersToReviewByDepartment } from '../../api/teacherApi';
 import TeacherOfferCard from './TeacherOfferCard';
 import type { OfferResponseDto } from '../../types/offer';

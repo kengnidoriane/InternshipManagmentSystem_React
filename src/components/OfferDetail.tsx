@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import EntrepriseHeader from './EnterpriseHeader';
+import EntrepriseHeader from './entreprise/EnterpriseHeader';
 import { getEnterpriseOffers, downloadConvention, getEnterpriseLogo } from '../api/enterpriseApi';
 import { useApplicationsStore } from '../store/applicationsStore';
 import type { OfferResponseDto } from '../types/offer';

@@ -7,11 +7,11 @@ import EntreprisesList from './components/teacher/EntreprisesList';
 import EnterpriseDetail from './components/teacher/EnterpriseDetail';
 import StudentsList from './components/teacher/StudentsList';
 import StudentDetail from './components/teacher/StudentDetail';
-import CreerOffreEntreprise from './components/CreerOffreEntreprise';
-import ListeOffresEntreprise from './components/ListeOffresEntreprise';
+import CreerOffreEntreprise from './components/entreprise/CreerOffreEntreprise';
+import ListeOffresEntreprise from './components/entreprise/ListeOffresEntreprise';
 import OfferDetail from './components/OfferDetail';
-import CandidaturesEntreprise from './components/CandidaturesEntreprise';
-import DetailCandidature from './components/DetailCandidature';
+import CandidaturesEntreprise from './components/entreprise/CandidaturesEntreprise';
+import DetailCandidature from './components/entreprise/DetailCandidature';
 import ProfilEntreprise from './components/ProfilEntreprise';
 import TeacherOfferDetail from './components/teacher/OfferDetail';
 import DebugTeacher from './components/teacher/DebugTeacher';
@@ -31,8 +31,8 @@ import AdminTeacherDetail from './components/admin/TeacherDetail';
 import AdminStudentsList from './components/admin/StudentsList';
 import AdminStudentDetail from './components/admin/StudentDetail';
 
-import ListStagesEtudiant from './components/ListStagesEtudiant';
-import MonStageEtudiant from './components/MonStageEtudiant';
+import ListStagesEtudiant from './components/etudiant/ListStagesEtudiant';
+import MonStageEtudiant from './components/etudiant/MonStageEtudiant';
 import MonProfil from './components/etudiant/MonProfil';
 import Felicitations from './components/Felicitations';
 // Les dashboards spécifiques n'existent pas, routes simplifiées

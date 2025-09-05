@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getEnterpriseApplications, getEnterpriseOffers, downloadCandidateCV } from '../api/enterpriseApi';
+import { getEnterpriseApplications, getEnterpriseOffers, downloadCandidateCV } from '../../api/enterpriseApi';
 import EnterpriseHeader from './EnterpriseHeader';
-
 interface Application {
   id: number;
   student: {

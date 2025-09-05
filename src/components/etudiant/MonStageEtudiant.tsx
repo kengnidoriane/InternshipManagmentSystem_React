@@ -1,10 +1,10 @@
 import { useState, useEffect} from 'react';
 import { motion } from 'framer-motion';
-import EtudiantHeader from './EtudiantHeader';
-import ConfirmationModal from './admin/ConfirmationModal';
-import { updateStudentStatus, deleteApplication, getStudentStatus } from '../api';
-import { useStudentStatus } from '../hooks/useStudentStatus';
-import EnterpriseLogo from './EnterpriseLogo';
+import EtudiantHeader from '../EtudiantHeader';
+import ConfirmationModal from '../admin/ConfirmationModal';
+import { updateStudentStatus, deleteApplication, getStudentStatus } from '../../api';
+import { useStudentStatus } from '../../hooks/useStudentStatus';
+import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 import { Link } from 'react-router-dom';
 
 export default function MonStageEtudiant() {
@@ -284,18 +284,18 @@ export default function MonStageEtudiant() {
           <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mes Candidatures</h2>
           
           {/* Candidatures en attente */}
-          {pendingApplications.length > 0 && (
+          {pendingApplications.filter(app => app.state === 'PENDING').length > 0 && (
             <div className="mb-8">
-              <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">En attente de réponse</h3>
+              <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">En attente de réponse de l'entreprise</h3>
               <div className="grid gap-4">
-                {pendingApplications.map(app => (
+                {pendingApplications.filter(app => app.state === 'PENDING').map(app => (
                   <div key={app.id} className="bg-[#f5ede3] rounded-lg p-4 shadow-md">
                     <h4 className="font-semibold text-[#2d2d2d] mb-2">{app.offer.title}</h4>
                     <p className="text-gray-600 mb-1">Entreprise: {app.enterprise.name}</p>
                     <p className="text-gray-600 mb-2">Domaine: {app.offer.domain}</p>
                     <div className="flex items-center justify-between">
                       <div className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                        En attente
+                        En attente de validation
                       </div>
                       <button
                         onClick={() => handleDeleteApplication(app.id)}
@@ -311,11 +311,11 @@ export default function MonStageEtudiant() {
           )}
           
           {/* Candidatures approuvées */}
-          {approvedApplications.length > 0 && (
+          {approvedApplications.filter(app => app.state === 'APPROVED').length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">Offres approuvées par l'entreprise</h3>
               <div className="grid gap-4">
-                {approvedApplications.map(app => (
+                {approvedApplications.filter(app => app.state === 'APPROVED').map(app => (
                   <div key={app.id} className="bg-[#f5ede3] rounded-lg p-4 shadow-md">
                     <h4 className="font-semibold text-[#2d2d2d] mb-2">{app.offer.title}</h4>
                     <p className="text-gray-600 mb-1">Entreprise: {app.enterprise.name}</p>

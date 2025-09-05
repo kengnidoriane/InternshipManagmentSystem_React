@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getInternshipStats } from '../../api/teacherApi';
-import TeacherHeader from '../TeacherHeader';
+import TeacherHeader from './TeacherHeader';
 
 interface InternshipStat {
   department: string;

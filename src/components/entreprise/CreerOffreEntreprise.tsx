@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createOffer, addConventionToOffer, getEnterpriseLogo, getEnterpriseOffers, getCurrentEnterpriseInfo } from '../api/enterpriseApi';
-import type { OfferRequestDto } from '../types/offer';
+import { createOffer, addConventionToOffer, getEnterpriseLogo, getEnterpriseOffers, getCurrentEnterpriseInfo } from '../../api/enterpriseApi';
+import type { OfferRequestDto } from '../../types/offer';
 import EnterpriseHeader from './EnterpriseHeader';
 
 const defaultState: OfferRequestDto = {
@@ -258,7 +258,9 @@ const CreerOffreEntreprise: React.FC = () => {
           <div className="flex-1 min-w-[320px]">
             <div className="flex items-center mb-6">
               <button type="button" className="mr-2 text-xl cursor-pointer" onClick={() => navigate(-1)}>
-                <span className="material-icons">arrow_back</span>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
               <h2 className="text-xl font-semibold">Créer une offre de stage</h2>
             </div>
@@ -410,16 +412,12 @@ const CreerOffreEntreprise: React.FC = () => {
                   ×
                 </button>
               </div>
-              {console.log('=== RENDU APERÇU ===')}
-              {console.log('Form dans le rendu:', form)}
-              {console.log('ShowPreview:', showPreview)}
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Colonne principale */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Titre */}
                   <h3 className="text-2xl font-bold text-[#2d2d2d]">{form.title}</h3>
-                  {console.log('Titre affiché:', form.title)}
 
                   {/* Résumé */}
                   <div>
@@ -430,7 +428,6 @@ const CreerOffreEntreprise: React.FC = () => {
                       <div><span className="font-medium">Stage payant:</span> {form.paying ? 'OUI' : 'NON'}</div>
                       <div><span className="font-medium">Télétravail:</span> {form.remote ? 'OUI' : 'NON'}</div>
                       <div><span className="font-medium">Période du stage:</span> {formatDate(form.startDate)} - {formatDate(form.endDate)}</div>
-                      {console.log('Type:', form.typeOfInternship, 'Job:', form.job, 'Paying:', form.paying, 'Remote:', form.remote)}
                     </div>
                     <div className="flex gap-2 mt-3">
                       {form.paying && (
@@ -444,7 +441,6 @@ const CreerOffreEntreprise: React.FC = () => {
                   <div>
                     <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Description de la mission</h4>
                     <p className="text-sm text-[#2d2d2d]">{form.description}</p>
-                    {console.log('Description:', form.description)}
                   </div>
 
                   {/* Convention */}
@@ -452,7 +448,6 @@ const CreerOffreEntreprise: React.FC = () => {
                     <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Convention de stage</h4>
                     <div className="text-sm text-[#2d2d2d]">
                       Fichier: {pdfConvention?.name || 'Aucun fichier sélectionné'}
-                      {console.log('PDF Convention:', pdfConvention?.name)}
                     </div>
                   </div>
 
@@ -460,7 +455,6 @@ const CreerOffreEntreprise: React.FC = () => {
                   <div>
                     <h4 className="text-lg font-semibold text-[#2d2d2d] mb-3">Exigences</h4>
                     <p className="text-sm text-[#2d2d2d]">{form.requirements}</p>
-                    {console.log('Exigences:', form.requirements)}
                   </div>
 
                   {/* Boutons d'action */}
@@ -500,7 +494,6 @@ const CreerOffreEntreprise: React.FC = () => {
                       )}
                     </div>
                     <h4 className="font-semibold text-[#2d2d2d] mb-1">{enterpriseInfo?.name || 'Entreprise'}</h4>
-                    {console.log('Enterprise info dans aperçu:', enterpriseInfo)}
                     <div className="text-xs text-[#2d2d2d] space-y-1">
                       <div>{enterpriseInfo?.location || 'Localisation'}</div>
                       <div>{enterpriseInfo?.sectorOfActivity || 'Secteur'}</div>
@@ -511,7 +504,6 @@ const CreerOffreEntreprise: React.FC = () => {
                   <div className="space-y-3 text-sm text-[#2d2d2d]">
                     <div><span className="font-medium">Nombre de places:</span> {form.numberOfPlaces || '1'}</div>
                     <div><span className="font-medium">Domaine:</span> {form.domain}</div>
-                    {console.log('Nombre de places:', form.numberOfPlaces, 'Domaine:', form.domain)}
                   </div>
 
                   {/* Tags */}

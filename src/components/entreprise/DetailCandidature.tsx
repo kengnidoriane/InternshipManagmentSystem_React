@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getEnterpriseApplications, downloadCandidateCV, downloadCandidateCoverLetter, validateApplication } from '../api/enterpriseApi';
+import { getEnterpriseApplications, downloadCandidateCV, downloadCandidateCoverLetter, validateApplication } from '../../api/enterpriseApi';
 import EnterpriseHeader from './EnterpriseHeader';
+import ConfirmationModal from '../admin/ConfirmationModal';
 
 interface ApplicationDetail {
   id: number;
@@ -29,6 +30,13 @@ const DetailCandidature: React.FC = () => {
   const [application, setApplication] = useState<ApplicationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    message: string;
+    type: 'info' | 'danger' | 'warning';
+    onConfirm: () => void;
+  } | null>(null);
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -105,14 +113,27 @@ const DetailCandidature: React.FC = () => {
     setProcessing(true);
     try {
       await validateApplication(application.id, approved);
-      // Afficher un message de succès temporaire
       const message = approved ? 'Candidature acceptée avec succès!' : 'Candidature refusée.';
-      alert(message);
-      navigate('/entreprise/candidatures');
+      setModalConfig({
+        title: approved ? 'Candidature acceptée' : 'Candidature refusée',
+        message,
+        type: 'info',
+        onConfirm: () => {
+          setShowModal(false);
+          navigate('/entreprise/candidatures');
+        }
+      });
+      setShowModal(true);
     } catch (err: any) {
       console.error('Erreur lors de la validation:', err);
       const errorMessage = err?.response?.data?.message || 'Erreur lors de la validation de la candidature';
-      alert(errorMessage);
+      setModalConfig({
+        title: 'Erreur',
+        message: errorMessage,
+        type: 'danger',
+        onConfirm: () => setShowModal(false)
+      });
+      setShowModal(true);
     } finally {
       setProcessing(false);
     }
@@ -267,6 +288,18 @@ const DetailCandidature: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {modalConfig && (
+        <ConfirmationModal
+          isOpen={showModal}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          type={modalConfig.type}
+          confirmText="OK"
+          onConfirm={modalConfig.onConfirm}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 };

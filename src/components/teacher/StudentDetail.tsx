@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import TeacherHeader from '../TeacherHeader';
+import TeacherHeader from './TeacherHeader';
 import { getStudentsByDepartment } from '../../api/teacherApi';
 import type { StudentResponseDto } from '../../types/student';
 

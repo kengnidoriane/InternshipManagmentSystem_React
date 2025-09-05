@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { OfferResponseDto } from '../../types/offer';
-import EnterpriseLogo from '../EnterpriseLogo';
+import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 
 interface TeacherOfferCardProps {
   offer: OfferResponseDto;

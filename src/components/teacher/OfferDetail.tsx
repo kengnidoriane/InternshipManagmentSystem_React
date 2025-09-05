@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import TeacherHeader from '../TeacherHeader';
+import TeacherHeader from './TeacherHeader';
 import AdminHeader from '../admin/AdminHeader';
 import { getOffersToReviewByDepartment, validateOfferAndConvention, downloadConvention } from '../../api/teacherApi';
 import { useLocation } from 'react-router-dom';
-import EnterpriseLogo from '../EnterpriseLogo';
+import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 import type { OfferResponseDto } from '../../types/offer';
 
 const TeacherOfferDetail = () => {

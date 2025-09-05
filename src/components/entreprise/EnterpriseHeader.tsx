@@ -1,8 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import logo from '../../assets/logo.png';
 import { motion } from 'framer-motion';
-import NotificationBell from './NotificationBell';
-import { useAuthStore } from '../store/authStore';
+import NotificationBell from '../NotificationBell';
+import { useAuthStore } from '../../store/authStore';
 
 const navLinks = [
   { to: '/entreprise/offres', label: 'Listes des offres' },

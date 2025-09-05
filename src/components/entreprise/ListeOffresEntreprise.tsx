@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { getEnterpriseOffers, getEnterpriseApplications, getCurrentEnterpriseInfo } from '../api/enterpriseApi';
-import { useApplicationsStore } from '../store/applicationsStore';
-import type { OfferResponseDto } from '../types/offer';
+import { getEnterpriseOffers, getEnterpriseApplications, getCurrentEnterpriseInfo } from '../../api/enterpriseApi';
+import { useApplicationsStore } from '../../store/applicationsStore';
+import type { OfferResponseDto } from '../../types/offer';
 import EntrepriseHeader from './EnterpriseHeader';
-import OfferCard from './OfferCard';
-import ConfirmationModal from './admin/ConfirmationModal';
+import OfferCard from '../OfferCard';
+import ConfirmationModal from '../admin/ConfirmationModal';
 
 const ListeOffresEntreprise: React.FC = () => {
   const [offers, setOffers] = useState<OfferResponseDto[]>([]);

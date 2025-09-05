@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getStageDetail, downloadConvention, submitApplication } from "../api/stageApi";
 import type { OfferResponseDto } from '../types/offer';
 import EtudiantHeader from './EtudiantHeader';
-import EnterpriseLogo from './EnterpriseLogo';
+import EnterpriseLogo from './entreprise/EnterpriseLogo';
 import { useStudentStatus } from '../hooks/useStudentStatus';
 import { validateApplicationEligibility, getApplicationButtonText, isApplicationButtonDisabled } from '../utils/applicationUtils';
+import ConfirmationModal from './admin/ConfirmationModal';
 
 const StageDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [offer, setOffer] = useState<OfferResponseDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +20,12 @@ const StageDetail: React.FC = () => {
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    title: string;
+    message: string;
+    type: 'info' | 'danger' | 'warning';
+  } | null>(null);
   const studentStatus = useStudentStatus();
 
   useEffect(() => {
@@ -77,7 +85,12 @@ const StageDetail: React.FC = () => {
     const validation = validateApplicationEligibility(offerId, studentStatus);
     
     if (!validation.canApply) {
-      console.log(validation.message);
+      setModalConfig({
+        title: 'Candidature impossible',
+        message: validation.message,
+        type: 'warning'
+      });
+      setShowModal(true);
       return;
     }
     
@@ -102,7 +115,12 @@ const StageDetail: React.FC = () => {
   const handleSubmitApplication = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || !cvFile || !coverLetterFile) {
-      console.log('Veuillez sélectionner un CV et une lettre de motivation.');
+      setModalConfig({
+        title: 'Fichiers manquants',
+        message: 'Veuillez sélectionner un CV et une lettre de motivation.',
+        type: 'warning'
+      });
+      setShowModal(true);
       return;
     }
 
@@ -110,7 +128,12 @@ const StageDetail: React.FC = () => {
     
     // Vérification finale avant soumission
     if (studentStatus.hasApplicationForOffer(offerId)) {
-      console.log('Vous avez déjà candidaté pour cette offre.');
+      setModalConfig({
+        title: 'Candidature impossible',
+        message: 'Vous avez déjà candidaté à cette offre. Impossible de candidater 2 fois.',
+        type: 'warning'
+      });
+      setShowModal(true);
       setShowCandidatureForm(false);
       return;
     }
@@ -127,20 +150,39 @@ const StageDetail: React.FC = () => {
       setCoverLetterFile(null);
       setTimeout(() => {
         setSubmitSuccess(false);
-      }, 3000);
+        navigate('/etudiant/mon-stage');
+      }, 2000);
     } catch (error: any) {
       console.error('Erreur lors de la soumission:', error);
+      console.error('Status:', error?.response?.status);
+      console.error('Message:', error?.response?.data?.message);
+      
       // Gestion d'erreurs spécifiques
-      if (error?.response?.status === 409) {
-        console.log('Vous avez déjà candidaté pour cette offre.');
+      if (error?.response?.status === 409 || error?.response?.status === 400 || error?.message?.includes('already applied') || error?.response?.data?.message?.includes('déjà candidaté') || error?.response?.data?.message?.includes('already applied')) {
+        setModalConfig({
+          title: 'Candidature impossible',
+          message: 'Vous avez déjà candidaté à cette offre. Impossible de candidater 2 fois.',
+          type: 'warning'
+        });
+        setShowModal(true);
         await studentStatus.refresh();
         setShowCandidatureForm(false);
       } else if (error?.response?.status === 403) {
-        console.log('Vous ne pouvez plus candidater car vous êtes déjà en stage.');
+        setModalConfig({
+          title: 'Candidature impossible',
+          message: 'Vous ne pouvez plus candidater car vous êtes déjà en stage.',
+          type: 'warning'
+        });
+        setShowModal(true);
         await studentStatus.refresh();
         setShowCandidatureForm(false);
       } else {
-        console.error('Erreur lors de la soumission de votre candidature.');
+        setModalConfig({
+          title: 'Erreur',
+          message: error?.response?.data?.message || 'Erreur lors de la soumission de votre candidature.',
+          type: 'danger'
+        });
+        setShowModal(true);
       }
     } finally {
       setSubmitting(false);
@@ -155,7 +197,17 @@ const StageDetail: React.FC = () => {
           <div className="w-full bg-[var(--color-light)] shadow-xl p-8 border border-[#e1d3c1] relative rounded-lg">
             <div style={{ position: 'relative', width: '100%' }}>
               <div className="flex flex-row justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-[var(--color-dark)]">Detail de stage</h1>
+                <div className="flex items-center">
+                  <button 
+                    onClick={() => navigate(-1)}
+                    className="mr-4 p-2 text-[var(--color-dark)] hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <h1 className="text-2xl font-bold text-[var(--color-dark)]">Detail de stage</h1>
+                </div>
                 {!isApplicationButtonDisabled(Number(id || 0), studentStatus) ? (
                   <button 
                     onClick={handleCandidaterClick}
@@ -390,6 +442,18 @@ const StageDetail: React.FC = () => {
             </div>
           )}
         </AnimatePresence>
+        
+        {modalConfig && (
+          <ConfirmationModal
+            isOpen={showModal}
+            title={modalConfig.title}
+            message={modalConfig.message}
+            type={modalConfig.type}
+            confirmText="OK"
+            onConfirm={() => setShowModal(false)}
+            onCancel={() => setShowModal(false)}
+          />
+        )}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useApplicationsStore } from '../store/applicationsStore';
 import type { OfferResponseDto } from '../types/offer';
-import EnterpriseLogo from './EnterpriseLogo';
+import EnterpriseLogo from './entreprise/EnterpriseLogo';
 
 interface OfferCardProps {
   offer: OfferResponseDto;

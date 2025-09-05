@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getEnterpriseLogo, uploadProfilePhoto, getCurrentEnterpriseInfo, updateContact, updateLocation, updateLogo } from '../api/enterpriseApi';
-import EnterpriseHeader from './EnterpriseHeader';
+import EnterpriseHeader from './entreprise/EnterpriseHeader';
 
 interface EnterpriseProfile {
   id: number;

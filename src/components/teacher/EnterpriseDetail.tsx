@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import TeacherHeader from '../TeacherHeader';
+import TeacherHeader from './TeacherHeader';
 import { approveEnterprise, getEnterpriseInPartnership } from '../../api/teacherApi';
 import { api } from '../../api/api';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
-import EnterpriseLogo from '../EnterpriseLogo';
+import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 
 const EnterpriseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -125,14 +125,15 @@ const EnterpriseDetail: React.FC = () => {
                           </span>
                         )}
                         <p className="text-gray-600 mb-1">{enterprise.country} • {enterprise.city}</p>
-                        <p className="text-gray-700">{enterprise.sectorOfActivity}</p>
+                        <p className="text-gray-700">Seteur: {enterprise.sectorOfActivity}</p>
                       </div>
                     </div>
                     
                     <div className="mt-4">
                       <h2 className="text-lg font-semibold mb-2">Informations de contact</h2>
                       <p className="text-gray-700">Email: {enterprise.email}</p>
-                      <p className="text-gray-700">Matriculation: {enterprise.matriculation}</p>
+                      <p className="text-gray-700">Telephone: {enterprise.contact}</p>
+                      <p className="text-gray-700">Immatriculation: {enterprise.matriculation}</p>
                     </div>
                   </div>
                 </div>

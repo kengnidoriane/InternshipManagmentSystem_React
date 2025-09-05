@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import EtudiantHeader from './EtudiantHeader';
-import EnterpriseLogo from './EnterpriseLogo';
-import { useStudentStatus } from '../hooks/useStudentStatus';
+import EtudiantHeader from '../EtudiantHeader';
+import EnterpriseLogo from '../entreprise/EnterpriseLogo';
+import { useStudentStatus } from '../../hooks/useStudentStatus';
 
-import { getApprovedOffers } from '../api/studentApi';
-import type { OfferResponseDto } from '../types/offer';
+import { getApprovedOffers } from '../../api/studentApi';
+import type { OfferResponseDto } from '../../types/offer';
 
 // Mock data au format backend (fallback si API vide)
 const mockOffers: OfferResponseDto[] = [
