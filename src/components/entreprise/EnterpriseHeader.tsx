@@ -3,6 +3,8 @@ import logo from '../../assets/logo.png';
 import { motion } from 'framer-motion';
 import NotificationBell from '../NotificationBell';
 import { useAuthStore } from '../../store/authStore';
+import { useState } from 'react';
+import LogoutConfirmation from '../LogoutConfirmation';
 
 const navLinks = [
   { to: '/entreprise/offres', label: 'Listes des offres' },
@@ -17,12 +19,12 @@ const rightLinks = [
 export default function EntrepriseHeader() {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const linkClass =
     'relative text-lg font-light font-[var(--font-family-poiret)] tracking-wider px-1 pb-1 transition-colors duration-200';
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    setShowLogoutConfirmation(true);
   };
 
   return (
@@ -33,9 +35,7 @@ export default function EntrepriseHeader() {
           <NavLink
             key={link.to}
             to={link.to}
-            className={({ isActive }) =>
-              `${linkClass} ${isActive ? 'text-[var(--color-emeraude)]' : 'text-[var(--color-light)]'}`
-            }
+            className={({ isActive }) => `${linkClass} ${isActive ? 'text-[var(--color-emeraude)]' : 'text-[var(--color-light)]'}`}
           >
             {({ isActive }) => (
               <motion.span
@@ -74,7 +74,7 @@ export default function EntrepriseHeader() {
         ))}
       </nav>
 
-      {/* Logo */}
+      {/* Logo central */}
       <NavLink to="/">
         <img src={logo} alt="Logo" className="h-12 w-auto" />
       </NavLink>
@@ -132,6 +132,16 @@ export default function EntrepriseHeader() {
           Déconnexion
         </button>
       </nav>
+      {showLogoutConfirmation && (
+        <LogoutConfirmation
+          onConfirm={() => {
+            setShowLogoutConfirmation(false);
+            logout();
+            navigate('/login');
+          }}
+          onCancel={() => setShowLogoutConfirmation(false)}
+        />
+      )}
     </header>
   );
 }

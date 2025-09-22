@@ -1,20 +1,19 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { verifyEmail, resendToken } from '../api/registrationApi';
-import { useAuthStore } from '../store/authStore';
 import { useRegistrationStore } from '../store/registrationStore';
+import Spinner from './Spinner';
 
 const CODE_LENGTH = 5;
 
 interface RegisterStep4CodeProps {
   email?: string;
-  accountType?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: RegisterStep4CodeProps) => {
-  const { setStep, reset } = useRegistrationStore();
+const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProps) => {
+  const { setStep, reset, formData } = useRegistrationStore();
 
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [submitted, setSubmitted] = useState(false);
@@ -24,11 +23,37 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+  const cooldownIntervalRef = useRef<number | null>(null);
   const navigate = useNavigate();
 
+  const effectiveEmail = email ?? formData?.email ?? '';
 
+  // Initial cooldown: 5 minutes (300s) before first resend
+  useEffect(() => {
+    const INITIAL_COOLDOWN_SECONDS = 300;
+    setResendCooldown(INITIAL_COOLDOWN_SECONDS);
 
+    if (cooldownIntervalRef.current) {
+      clearInterval(cooldownIntervalRef.current);
+    }
+    cooldownIntervalRef.current = window.setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownIntervalRef.current) {
+            clearInterval(cooldownIntervalRef.current);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
+    return () => {
+      if (cooldownIntervalRef.current) {
+        clearInterval(cooldownIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleChange = (value: string, idx: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -67,12 +92,16 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
     setError('');
     setLoading(true);
     try {
-      await verifyEmail({ email: email ?? '', token: code.join('') });
+      await verifyEmail({ email: effectiveEmail, token: code.join('') });
       setSubmitted(true);
       setTimeout(() => {
         reset();
         setStep(1);
-        navigate('/register-success');
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/register-success');
+        }
       }, 1200);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Le code est incorrect');
@@ -82,25 +111,30 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
   };
 
   const handleResendCode = async () => {
-    if (!email || resendCooldown > 0) return;
-    
+    if (!effectiveEmail || resendCooldown > 0) return;
+
     setResendLoading(true);
     setError('');
     try {
-      await resendToken(email);
+      await resendToken(effectiveEmail);
       setResendSuccess(true);
       setResendCooldown(60);
-      
-      const interval = setInterval(() => {
-        setResendCooldown(prev => {
+
+      if (cooldownIntervalRef.current) {
+        clearInterval(cooldownIntervalRef.current);
+      }
+      cooldownIntervalRef.current = window.setInterval(() => {
+        setResendCooldown((prev) => {
           if (prev <= 1) {
-            clearInterval(interval);
+            if (cooldownIntervalRef.current) {
+              clearInterval(cooldownIntervalRef.current);
+            }
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-      
+
       setTimeout(() => setResendSuccess(false), 3000);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erreur lors du renvoi du code');
@@ -110,11 +144,11 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
   };
 
   return (
-    <form className="w-ful text-white flex flex-col items-start" onSubmit={handleSubmit}>
+    <form className="w-full text-white flex flex-col items-start" onSubmit={handleSubmit}>
       <p className="text-white">Un code a été envoyé à l'adresse suivante&nbsp;</p>
-      <p className="font-semibold">{email}</p><br/>
+      <p className="font-semibold">{effectiveEmail || 'Adresse email introuvable'}</p><br/>
       <p>Veuillez l'insérer ci-dessous.</p><br/>
-      <div className="w-full flex justify-between mb-2">
+      <div className="w-full flex justify-between mb-2" role="group" aria-label="Code de vérification">
         {code.map((value, idx) => (
           <input
             key={idx}
@@ -128,6 +162,9 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
             onKeyDown={e => handleKeyDown(e, idx)}
             autoFocus={idx === 0}
             onPaste={handlePaste}
+            aria-label={`Chiffre ${idx + 1}`}
+            title={`Chiffre ${idx + 1}`}
+            placeholder="•"
           />
         ))}
       </div><br/><br/>
@@ -137,34 +174,39 @@ const RegisterStep4Code = ({ email, accountType, onSuccess, onCancel }: Register
       {resendSuccess && (
         <p className="text-xs text-green-600 mb-2 w-full">Code renvoyé avec succès !</p>
       )}
-      
+
       <div className="w-full text-center mb-4">
         <p className="text-sm text-gray-300 mb-2">Vous n'avez pas reçu le code ?</p>
         <button
           type="button"
           onClick={handleResendCode}
-          disabled={resendLoading || resendCooldown > 0}
-          className="text-[var(--color-jaune)] hover:text-[var(--color-vert)] underline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={resendLoading || resendCooldown > 0 || !effectiveEmail}
+          className="text-[var(--color-jaune)] hover:text-[var(--color-vert)] underline text-sm disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
-          {resendLoading ? 'Envoi...' : 
-           resendCooldown > 0 ? `Renvoyer dans ${resendCooldown}s` : 
+          {resendLoading && <Spinner size={14} />}
+          {resendLoading ? 'Envoi...' :
+           resendCooldown > 0 ? `Renvoyer dans ${resendCooldown}s` :
            'Renvoyer le code'}
         </button>
+        {!effectiveEmail && (
+          <p className="text-xs text-red-400 mt-1">Adresse email manquante pour renvoyer le code.</p>
+        )}
       </div>
       <div className="flex w-full justify-between gap-2 mt-4">
         <button
           type="button"
           className=" border border-[#58693e] text-[var(--color-light)] w-full py-1 px-6 rounded transition-colors"
-          onClick={() => { reset(); setStep(1); }}
+          onClick={() => { reset(); setStep(1); if (onCancel) { onCancel(); } }}
           disabled={loading}
         >
           Annuler
         </button>
         <button
           type="submit"
-          className="bg-[var(--color-vert)] text-[var(--color-light)] w-full py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer "
+          className="bg-[var(--color-vert)] text-[var(--color-light)] w-full py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer inline-flex items-center justify-center gap-2"
           disabled={!isComplete || loading}
         >
+          {loading && <Spinner size={16} />}
           {loading ? 'Vérification...' : 'Valider'}
         </button>
       </div>

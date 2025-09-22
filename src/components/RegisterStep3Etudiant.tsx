@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import RegisterProgress from './RegisterProgress';
+import Spinner from './Spinner';
 
 import { useRegistrationStore } from '../store/registrationStore';
 
@@ -17,10 +18,11 @@ export interface EtudiantFormData {
 type Props = {
   onPrev: () => void;
   onFinish: (data: EtudiantFormData) => void;
+  loading?: boolean;
 };
 
-const RegisterStep3Etudiant = ({ onPrev, onFinish }: Props) => {
-  const { formData, setFormData, setStep } = useRegistrationStore();
+const RegisterStep3Etudiant = ({ onPrev, onFinish, loading = false }: Props) => {
+  const { formData, setStep } = useRegistrationStore();
   const { register, handleSubmit, formState: { errors, isValid } } = useForm<EtudiantFormData>({
     mode: 'onChange',
     defaultValues: {
@@ -75,7 +77,6 @@ const RegisterStep3Etudiant = ({ onPrev, onFinish }: Props) => {
         {errors.email && <span className="text-xs text-red-600 mb-2">{errors.email.message}</span>}
 
 
-
         <label htmlFor="sector" className="text-[#e2e2e2] mb-1">Secteur</label>
         <input
           id="sector"
@@ -114,10 +115,6 @@ const RegisterStep3Etudiant = ({ onPrev, onFinish }: Props) => {
         >
           <option value="français">Français</option>
           <option value="anglais">Anglais</option>
-          {/* <option value="espagnol">Espagnol</option>
-          <option value="allemand">Allemand</option>
-          <option value="arabe">Arabe</option>
-          <option value="chinois">Chinois</option> */}
         </select>
         {errors.languages && <span className="text-xs text-red-600 mb-2">{errors.languages.message}</span>}
 
@@ -142,15 +139,17 @@ const RegisterStep3Etudiant = ({ onPrev, onFinish }: Props) => {
             type="button"
             className="border border-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors w-full"
             onClick={onPrev}
+            disabled={loading}
           >
             Précédent
           </button>
           <button
             type="submit"
-            className="bg-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors disabled:opacity-50 w-full"
-            disabled={!isValid}
+            className="bg-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors disabled:opacity-50 w-full flex items-center justify-center gap-2"
+            disabled={!isValid || loading}
           >
-            Terminer
+            {loading && <Spinner size={16} />}
+            {loading ? 'Envoi...' : 'Terminer'}
           </button>
         </div>
       </form>

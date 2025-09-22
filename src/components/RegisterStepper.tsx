@@ -105,6 +105,7 @@ const RegisterStepper = () => {
         <RegisterStep3Entreprise
           onPrev={() => setStep(2)}
           onFinish={handleRegister}
+          loading={registerLoading}
         />
       );
     } else if (formData.type === 'etudiant') {
@@ -112,6 +113,7 @@ const RegisterStepper = () => {
         <RegisterStep3Etudiant
           onPrev={() => setStep(2)}
           onFinish={handleRegister}
+          loading={registerLoading}
         />
       );
     } else if (formData.type === 'enseignant') {
@@ -126,7 +128,6 @@ const RegisterStepper = () => {
     stepContent = (
       <RegisterStep4Code
         email={formData.email}
-        accountType={formData.type}
         onSuccess={() => {
           setShowSuccess(true);
           navigate('/felicitations');

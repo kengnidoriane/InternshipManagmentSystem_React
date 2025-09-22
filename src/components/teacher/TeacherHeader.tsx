@@ -1,7 +1,9 @@
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import NotificationBell from '../NotificationBell';
 import { useAuthStore } from '../../store/authStore';
+import { useState } from 'react';
+import LogoutConfirmation from '../LogoutConfirmation';
 
 const navLinks = [
   { to: '/enseignant/entreprises', label: 'Entreprises' },
@@ -12,16 +14,16 @@ const navLinks = [
 ];
 
 export default function TeacherHeader() {
-  const location = useLocation();
+
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
   const linkClass =
     'relative text-lg font-light font-[var(--font-family-poiret)] tracking-wider px-1 pb-1 transition-colors duration-200';
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    setShowLogoutConfirmation(true);
   };
 
   return (
@@ -71,6 +73,16 @@ export default function TeacherHeader() {
           Déconnexion
         </button>
       </nav>
+      {showLogoutConfirmation && (
+        <LogoutConfirmation
+          onConfirm={() => {
+            setShowLogoutConfirmation(false);
+            logout();
+            navigate('/login');
+          }}
+          onCancel={() => setShowLogoutConfirmation(false)}
+        />
+      )}
     </header>
   );
 }

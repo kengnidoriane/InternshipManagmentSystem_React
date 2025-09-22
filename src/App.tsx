@@ -14,7 +14,6 @@ import CandidaturesEntreprise from './components/entreprise/CandidaturesEntrepri
 import DetailCandidature from './components/entreprise/DetailCandidature';
 import ProfilEntreprise from './components/ProfilEntreprise';
 import TeacherOfferDetail from './components/teacher/OfferDetail';
-import DebugTeacher from './components/teacher/DebugTeacher';
 import LoginPage from './components/LoginPage';
 import ResetPassword from './components/ResetPassword';
 import RegisterStepper from './components/RegisterStepper';
@@ -35,7 +34,6 @@ import ListStagesEtudiant from './components/etudiant/ListStagesEtudiant';
 import MonStageEtudiant from './components/etudiant/MonStageEtudiant';
 import MonProfil from './components/etudiant/MonProfil';
 import Felicitations from './components/Felicitations';
-// Les dashboards spécifiques n'existent pas, routes simplifiées
 
 
 const AnimatedRoutes = () => {
@@ -61,7 +59,6 @@ const AnimatedRoutes = () => {
         <Route path="/felicitations" element={<PageWrapper><Felicitations /></PageWrapper>} />
 
         <Route element={<ProtectedRoute allowedRoles={['TEACHER', 'ADMIN']} />}>
-          <Route path="/enseignant/debug" element={<DebugTeacher />} />
           <Route path="/enseignant/offres" element={<OffersList />} />
           <Route path="/enseignant/offres/:id" element={<TeacherOfferDetail />} />
           <Route path="/enseignant/entreprises" element={<EntreprisesList />} />
@@ -71,7 +68,6 @@ const AnimatedRoutes = () => {
           <Route path="/enseignant/parametres" element={<UserSettings />} />
         </Route>
 
-        {/* Routes entreprises (protégées) */}
         <Route element={<ProtectedRoute allowedRoles={['ENTERPRISE', 'ADMIN']} />}>
           <Route path="/entreprise/candidatures" element={<CandidaturesEntreprise />} />
           <Route path="/entreprise/candidatures/:applicationId" element={<DetailCandidature />} />
@@ -83,7 +79,6 @@ const AnimatedRoutes = () => {
           <Route path="/entreprise/parametres" element={<UserSettings />} />
         </Route>
 
-        {/* Routes admin (protégées) */}
         <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/enterprises" element={<AdminEnterprisesList />} />

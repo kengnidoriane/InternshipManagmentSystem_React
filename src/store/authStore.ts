@@ -71,7 +71,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   }
 }));
 
-// Synchronisation multi-onglets (logout/login partout)
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (event) => {
     if (event.key === 'token' || event.key === 'role') {
@@ -83,7 +82,6 @@ if (typeof window !== 'undefined') {
 }
 
 
-// Listen to storage events for multi-tab sync
 type WindowWithAddEventListener = Window & typeof globalThis;
 if (typeof window !== 'undefined') {
   (window as WindowWithAddEventListener).addEventListener('storage', () => {

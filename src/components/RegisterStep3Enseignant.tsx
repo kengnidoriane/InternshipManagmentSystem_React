@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import RegisterProgress from './RegisterProgress';
+import Spinner from './Spinner';
 
 import { useRegistrationStore } from '../store/registrationStore';
 
@@ -12,16 +13,17 @@ export interface EnseignantFormData {
 type Props = {
   onPrev: () => void;
   onFinish: (data: EnseignantFormData) => void;
+  loading?: boolean;
 };
 
-const RegisterStep3Enseignant = ({ onPrev, onFinish }: Props) => {
-  const { formData, setFormData, setStep } = useRegistrationStore();
+const RegisterStep3Enseignant = ({ onPrev, onFinish, loading = false }: Props) => {
+  const { formData, setStep } = useRegistrationStore();
   const { register, handleSubmit, formState: { errors, isValid } } = useForm<EnseignantFormData>({
     mode: 'onChange',
     defaultValues: {
-      lastName: formData.lastName || '',
-      firstName: formData.firstName || '',
-      department: formData.department || '',
+      lastName: (formData as unknown as { lastName?: string }).lastName || '',
+      firstName: (formData as unknown as { firstName?: string }).firstName || '',
+      department: (formData as unknown as { department?: string }).department || '',
     },
   });
 
@@ -78,15 +80,17 @@ const RegisterStep3Enseignant = ({ onPrev, onFinish }: Props) => {
             type="button"
             className=" border w-full border-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors cursor-pointer"
             onClick={onPrev}
+            disabled={loading}
           >
             Précédent
           </button>
           <button
             type="submit"
-            className="bg-[var(--color-vert)] w-full text-[var(--color-light)] py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer"
-            disabled={!isValid}
+            className="bg-[var(--color-vert)] w-full text-[var(--color-light)] py-1 px-6 rounded transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+            disabled={!isValid || loading}
           >
-            Terminer
+            {loading && <Spinner size={16} />}
+            {loading ? 'Envoi...' : 'Terminer'}
           </button>
         </div>
       </form>

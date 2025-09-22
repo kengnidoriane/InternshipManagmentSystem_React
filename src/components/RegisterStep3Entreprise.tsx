@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import RegisterProgress from './RegisterProgress';
+import Spinner from './Spinner';
 
 import { useRegistrationStore } from '../store/registrationStore';
 
@@ -19,9 +20,10 @@ export interface EntrepriseFormData {
 type Props = {
   onPrev: () => void;
   onFinish: (data: EntrepriseFormData) => void;
+  loading?: boolean;
 };
 
-const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
+const RegisterStep3Entreprise = ({ onPrev, onFinish, loading = false }: Props) => {
   const { formData, setStep } = useRegistrationStore();
   const { register, handleSubmit, setValue, formState: { errors, isValid } } = useForm<EntrepriseFormData>({
     mode: 'onChange',
@@ -43,7 +45,6 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
     onFinish(data);
   };
 
-  // Gestion du champ fichier (logo)
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setValue('logo', e.target.files[0], { shouldValidate: true });
@@ -51,7 +52,6 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
   };
 
 
-  // Plus besoin de handlePrev, on utilise onPrev directement du parent
 
   return (
     <div>
@@ -76,7 +76,6 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
           value={formData.email || ''}
           readOnly
         />
-        {/* Pas de message d'erreur pour email readonly */}
 
         <label htmlFor="matriculation" className="text-[#e2e2e2] text-2xl font-light mb-1">Matricule</label>
         <input
@@ -151,15 +150,17 @@ const RegisterStep3Entreprise = ({ onPrev, onFinish }: Props) => {
             type="button"
             className="border border-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors w-full cursor-pointer"
             onClick={onPrev}
+            disabled={loading}
           >
             Précédent
           </button>
           <button
             type="submit"
-            className="bg-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors w-full cursor-pointer"
-            disabled={!isValid}
+            className="bg-[var(--color-vert)] text-[var(--color-light)] py-1 px-6 rounded transition-colors w-full cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            disabled={!isValid || loading}
           >
-            Finish
+            {loading && <Spinner size={16} />}
+            {loading ? 'Envoi...' : 'Terminer'}
           </button>
         </div>
       </form>

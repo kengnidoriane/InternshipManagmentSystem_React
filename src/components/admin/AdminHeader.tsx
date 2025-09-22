@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import NotificationBell from '../NotificationBell';
 import { useAuthStore } from '../../store/authStore';
+import { useState } from 'react';
+import LogoutConfirmation from '../LogoutConfirmation';
 
 const navLinks = [
   { to: '/admin/dashboard', label: 'Dashboard' },
@@ -14,12 +16,12 @@ const navLinks = [
 export default function AdminHeader() {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const linkClass =
     'relative text-lg font-light font-[var(--font-family-poiret)] tracking-wider px-1 pb-1 transition-colors duration-200';
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    setShowLogoutConfirmation(true);
   };
 
   return (
@@ -64,11 +66,21 @@ export default function AdminHeader() {
         <NotificationBell />
         <button
           onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors duration-200 text-sm font-medium"
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors duration-200 text-sm font-medium ml-4"
         >
           Déconnexion
         </button>
       </nav>
+      {showLogoutConfirmation && (
+        <LogoutConfirmation
+          onConfirm={() => {
+            setShowLogoutConfirmation(false);
+            logout();
+            navigate('/login');
+          }}
+          onCancel={() => setShowLogoutConfirmation(false)}
+        />
+      )}
     </header>
   );
 }
