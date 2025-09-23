@@ -29,25 +29,23 @@ export default function MonStageEtudiant() {
         const statusResponse = await getStudentStatus();
         setInternshipStatus(statusResponse.data);
         
-        console.log('Student status from backend:', statusResponse.data);
+        // console.log('Student status from backend:', statusResponse.data);
         
-        // Si l'étudiant est en stage, récupérer les infos depuis localStorage
         const savedInternship = localStorage.getItem('currentInternship');
         if ((statusResponse.data.onInternship || statusResponse.data.inInternship) && savedInternship) {
           try {
             const parsedInternship = JSON.parse(savedInternship);
             setCurrentInternship(parsedInternship);
-            console.log('Loaded internship from localStorage:', parsedInternship);
+            // console.log('Loaded internship from localStorage:', parsedInternship);
           } catch (e) {
-            console.error('Error parsing saved internship:', e);
+            // console.error('Error parsing saved internship:', e);
             localStorage.removeItem('currentInternship');
           }
         } else if (statusResponse.data.onInternship || statusResponse.data.inInternship) {
-          // Si en stage mais pas d'infos sauvegardées, essayer de récupérer depuis les candidatures approuvées
-          console.log('Student is in internship but no saved data, checking approved applications...');
+          // console.log('Student is in internship but no saved data, checking approved applications...');
         }
       } catch (error) {
-        console.error('Erreur lors de la récupération du statut:', error);
+        // console.error('Erreur lors de la récupération du statut:', error);
       } finally {
         setStatusLoading(false);
       }
@@ -71,12 +69,10 @@ export default function MonStageEtudiant() {
     setConfirmModal({ isOpen: false, type: 'accept', applicationId: null, title: '', message: '' });
     try {
       const response = await updateStudentStatus(applicationId, true);
-      // Stocker les informations du stage accepté
       setCurrentInternship(response.data);
       localStorage.setItem('currentInternship', JSON.stringify(response.data));
       
-      // Mettre à jour le statut local
-      setInternshipStatus({ 
+      setInternshipStatus({
         inInternship: true, 
         onInternship: true,
         message: 'Vous êtes en stage', 
@@ -85,11 +81,9 @@ export default function MonStageEtudiant() {
       
       setShowCongratulations(true);
       
-      // Rafraîchir le statut après un délai
       setTimeout(async () => {
         setShowCongratulations(false);
         await studentStatus.refresh();
-        // Recharger le statut depuis le serveur
         const newStatus = await getStudentStatus();
         setInternshipStatus(newStatus.data);
       }, 3000);
@@ -115,7 +109,6 @@ export default function MonStageEtudiant() {
     
     try {
       await updateStudentStatus(applicationId, false);
-      // Rafraîchir le statut après refus
       await studentStatus.refresh();
     } catch (error) {
       console.error('Erreur lors du refus:', error);
@@ -138,7 +131,6 @@ export default function MonStageEtudiant() {
     
     try {
       await deleteApplication(applicationId);
-      // Rafraîchir le statut après suppression
       await studentStatus.refresh();
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
@@ -156,7 +148,6 @@ export default function MonStageEtudiant() {
     );
   }
 
-  // Si l'étudiant est en stage, afficher les informations du stage
   if ((internshipStatus?.inInternship || internshipStatus?.onInternship || studentStatus.isOnInternship) && currentInternship) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
@@ -201,7 +192,6 @@ export default function MonStageEtudiant() {
                   </div>
                 </div>
                 
-                {/* Informations de l'entreprise */}
                 <div className="lg:w-80">
                   <div className="bg-white rounded-lg p-6 shadow-md">
                     <div className="text-center mb-4">
@@ -243,7 +233,6 @@ export default function MonStageEtudiant() {
 
 
 
-  // Si pas de candidatures du tout
   if (pendingApplications.length === 0 && approvedApplications.length === 0) {
     return (
     <div className="min-h-screen bg-login-gradient flex flex-col">
@@ -270,7 +259,6 @@ export default function MonStageEtudiant() {
     );
   }
 
-  // Afficher les candidatures en attente et approuvées
   return (
     <div className="min-h-screen bg-login-gradient flex flex-col">
       <EtudiantHeader />
@@ -283,7 +271,6 @@ export default function MonStageEtudiant() {
         >
           <h2 className="text-center text-[var(--color-jaune)] text-3xl font-light mb-8 tracking-wide">Mes Candidatures</h2>
           
-          {/* Candidatures en attente */}
           {pendingApplications.filter(app => app.state === 'PENDING').length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">En attente de réponse de l'entreprise</h3>
@@ -310,7 +297,6 @@ export default function MonStageEtudiant() {
             </div>
           )}
           
-          {/* Candidatures approuvées */}
           {approvedApplications.filter(app => app.state === 'APPROVED').length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-[var(--color-light)] mb-4">Offres approuvées par l'entreprise</h3>

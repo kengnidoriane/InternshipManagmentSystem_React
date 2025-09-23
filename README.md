@@ -16,7 +16,7 @@ Interface utilisateur moderne pour la plateforme de gestion des stages, dévelop
 cd "gestion de stage"
 
 # 2. Installer les dépendances
-npm install
+pnpm install
 
 # 3. Lancer le serveur de développement
 npm run dev

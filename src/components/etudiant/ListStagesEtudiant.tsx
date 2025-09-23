@@ -8,40 +8,6 @@ import { useStudentStatus } from '../../hooks/useStudentStatus';
 import { getApprovedOffers } from '../../api/studentApi';
 import type { OfferResponseDto } from '../../types/offer';
 
-// Mock data au format backend (fallback si API vide)
-const mockOffers: OfferResponseDto[] = [
-  {
-    id: 1,
-    title: 'Implémentation du paiement en ligne',
-    description: 'Développement d’une solution de paiement en ligne pour EG store.',
-    domain: 'web dev',
-    startDate: '2025-06-10',
-    endDate: '2025-09-10',
-    status: 'Ouvert',
-    enterprise: {
-      id: 1,
-      name: 'EG store',
-      email: 'eg@store.com',
-      sectorOfActivity: 'Vente d’appareils',
-      matriculation: 'EG12345',
-      country: 'Nigeria',
-      city: 'Lagos',
-      hasLogo: { hasLogo: false },
-      inPartnership: true,
-    },
-    convention: undefined,
-    typeOfInternship: 'Perfectionnement',
-    job: 'Développeur',
-    requirements: 'Avoir un PC',
-    numberOfPlaces: '2',
-    durationOfInternship: 3,
-    paying: true,
-    remote: false,
-  },
-];
-
-
-
 export default function ListStagesEtudiant() {
   const [offers, setOffers] = useState<OfferResponseDto[]>([]);
   const [search, setSearch] = useState('');

@@ -71,7 +71,7 @@ const RegisterStep1 = () => {
         </label>
         <input
           id="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           autoComplete="new-password"
           placeholder="-"
           className="w-full mb-2 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"
@@ -99,7 +99,7 @@ const RegisterStep1 = () => {
         </label>
         <input
           id="confirmPassword"
-          type="password"
+          type={showPassword ? "text" : "password"}
           autoComplete="new-password"
           placeholder="-"
           className="w-full mb-2 border text-center border-gray-300 bg-[#e1d3c1] rounded focus:outline-none"

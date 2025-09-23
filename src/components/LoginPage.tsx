@@ -3,9 +3,9 @@ import { useForm } from 'react-hook-form';
 import { FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { create } from 'zustand';
 import logo from '../assets/logo.png';
-import { login } from '../api/authApi';
+import { login } from '../api';
 import { useAuthStore } from '../store/authStore';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link} from 'react-router-dom';
 
 interface LoginState {
   error: string;
@@ -26,7 +26,6 @@ interface LoginFormInputs {
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { register, handleSubmit } = useForm<LoginFormInputs>();
   const [showPassword, setShowPassword] = useState(false);
   const { error, setError, clearError } = useLoginStore();
@@ -36,17 +35,12 @@ const LoginPage = () => {
   const onSubmit = async (data: LoginFormInputs) => {
     try {
       const response = await login(data);
-      console.log('Réponse login:', response.data);
       const { token, role } = response.data;
-      console.log('Token:', token);
-      console.log('Role:', role);
-      
+
       if (token && role) {
         setAuth(token, role);
         clearError();
         
-        console.log('Redirection vers:', role);
-        // Redirection automatique selon le rôle
         if (role === 'STUDENT') {
           navigate('/etudiant/stages');
         } else if (role === 'TEACHER') {
@@ -56,16 +50,14 @@ const LoginPage = () => {
         } else if (role === 'ADMIN') {
           navigate('/admin/dashboard');
         } else {
-          console.log('Role non reconnu, redirection vers /');
           navigate('/');
         }
       } else {
-        console.log('Token ou role manquant');
         setError('Réponse de connexion invalide');
       }
     } catch (error) {
-      console.log('Erreur login:', error);
       setError('Identifiants incorrects');
+      console.log(error)
     }
   };
 
@@ -128,9 +120,6 @@ const LoginPage = () => {
               <Link to="/register" className="text-xs text-white hover:underline">Créer un compte?</Link>
             </div>
           </div>
-          
-          {/* Lien mot de passe oublié */}
-          
         </form>
     </div>
   );
