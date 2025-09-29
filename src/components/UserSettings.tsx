@@ -107,7 +107,6 @@ const UserSettings: React.FC = () => {
               </button>
             </div>
           </div>
-          <h2 className="text-2xl font-thin text-[var(--color-jaune)] text-center">Deconnexion</h2>
           <div className="mt-8 w-full max-w-3xl">
             <button 
               onClick={handleLogoutClick}

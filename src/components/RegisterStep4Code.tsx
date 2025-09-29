@@ -28,9 +28,9 @@ const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProp
 
   const effectiveEmail = email ?? formData?.email ?? '';
 
-  // Initial cooldown: 5 minutes (300s) before first resend
+  // Initial cooldown: 1 minute (60s) before first resend
   useEffect(() => {
-    const INITIAL_COOLDOWN_SECONDS = 300;
+    const INITIAL_COOLDOWN_SECONDS = 60;
     setResendCooldown(INITIAL_COOLDOWN_SECONDS);
 
     if (cooldownIntervalRef.current) {

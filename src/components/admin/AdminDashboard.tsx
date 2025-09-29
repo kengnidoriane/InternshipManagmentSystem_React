@@ -143,12 +143,12 @@ const AdminDashboard: React.FC = () => {
                       { 
                         name: 'En stage', 
                         value: studentsInInternship, 
-                        color: '#ef4444' 
+                        color: '#337db3'
                       },
                       { 
                         name: 'Disponibles', 
                         value: studentsAvailable, 
-                        color: '#22c55e' 
+                        color: '#330315FF'
                       }
                     ]}
                     cx="50%"
@@ -157,19 +157,19 @@ const AdminDashboard: React.FC = () => {
                     outerRadius={80}
                     dataKey="value"
                   >
-                    <Cell fill="#ef4444" />
-                    <Cell fill="#22c55e" />
+                    <Cell fill="#337db3" />
+                    <Cell fill="#330315FF" />
                   </Pie>
                   <Tooltip formatter={(value, name) => [`${value} étudiants`, name]} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex justify-center gap-4 mt-2 text-xs">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-[#337db3] rounded-full"></div>
                   <span>En stage ({studentsInInternship})</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-[#330315FF] rounded-full"></div>
                   <span>Disponibles ({studentsAvailable})</span>
                 </div>
               </div>
