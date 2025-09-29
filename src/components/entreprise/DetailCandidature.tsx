@@ -8,13 +8,12 @@ interface ApplicationDetail {
   id: number;
   student: {
     firstName: string;
-    lastName: string;
+    name: string;
     email: string;
     department: string;
     languages?: string[];
-    linkedin?: string;
-    github?: string;
-    website?: string;
+    linkedinLink?: string;
+    githubLink?: string;
   };
   offer: {
     id: number;
@@ -214,49 +213,40 @@ const DetailCandidature: React.FC = () => {
                 <div className="mb-4">
                   <span className="font-semibold text-[#2d2d2d]">Langues : </span>
                   <span className="text-[#2d2d2d]">
-                    {application.student.languages?.join(', ') || 'Anglais, Français'}
+                    {application.student.languages?.length ? application.student.languages.join(', ') : 'Non spécifié'}
                   </span>
                 </div>
 
-                {/* Réseaux */}
+                {/* Liens */}
                 <div className="space-y-1">
-                  <span className="font-semibold text-[#2d2d2d]">Réseaux : </span>
+                  <span className="font-semibold text-[#2d2d2d]">Liens : </span>
                   <div className="space-y-1">
-                    {application.student.linkedin && (
+                    {application.student.linkedinLink && (
                       <div>
                         <a 
-                          href={application.student.linkedin} 
+                          href={application.student.linkedinLink} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"
                         >
-                          linkedin
+                          LinkedIn
                         </a>
                       </div>
                     )}
-                    {application.student.github && (
+                    {application.student.githubLink && (
                       <div>
                         <a 
-                          href={application.student.github} 
+                          href={application.student.githubLink} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-purple-600 hover:underline"
                         >
-                          github
+                          GitHub
                         </a>
                       </div>
                     )}
-                    {application.student.website && (
-                      <div>
-                        <a 
-                          href={application.student.website} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
-                        >
-                          Site web
-                        </a>
-                      </div>
+                    {!application.student.linkedinLink && !application.student.githubLink && (
+                      <span className="text-gray-500 italic">Aucun lien disponible</span>
                     )}
                   </div>
                 </div>

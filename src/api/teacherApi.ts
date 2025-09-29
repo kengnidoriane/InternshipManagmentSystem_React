@@ -3,6 +3,8 @@ import type { TeacherRegistrationRequestDto } from '../types/teacher';
 import type { EnterpriseResponseDto } from '../types/enterprise';
 import type { OfferResponseDto } from '../types/offer';
 
+// ✅ NOUVEAUX ENDPOINTS BACKEND AJOUTÉS
+
 // Offres à valider pour le département de l'enseignant
 export const getOffersToReviewByDepartment = async () => {
   try {
@@ -111,7 +113,7 @@ export const getInternshipStats = async () => {
   }
 };
 
-// Récupérer les offres approuvées par l'enseignant
+// ✅ NOUVEAU: Récupérer les offres approuvées par l'enseignant
 export const getOffersApprovedByTeacher = async () => {
   try {
     return await api.get('/api/teacher/offersApprovedByTeacher', {
@@ -133,7 +135,7 @@ export const getTeacherNotifications = async () => {
   }
 };
 
-// Supprimer le compte utilisateur
+// ✅ NOUVEAU: Supprimer le compte utilisateur
 export const deleteUserAccount = async () => {
   try {
     return await api.delete('/updateProfile/deleteUserAccount', {
@@ -144,7 +146,7 @@ export const deleteUserAccount = async () => {
   }
 };
 
-// Vérifier le mot de passe
+// ✅ NOUVEAU: Vérifier le mot de passe
 export const verifyPassword = async (password: string) => {
   try {
     if (!password || password.trim() === '') {
@@ -166,6 +168,48 @@ export const getEnterpriseInPartnership = async () => {
     });
   } catch (error) {
     throw error;
+  }
+};
+
+// ✅ NOUVEAU: Récupérer l'email de l'utilisateur connecté
+export const getUserEmail = async () => {
+  try {
+    return await api.get('/updateProfile/getUserEmail', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de l\'email');
+  }
+};
+
+// ✅ NOUVEAU: Mettre à jour l'email
+export const updateEmail = async (email: string) => {
+  try {
+    return await api.patch('/updateProfile/updateEmail', { email }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de l\'email');
+  }
+};
+
+// ✅ NOUVEAU: Mettre à jour le mot de passe
+export const updatePassword = async (password: string) => {
+  try {
+    return await api.patch('/updateProfile/updatePassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du mot de passe');
   }
 };
 

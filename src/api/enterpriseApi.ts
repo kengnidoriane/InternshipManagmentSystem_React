@@ -2,6 +2,8 @@ import { api, getAuthHeaders } from './api';
 import type { OfferRequestDto } from '../types/offer';
 import type { EnterpriseResponseDto } from '../types/enterprise';
 
+// ✅ NOUVEAUX ENDPOINTS BACKEND AJOUTÉS
+
 // Créer une nouvelle offre (sans convention)
 export const createOffer = async (offer: OfferRequestDto) => {
   if (!offer.title || !offer.description) {
@@ -215,7 +217,7 @@ export const getEnterpriseLogoById = async (enterpriseId: number) => {
   }
 };
 
-// Récupérer les informations de l'entreprise connectée
+// ✅ NOUVEAU: Récupérer les informations de l'entreprise connectée
 export const getCurrentEnterpriseInfo = async () => {
   try {
     return await api.get('/api/enterprise/info', { headers: getAuthHeaders() });
@@ -227,14 +229,14 @@ export const getCurrentEnterpriseInfo = async () => {
   }
 };
 
-// Mettre à jour le contact
+// ✅ NOUVEAU: Mettre à jour le contact
 export const updateContact = async (contact: string) => {
   return await api.patch('/api/enterprise/updateContact', { contact }, {
     headers: getAuthHeaders()
   });
 };
 
-// Mettre à jour la localisation
+// ✅ NOUVEAU: Mettre à jour la localisation
 export const updateLocation = async (location: string) => {
   return await api.patch('/api/enterprise/updateLocation', { location }, {
     headers: getAuthHeaders()
@@ -248,6 +250,76 @@ export const updateLogo = async (enterpriseId: number, file: File) => {
   return await api.put(`/api/enterprise/updateLogo/${enterpriseId}`, formData, {
     headers: getAuthHeaders()
   });
+};
+
+// ✅ NOUVEAU: Vérifier le mot de passe
+export const verifyPassword = async (password: string) => {
+  try {
+    return await api.put('/updateProfile/verifyPassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Mot de passe incorrect');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la vérification du mot de passe');
+  }
+};
+
+// ✅ NOUVEAU: Supprimer le compte utilisateur
+export const deleteUserAccount = async () => {
+  try {
+    return await api.delete('/updateProfile/deleteUserAccount', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la suppression du compte');
+  }
+};
+
+// ✅ NOUVEAU: Récupérer l'email de l'utilisateur connecté
+export const getUserEmail = async () => {
+  try {
+    return await api.get('/updateProfile/getUserEmail', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de l\'email');
+  }
+};
+
+// ✅ NOUVEAU: Mettre à jour l'email
+export const updateEmail = async (email: string) => {
+  try {
+    return await api.patch('/updateProfile/updateEmail', { email }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de l\'email');
+  }
+};
+
+// ✅ NOUVEAU: Mettre à jour le mot de passe
+export const updatePassword = async (password: string) => {
+  try {
+    return await api.patch('/updateProfile/updatePassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du mot de passe');
+  }
 };
 
 

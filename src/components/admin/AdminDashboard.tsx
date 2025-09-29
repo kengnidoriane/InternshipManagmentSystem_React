@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import AdminHeader from './AdminHeader';
 import { getPendingEnterprises, approveEnterprise, downloadInternshipsExcel, getAllTeachers, getAllStudents, getEnterpriseInPartnership } from '../../api/adminApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const AdminDashboard: React.FC = () => {
   const [pendingEnterprises, setPendingEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [partnerEnterprises, setPartnerEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [teachersCount, setTeachersCount] = useState(0);
   const [studentsCount, setStudentsCount] = useState(0);
+  const [studentsInInternship, setStudentsInInternship] = useState(0);
+  const [studentsAvailable, setStudentsAvailable] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +30,14 @@ const AdminDashboard: React.FC = () => {
       setPendingEnterprises(enterprisesRes.data || []);
       setPartnerEnterprises(partnerRes.data || []);
       setTeachersCount(teachersRes.data?.length || 0);
-      setStudentsCount(studentsRes.data?.length || 0);
+      const students = studentsRes.data || [];
+      setStudentsCount(students.length);
+      
+      // Calculer les étudiants en stage vs disponibles
+      const inInternship = students.filter((student: any) => student.onInternship).length;
+      const available = students.length - inInternship;
+      setStudentsInInternship(inInternship);
+      setStudentsAvailable(available);
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
       setError('Erreur lors du chargement des données');
@@ -126,20 +135,44 @@ const AdminDashboard: React.FC = () => {
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-[#2d2d2d] mb-4">Utilisateurs par type</h3>
+              <h3 className="text-lg font-semibold text-[#2d2d2d] mb-4">Statut des étudiants</h3>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={[
-                  { name: 'Étudiants', count: studentsCount, color: '#8b5cf6' },
-                  { name: 'Enseignants', count: teachersCount, color: '#3b82f6' },
-                  { name: 'Entreprises', count: partnerEnterprises.length, color: '#10b981' }
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" />
-                </BarChart>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { 
+                        name: 'En stage', 
+                        value: studentsInInternship, 
+                        color: '#ef4444' 
+                      },
+                      { 
+                        name: 'Disponibles', 
+                        value: studentsAvailable, 
+                        color: '#22c55e' 
+                      }
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    <Cell fill="#ef4444" />
+                    <Cell fill="#22c55e" />
+                  </Pie>
+                  <Tooltip formatter={(value, name) => [`${value} étudiants`, name]} />
+                </PieChart>
               </ResponsiveContainer>
+              <div className="flex justify-center gap-4 mt-2 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <span>En stage ({studentsInInternship})</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span>Disponibles ({studentsAvailable})</span>
+                </div>
+              </div>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -151,12 +184,12 @@ const AdminDashboard: React.FC = () => {
                 >
                   Télécharger rapport Excel
                 </button>
-                <button
-                  onClick={fetchData}
-                  className="w-full bg-[#6a9a6a] text-white px-4 py-2 rounded hover:bg-[#4c7a4c] transition-colors"
-                >
-                  Actualiser les données
-                </button>
+                {/*<button*/}
+                {/*  onClick={fetchData}*/}
+                {/*  className="w-full bg-[#6a9a6a] text-white px-4 py-2 rounded hover:bg-[#4c7a4c] transition-colors"*/}
+                {/*>*/}
+                {/*  Actualiser les données*/}
+                {/*</button>*/}
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">

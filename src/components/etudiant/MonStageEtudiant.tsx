@@ -2,7 +2,8 @@ import { useState, useEffect} from 'react';
 import { motion } from 'framer-motion';
 import EtudiantHeader from '../EtudiantHeader';
 import ConfirmationModal from '../admin/ConfirmationModal';
-import { updateStudentStatus, deleteApplication, getStudentStatus } from '../../api';
+import { updateStudentStatus, deleteApplication } from '../../api';
+import { getStudentStatus, getCurrentStudentInfo, getCurrentInternship } from '../../api/studentApi';
 import { useStudentStatus } from '../../hooks/useStudentStatus';
 import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 import { Link } from 'react-router-dom';
@@ -29,29 +30,81 @@ export default function MonStageEtudiant() {
         const statusResponse = await getStudentStatus();
         setInternshipStatus(statusResponse.data);
         
-        // console.log('Student status from backend:', statusResponse.data);
-        
-        const savedInternship = localStorage.getItem('currentInternship');
-        if ((statusResponse.data.onInternship || statusResponse.data.inInternship) && savedInternship) {
-          try {
-            const parsedInternship = JSON.parse(savedInternship);
-            setCurrentInternship(parsedInternship);
-            // console.log('Loaded internship from localStorage:', parsedInternship);
-          } catch (e) {
-            // console.error('Error parsing saved internship:', e);
-            localStorage.removeItem('currentInternship');
+        // ✅ Si en stage, essayer localStorage d'abord, puis backend
+        if (statusResponse.data.onInternship || statusResponse.data.inInternship) {
+          const savedInternship = localStorage.getItem('currentInternship');
+          if (savedInternship) {
+            try {
+              const parsedInternship = JSON.parse(savedInternship);
+              setCurrentInternship(parsedInternship);
+              console.log('Loaded internship from localStorage:', parsedInternship);
+            } catch (e) {
+              console.error('Error parsing saved internship:', e);
+              localStorage.removeItem('currentInternship');
+            }
           }
-        } else if (statusResponse.data.onInternship || statusResponse.data.inInternship) {
-          // console.log('Student is in internship but no saved data, checking approved applications...');
+          
+          // Si pas de localStorage, récupérer depuis le backend
+          if (!savedInternship) {
+            try {
+              const internshipResponse = await getCurrentInternship();
+              setCurrentInternship(internshipResponse.data);
+              localStorage.setItem('currentInternship', JSON.stringify(internshipResponse.data));
+              console.log('Loaded internship from backend:', internshipResponse.data);
+            } catch (error) {
+              console.error('Error loading internship from backend:', error);
+            }
+          }
         }
       } catch (error) {
-        // console.error('Erreur lors de la récupération du statut:', error);
+        console.error('Erreur lors de la récupération du statut:', error);
+        setInternshipStatus({ onInternship: false, canApply: true });
       } finally {
         setStatusLoading(false);
       }
     };
     fetchStatus();
   }, []);
+  
+  // Effet séparé pour récupérer les détails du stage
+  useEffect(() => {
+    const enrichInternshipData = async () => {
+      if (!loading && !statusLoading && !currentInternship) {
+        // Si l'étudiant est marqué comme en stage, chercher dans les candidatures approuvées
+        if (internshipStatus?.onInternship || internshipStatus?.inInternship) {
+          const acceptedApp = approvedApplications.find(app => app.state === 'APPROVED');
+          if (acceptedApp) {
+            try {
+              // Enrichir avec les données complètes du profil étudiant
+              const profileResponse = await getCurrentStudentInfo();
+              const enrichedApp = {
+                ...acceptedApp,
+                student: {
+                  ...acceptedApp.student,
+                  id: profileResponse.data.id,
+                  department: profileResponse.data.department,
+                  sector: profileResponse.data.sector,
+                  onInternship: profileResponse.data.onInternship
+                }
+              };
+              
+              console.log('Enriched approved application:', enrichedApp);
+              setCurrentInternship(enrichedApp);
+              // ✅ Sauvegarder les données enrichies en localStorage
+              localStorage.setItem('currentInternship', JSON.stringify(enrichedApp));
+            } catch (error) {
+              console.error('Error enriching internship data:', error);
+              // Fallback: utiliser les données de base
+              setCurrentInternship(acceptedApp);
+              localStorage.setItem('currentInternship', JSON.stringify(acceptedApp));
+            }
+          }
+        }
+      }
+    };
+    
+    enrichInternshipData();
+  }, [internshipStatus, approvedApplications, currentInternship, loading, statusLoading]);
 
   const handleAcceptOffer = (applicationId: number) => {
     setConfirmModal({
@@ -69,9 +122,32 @@ export default function MonStageEtudiant() {
     setConfirmModal({ isOpen: false, type: 'accept', applicationId: null, title: '', message: '' });
     try {
       const response = await updateStudentStatus(applicationId, true);
-      setCurrentInternship(response.data);
-      localStorage.setItem('currentInternship', JSON.stringify(response.data));
       
+      // Enrichir immédiatement avec les données complètes du profil
+      try {
+        const profileResponse = await getCurrentStudentInfo();
+        const enrichedInternship = {
+          ...response.data,
+          student: {
+            ...response.data.student,
+            id: profileResponse.data.id,
+            department: profileResponse.data.department,
+            sector: profileResponse.data.sector,
+            onInternship: true
+          }
+        };
+        
+        console.log('Enriched internship after acceptance:', enrichedInternship);
+        setCurrentInternship(enrichedInternship);
+        localStorage.setItem('currentInternship', JSON.stringify(enrichedInternship));
+      } catch (profileError) {
+        console.error('Error enriching profile data:', profileError);
+        // Fallback: utiliser les données de base
+        setCurrentInternship(response.data);
+        localStorage.setItem('currentInternship', JSON.stringify(response.data));
+      }
+      
+      // Mettre à jour le statut
       setInternshipStatus({
         inInternship: true, 
         onInternship: true,
@@ -80,13 +156,12 @@ export default function MonStageEtudiant() {
       });
       
       setShowCongratulations(true);
+      setAcceptingApplication(null);
       
-      setTimeout(async () => {
+      setTimeout(() => {
         setShowCongratulations(false);
-        await studentStatus.refresh();
-        const newStatus = await getStudentStatus();
-        setInternshipStatus(newStatus.data);
       }, 3000);
+      
     } catch (error) {
       console.error('Erreur lors de l\'acceptation:', error);
       setAcceptingApplication(null);
@@ -148,7 +223,17 @@ export default function MonStageEtudiant() {
     );
   }
 
-  if ((internshipStatus?.inInternship || internshipStatus?.onInternship || studentStatus.isOnInternship) && currentInternship) {
+  // Vérifier si l'étudiant est en stage
+  const isInInternship = internshipStatus?.onInternship || 
+                        internshipStatus?.inInternship || 
+                        studentStatus.isOnInternship || 
+                        currentInternship !== null;
+  
+  console.log('Debug - isInInternship:', isInInternship);
+  console.log('Debug - currentInternship:', currentInternship);
+  console.log('Debug - internshipStatus:', internshipStatus);
+  
+  if (isInInternship && currentInternship) {
     return (
       <div className="min-h-screen bg-login-gradient flex flex-col">
         <EtudiantHeader />
@@ -183,12 +268,81 @@ export default function MonStageEtudiant() {
                       <p className="text-[var(--color-dark)] text-sm">{currentInternship.offer.description}</p>
                     </div>
                     
-                    <div>
-                      <h4 className="font-semibold text-[var(--color-dark)] mb-2">Domaine</h4>
-                      <span className="px-3 py-1 bg-[var(--color-vert)] text-white rounded-full text-sm">
-                        {currentInternship.offer.domain}
-                      </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-semibold text-[var(--color-dark)] mb-2">Domaine</h4>
+                        <span className="px-3 py-1 bg-[var(--color-vert)] text-white rounded-full text-sm">
+                          {currentInternship.offer.domain}
+                        </span>
+                      </div>
+                      
+                      {currentInternship.offer.typeOfInternship && (
+                        <div>
+                          <h4 className="font-semibold text-[var(--color-dark)] mb-2">Type de stage</h4>
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                            {currentInternship.offer.typeOfInternship}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div>
+                        <h4 className="font-semibold text-[var(--color-dark)] mb-2">Modalité</h4>
+                        <span className={`px-3 py-1 rounded-full text-sm ${
+                          currentInternship.offer.remote 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-orange-100 text-orange-800'
+                        }`}>
+                          {currentInternship.offer.remote ? 'Télétravail' : 'Présentiel'}
+                        </span>
+                      </div>
+                      
+                      {currentInternship.offer.paying !== undefined && (
+                        <div>
+                          <h4 className="font-semibold text-[var(--color-dark)] mb-2">Rémunération</h4>
+                          <span className={`px-3 py-1 rounded-full text-sm ${
+                            currentInternship.offer.paying 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {currentInternship.offer.paying ? 'Payant' : 'Non payant'}
+                          </span>
+                        </div>
+                      )}
                     </div>
+                    
+                    {(currentInternship.offer.startDate || currentInternship.offer.endDate) && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-[var(--color-dark)] mb-2">Période du stage</h4>
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <div className="flex items-center justify-between text-sm">
+                            {currentInternship.offer.startDate && (
+                              <div>
+                                <span className="font-medium text-blue-800">Début:</span>
+                                <span className="ml-2 text-blue-600">
+                                  {new Date(currentInternship.offer.startDate).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                            {currentInternship.offer.endDate && (
+                              <div>
+                                <span className="font-medium text-blue-800">Fin:</span>
+                                <span className="ml-2 text-blue-600">
+                                  {new Date(currentInternship.offer.endDate).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                  })}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -214,12 +368,54 @@ export default function MonStageEtudiant() {
                         <span className="font-medium text-[var(--color-dark)]">Candidature :</span>
                         <span className="text-green-600 font-medium">Acceptée</span>
                       </div>
+                      {currentInternship.offer.startDate && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-[var(--color-dark)]">Début :</span>
+                          <span className="text-[var(--color-dark)]">{new Date(currentInternship.offer.startDate).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      )}
+                      {currentInternship.offer.endDate && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-[var(--color-dark)]">Fin :</span>
+                          <span className="text-[var(--color-dark)]">{new Date(currentInternship.offer.endDate).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      )}
+                      {currentInternship.offer.durationOfInternship && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-[var(--color-dark)]">Durée :</span>
+                          <span className="text-[var(--color-dark)]">{currentInternship.offer.durationOfInternship} semaines</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="font-medium text-[var(--color-dark)]">Entreprise :</span>
+                        <span className="text-[var(--color-dark)]">{currentInternship.enterprise.name}</span>
+                      </div>
+                      {currentInternship.enterprise.city && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-[var(--color-dark)]">Ville :</span>
+                          <span className="text-[var(--color-dark)]">{currentInternship.enterprise.city}</span>
+                        </div>
+                      )}
+                      {currentInternship.enterprise.sectorOfActivity && (
+                        <div className="flex justify-between">
+                          <span className="font-medium text-[var(--color-dark)]">Secteur :</span>
+                          <span className="text-[var(--color-dark)]">{currentInternship.enterprise.sectorOfActivity}</span>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="mt-6 pt-4 border-t border-gray-200">
-                      <p className="text-xs text-gray-600 text-center">
-                        Félicitations ! Votre stage a été confirmé avec succès.
-                      </p>
+                      <div className="text-center">
+                        <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 mb-2">
+                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Stage confirmé
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          Félicitations ! Votre stage a été confirmé avec succès.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -233,6 +429,21 @@ export default function MonStageEtudiant() {
 
 
 
+  // Affichage de chargement si en stage mais pas encore de détails
+  if (isInInternship && !currentInternship && !loading) {
+    return (
+      <div className="min-h-screen bg-login-gradient flex flex-col">
+        <EtudiantHeader />
+        <div className="flex justify-center items-center flex-1">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-jaune)] mx-auto mb-4"></div>
+            <div className="text-lg text-[var(--color-jaune)]">Chargement des détails du stage...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (pendingApplications.length === 0 && approvedApplications.length === 0) {
     return (
     <div className="min-h-screen bg-login-gradient flex flex-col">

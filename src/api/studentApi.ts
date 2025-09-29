@@ -1,6 +1,8 @@
 import { api, getAuthHeaders } from './api';
 import type { StudentResponseDto } from '../types/student';
 
+// ✅ NOUVEAUX ENDPOINTS BACKEND AJOUTÉS
+
 // Récupérer le profil de l'utilisateur connecté
 export const getCurrentStudentInfo = async () => {
   try {
@@ -125,6 +127,10 @@ export const getApplicationsApprovedOfStudent = async () => {
     throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des candidatures approuvées');
   }
 };
+
+// Alias pour compatibilité avec l'ancien nom
+export const getApprovedApplications = getApplicationsApprovedOfStudent;
+export const getPendingApplications = getPendingApplicationsOfStudent;
 
 // Mettre à jour le statut de l'étudiant pour une candidature
 export const updateStudentStatus = async (applicationId: number, applicationAccepted: boolean) => {
@@ -304,6 +310,94 @@ export const deleteApplication = async (applicationId: number) => {
       throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
     throw new Error(error.response?.data?.message || 'Erreur lors de la suppression de la candidature');
+  }
+};
+
+// ✅ NOUVEAU: Vérifier le mot de passe
+export const verifyPassword = async (password: string) => {
+  try {
+    return await api.put('/updateProfile/verifyPassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Mot de passe incorrect');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la vérification du mot de passe');
+  }
+};
+
+// ✅ NOUVEAU: Supprimer le compte utilisateur
+export const deleteUserAccount = async (userId?: number) => {
+  try {
+    const endpoint = userId ? `/updateProfile/deleteAccount/${userId}` : '/updateProfile/deleteUserAccount';
+    return await api.delete(endpoint, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la suppression du compte');
+  }
+};
+
+// ✅ NOUVEAU: Récupérer l'email de l'utilisateur connecté
+export const getUserEmail = async () => {
+  try {
+    return await api.get('/updateProfile/getUserEmail', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de l\'email');
+  }
+};
+
+// ✅ NOUVEAU: Récupérer l'utilisateur connecté
+export const getCurrentUser = async () => {
+  try {
+    return await api.get('/updateProfile/getCurrentUser', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de l\'utilisateur');
+  }
+};
+
+// ✅ NOUVEAU: Mettre à jour le mot de passe
+export const updatePassword = async (password: string) => {
+  try {
+    return await api.patch('/updateProfile/updatePassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du mot de passe');
+  }
+};
+
+// ✅ NOUVEAU: Récupérer le stage actuel de l'étudiant
+export const getCurrentInternship = async () => {
+  try {
+    return await api.get('/api/student/currentInternship', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error('Aucun stage en cours trouvé');
+    }
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération du stage');
   }
 };
 

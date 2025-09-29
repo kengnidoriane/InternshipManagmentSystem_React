@@ -1,6 +1,8 @@
 import { api, getAuthHeaders } from './api';
 import type { EnterpriseResponseDto } from '../types/enterprise';
 
+// ✅ NOUVEAUX ENDPOINTS BACKEND AJOUTÉS
+
 // Récupérer les entreprises en attente de validation
 export const getPendingEnterprises = async () => {
   return api.get<EnterpriseResponseDto[]>('/api/admin/approvalPendingEnterprise', {
@@ -67,14 +69,14 @@ export const getStudentsPagination = async (page: number, size: number) => {
   });
 };
 
-// Supprimer le compte utilisateur (admin)
+// ✅ NOUVEAU: Supprimer le compte utilisateur (admin)
 export const deleteUserAccount = async () => {
   return api.delete('/updateProfile/deleteUserAccount', {
     headers: getAuthHeaders()
   });
 };
 
-// Vérifier le mot de passe
+// ✅ NOUVEAU: Vérifier le mot de passe
 export const verifyPassword = async (password: string) => {
   if (!password || password.trim() === '') {
     throw new Error('Mot de passe requis');
@@ -84,16 +86,58 @@ export const verifyPassword = async (password: string) => {
   });
 };
 
-// Supprimer une entreprise (admin)
+// ✅ NOUVEAU: Supprimer une entreprise (admin)
 export const deleteEnterprise = async (enterpriseId: number) => {
   return api.delete(`/updateProfile/deleteAccount/${enterpriseId}`, {
     headers: getAuthHeaders()
   });
 };
 
-// Supprimer un étudiant (admin)
+// ✅ NOUVEAU: Supprimer un étudiant (admin)
 export const deleteStudent = async (studentId: number) => {
   return api.delete(`/updateProfile/deleteAccount/${studentId}`, {
     headers: getAuthHeaders()
   });
+};
+
+// ✅ NOUVEAU: Récupérer l'email de l'utilisateur connecté
+export const getUserEmail = async () => {
+  try {
+    return await api.get('/updateProfile/getUserEmail', {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de l\'email');
+  }
+};
+
+// ✅ NOUVEAU: Mettre à jour l'email
+export const updateEmail = async (email: string) => {
+  try {
+    return await api.patch('/updateProfile/updateEmail', { email }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour de l\'email');
+  }
+};
+
+// ✅ NOUVEAU: Mettre à jour le mot de passe
+export const updatePassword = async (password: string) => {
+  try {
+    return await api.patch('/updateProfile/updatePassword', { password }, {
+      headers: getAuthHeaders()
+    });
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    throw new Error(error.response?.data?.message || 'Erreur lors de la mise à jour du mot de passe');
+  }
 };

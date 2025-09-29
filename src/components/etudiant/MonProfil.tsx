@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { updateLanguages, updateGithubLink, updateLinkedinLink, getCurrentStudentInfo, updateEmail, updateStudentProfile } from '../../api/studentApi';
+import { updateLanguages, updateGithubLink, updateLinkedinLink, getCurrentStudentInfo, updateEmail, updateStudentProfile, getStudentStatus } from '../../api/studentApi';
+import { useNewEndpoints } from '../../hooks/useNewEndpoints';
 import EtudiantHeader from '../EtudiantHeader';
 
 interface StudentProfile {
@@ -21,6 +22,7 @@ export default function MonProfil() {
   const [editForm, setEditForm] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [newLanguage, setNewLanguage] = useState('');
+  const [studentStatus, setStudentStatus] = useState<any>(null);
   const [loadingStates, setLoadingStates] = useState({
     github: false,
     linkedin: false,
@@ -31,6 +33,9 @@ export default function MonProfil() {
     linkedin: false,
     language: false
   });
+  
+  // Hook pour tester les nouveaux endpoints
+  const { checkStudentStatus } = useNewEndpoints();
 
   useEffect(() => {
     const fetchStudentProfile = async () => {
@@ -51,6 +56,15 @@ export default function MonProfil() {
         
         setProfile(profile);
         setEditForm(profile);
+        
+        // ✅ Test du nouveau endpoint status (sans casser l'existant)
+        try {
+          const status = await checkStudentStatus();
+          setStudentStatus(status);
+        } catch (error) {
+          console.log('Nouveau endpoint status non disponible, continuons sans');
+        }
+        
       } catch (error) {
         console.error('Erreur lors du chargement du profil:', error);
       } finally {
@@ -189,6 +203,19 @@ export default function MonProfil() {
                 <div><span className="font-medium text-[var(--color-dark)]">Email :</span> <span className="text-[var(--color-dark)]">{profile.email}</span></div>
                 <div><span className="font-medium text-[var(--color-dark)]">Département :</span> <span className="text-[var(--color-dark)]">{profile.department}</span></div>
                 <div><span className="font-medium text-[var(--color-dark)]">Secteur :</span> <span className="text-[var(--color-dark)]">{profile.sector}</span></div>
+                {/* ✅ Nouveau: Affichage du statut si disponible */}
+                {studentStatus && (
+                  <div className="mt-3 p-2 rounded-lg bg-opacity-20 border-l-4 border-[var(--color-vert)]">
+                    <span className="font-medium text-[var(--color-dark)]">Statut :</span> 
+                    <span className={`ml-2 px-2 py-1 rounded text-sm ${
+                      studentStatus.onInternship 
+                        ? 'bg-red-100 text-red-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {studentStatus.message}
+                    </span>
+                  </div>
+                )}
               </div>
             </motion.div>
 
