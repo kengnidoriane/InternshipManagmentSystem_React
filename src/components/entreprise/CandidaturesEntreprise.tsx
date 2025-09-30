@@ -42,12 +42,10 @@ const CandidaturesEntreprise: React.FC = () => {
         const enterpriseOffers = offersResponse.data || [];
         setOffers(enterpriseOffers);
         
-        // Récupérer toutes les candidatures de l'entreprise
         const applicationsResponse = await getEnterpriseApplications();
         secureLog.info('Candidatures récupérées avec succès');
         const allApplications = applicationsResponse.data || [];
         
-        // Les candidatures sont déjà filtrées par entreprise par l'API
         const filteredApplications = allApplications;
         
         setApplications(filteredApplications);
@@ -162,9 +160,9 @@ const CandidaturesEntreprise: React.FC = () => {
                   <p className="text-sm text-[#2d2d2d] mb-4">
                     Liste des candidats ({offerApplications.length} profils pour {offer.numberOfPlaces || 1} places)
                   </p>
-                  <button className="bg-[#6a9a6a] text-white px-4 py-2 rounded text-sm mb-6">
+                  {/* <button className="bg-[#6a9a6a] text-white px-4 py-2 rounded text-sm mb-6">
                     Télécharger Toutes candidatures
-                  </button>
+                  </button> */}
 
                   {/* Grille des candidatures */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
