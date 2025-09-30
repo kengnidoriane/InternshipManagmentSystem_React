@@ -209,8 +209,8 @@ export default function MonProfil() {
                     <span className="font-medium text-[var(--color-dark)]">Statut :</span> 
                     <span className={`ml-2 px-2 py-1 rounded text-sm ${
                       studentStatus.onInternship 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-green-100 text-green-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800' 
                     }`}>
                       {studentStatus.message}
                     </span>

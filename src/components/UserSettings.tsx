@@ -110,7 +110,7 @@ const UserSettings: React.FC = () => {
           <div className="mt-8 w-full max-w-3xl">
             <button 
               onClick={handleLogoutClick}
-              className="bg-[var(--color-vert)] text-white px-4 py-2 rounded cursor-pointer w-full"
+              className="bg-[var(--color-rouge)] text-white px-4 py-2 rounded cursor-pointer w-full"
             >
               Déconnexion
             </button>
