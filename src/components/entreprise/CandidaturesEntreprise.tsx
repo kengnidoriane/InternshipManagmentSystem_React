@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getEnterpriseApplications, getEnterpriseOffers, downloadCandidateCV } from '../../api/enterpriseApi';
 import EnterpriseHeader from './EnterpriseHeader';
+import { secureLog } from '../../utils/security';
 interface Application {
   id: number;
   student: {
@@ -43,20 +44,16 @@ const CandidaturesEntreprise: React.FC = () => {
         
         // Récupérer toutes les candidatures de l'entreprise
         const applicationsResponse = await getEnterpriseApplications();
-        console.log('Candidatures - réponse complète:', applicationsResponse);
-        console.log('Candidatures - données:', applicationsResponse.data);
+        secureLog.info('Candidatures récupérées avec succès');
         const allApplications = applicationsResponse.data || [];
-        console.log('Candidatures - après traitement:', allApplications);
         
         // Les candidatures sont déjà filtrées par entreprise par l'API
         const filteredApplications = allApplications;
         
         setApplications(filteredApplications);
-        console.log('Candidatures filtrées pour cette entreprise:', filteredApplications);
-        console.log('Nombre de candidatures:', filteredApplications.length);
-        console.log('Nombre d\'offres:', enterpriseOffers.length);
+        secureLog.info('Candidatures filtrées pour cette entreprise');
       } catch (err: any) {
-        console.error('Erreur lors du chargement:', err);
+        secureLog.error('Erreur lors du chargement', err);
         setError(err?.response?.data?.message || 'Erreur lors du chargement des candidatures');
       } finally {
         setLoading(false);
@@ -83,7 +80,7 @@ const CandidaturesEntreprise: React.FC = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Erreur lors du téléchargement du CV:', err);
+      secureLog.error('Erreur lors du téléchargement du CV', err);
     }
   };
 
@@ -142,10 +139,7 @@ const CandidaturesEntreprise: React.FC = () => {
     );
   }
 
-  console.log('Rendu - offers.length:', offers.length);
-  console.log('Rendu - applications.length:', applications.length);
-  console.log('Rendu - loading:', loading);
-  console.log('Rendu - error:', error);
+  secureLog.info('Rendu des candidatures en cours');
 
   // État 3: Affichage des candidatures
   return (
@@ -158,7 +152,7 @@ const CandidaturesEntreprise: React.FC = () => {
           {/* Grouper par offre */}
           {offers.map(offer => {
             const offerApplications = applications.filter(app => app.offer.title === offer.title);
-            console.log(`Offre "${offer.title}" - candidatures trouvées:`, offerApplications.length);
+            secureLog.info('Candidatures trouvées pour offre');
             if (offerApplications.length === 0) return null;
 
             return (

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { verifyEmail, resendToken } from '../api/registrationApi';
 import { useRegistrationStore } from '../store/registrationStore';
 import Spinner from './Spinner';
+import { sanitizeForHTML } from '../utils/security';
 
 const CODE_LENGTH = 5;
 
@@ -100,7 +101,7 @@ const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProp
         if (onSuccess) {
           onSuccess();
         } else {
-          navigate('/register-success');
+          navigate('/login');
         }
       }, 1200);
     } catch (err: unknown) {
@@ -136,8 +137,15 @@ const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProp
       }, 1000);
 
       setTimeout(() => setResendSuccess(false), 3000);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du renvoi du code');
+    } catch (err: any) {
+      // Gestion des erreurs spécifiques du backend
+      if (err.response?.status === 400) {
+        setError('Utilisateur déjà vérifié');
+      } else if (err.response?.status === 404) {
+        setError('Utilisateur non trouvé');
+      } else {
+        setError(err.response?.data || err.message || 'Erreur lors du renvoi du code');
+      }
     } finally {
       setResendLoading(false);
     }
@@ -146,7 +154,7 @@ const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProp
   return (
     <form className="w-full text-white flex flex-col items-start" onSubmit={handleSubmit}>
       <p className="text-white">Un code a été envoyé à l'adresse suivante&nbsp;</p>
-      <p className="font-semibold">{effectiveEmail || 'Adresse email introuvable'}</p><br/>
+      <p className="font-semibold" dangerouslySetInnerHTML={{ __html: sanitizeForHTML(effectiveEmail || 'Adresse email introuvable') }}></p><br/>
       <p>Veuillez l'insérer ci-dessous.</p><br/>
       <div className="w-full flex justify-between mb-2" role="group" aria-label="Code de vérification">
         {code.map((value, idx) => (
@@ -181,7 +189,7 @@ const RegisterStep4Code = ({ email, onSuccess, onCancel }: RegisterStep4CodeProp
           type="button"
           onClick={handleResendCode}
           disabled={resendLoading || resendCooldown > 0 || !effectiveEmail}
-          className="text-[var(--color-jaune)] hover:text-[var(--color-vert)] underline text-sm disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+          className="text-[var(--color-jaune)] hover:text-[var(--color-vert)] underline text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
         >
           {resendLoading && <Spinner size={14} />}
           {resendLoading ? 'Envoi...' :

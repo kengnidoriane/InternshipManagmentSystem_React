@@ -10,6 +10,13 @@ export const getPendingEnterprises = async () => {
   });
 };
 
+// Récupérer les entreprises rejetées
+export const getRejectedEnterprises = async () => {
+  return api.get<EnterpriseResponseDto[]>('/api/admin/EnterpriseRejected', {
+    headers: getAuthHeaders()
+  });
+};
+
 // Approuver ou rejeter une entreprise
 export const approveEnterprise = async (enterpriseId: number, approved: boolean) => {
   if (!enterpriseId || enterpriseId <= 0) {

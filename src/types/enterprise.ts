@@ -20,10 +20,14 @@ export interface EnterpriseResponseDto {
   email: string;
   sectorOfActivity: string;
   inPartnership: boolean;
+  enterpriseState: string;
   matriculation: string;
   hasLogo: {
     hasLogo: boolean;
   };
   country?: string;
   city?: string;
+  contact?: string;
+  location?: string;
+  offers?: any[];
 }

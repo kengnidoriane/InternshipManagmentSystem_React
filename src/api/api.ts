@@ -5,27 +5,45 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+// ⚠️ SÉCURITÉ: localStorage vulnérable aux XSS - considérer httpOnly cookies en production
 // Fonction pour obtenir les headers avec token
 export const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  try {
+    const token = localStorage.getItem('token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch (error) {
+    console.error('Erreur récupération token');
+    return {};
+  }
 };
 
-// Fonction pour mettre à jour le token
+// Fonction pour mettre à jour le token avec validation
 export const updateTokenCache = (token: string | null) => {
-  if (token) {
-    localStorage.setItem('token', token);
-  } else {
-    localStorage.removeItem('token');
+  try {
+    if (token) {
+      // Validation basique JWT
+      if (!token.includes('.')) {
+        throw new Error('Token JWT invalide');
+      }
+      localStorage.setItem('token', token);
+    } else {
+      localStorage.removeItem('token');
+    }
+  } catch (error) {
+    console.error('Erreur gestion token');
   }
 };
 
 // Interceptor de requête pour gestion automatique des erreurs
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Erreur ajout token à la requête');
     }
     return config;
   },

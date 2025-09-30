@@ -28,6 +28,8 @@ const EnterpriseDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalAction, setApprovalAction] = useState<boolean | null>(null);
   // Logo non utilisé pour l'instant
 
   // Pas de ressource à nettoyer pour le moment
@@ -97,16 +99,24 @@ const EnterpriseDetail: React.FC = () => {
     fetchEnterpriseDetails();
   }, [id, location.state]);
 
-  const handleApprove = async (approved: boolean) => {
-    if (!enterprise) return;
+  const handleApprovalClick = (approved: boolean) => {
+    setApprovalAction(approved);
+    setShowApprovalModal(true);
+  };
+
+  const confirmApproval = async () => {
+    if (!enterprise || approvalAction === null) return;
     
     try {
-      await approveEnterprise(enterprise.id, approved);
+      await approveEnterprise(enterprise.id, approvalAction);
       navigate('/admin/enterprises');
     } catch (err) {
-      setError('Erreur lors de l\'approbation de l\'entreprise');
+      const action = approvalAction ? 'approbation' : 'rejet';
+      setError(`Erreur lors du ${action} de l'entreprise`);
       console.error(err);
     }
+    setShowApprovalModal(false);
+    setApprovalAction(null);
   };
 
   const handleDeleteAccount = async () => {
@@ -160,9 +170,16 @@ const EnterpriseDetail: React.FC = () => {
                         <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-2 ${
                           enterprise.inPartnership 
                             ? 'bg-green-100 text-green-800' 
+                            : enterprise.enterpriseState === 'REJECTED'
+                            ? 'bg-red-100 text-red-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {enterprise.inPartnership ? 'Partenaire' : 'En attente'}
+                          {enterprise.inPartnership 
+                            ? 'Partenaire' 
+                            : enterprise.enterpriseState === 'REJECTED' 
+                            ? 'Rejeté' 
+                            : 'En attente'
+                          }
                         </span>
                         <p className="text-gray-700">{enterprise.sectorOfActivity}</p>
                       </div>
@@ -248,25 +265,33 @@ const EnterpriseDetail: React.FC = () => {
               )}
               
               {/* Section actions admin */}
-              {!enterprise.inPartnership && (
+              {!enterprise.inPartnership && enterprise.enterpriseState !== 'REJECTED' && (
                 <div className="bg-[var(--color-neutre9)] rounded-lg shadow-md p-6 mb-6">
                   <h2 className="text-xl font-semibold mb-4">Actions administrateur</h2>
                   <p className="mb-4">Cette entreprise a fait une demande de partenariat. Souhaitez-vous l'accepter ou la rejeter?</p>
                   
                   <div className="flex space-x-4">
                     <button 
-                      onClick={() => handleApprove(false)}
-                      className="bg-[var(--color-rouge)] text-white px-4 py-2 rounded-md cursor-pointer"
+                      onClick={() => handleApprovalClick(false)}
+                      className="bg-[var(--color-rouge)] text-white px-4 py-2 rounded-md cursor-pointer hover:bg-red-700 transition-colors"
                     >
                       Rejeter
                     </button>
                     <button 
-                      onClick={() => handleApprove(true)}
-                      className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-md cursor-pointer"
+                      onClick={() => handleApprovalClick(true)}
+                      className="bg-[var(--color-vert)] text-white px-4 py-2 rounded-md cursor-pointer hover:bg-green-700 transition-colors"
                     >
                       Accepter
                     </button>
                   </div>
+                </div>
+              )}
+              
+              {/* Message pour entreprise rejetée */}
+              {enterprise.enterpriseState === 'REJECTED' && (
+                <div className="bg-red-50 rounded-lg shadow-md p-6 mb-6 border border-red-200">
+                  <h2 className="text-xl font-semibold mb-2 text-red-800">Entreprise rejetée</h2>
+                  <p className="text-red-700">Cette entreprise a été rejetée et a reçu une notification de rejet.</p>
                 </div>
               )}
               
@@ -299,6 +324,24 @@ const EnterpriseDetail: React.FC = () => {
         onConfirm={handleDeleteAccount}
         onCancel={() => setShowDeleteModal(false)}
         type="danger"
+      />
+      
+      <ConfirmationModal
+        isOpen={showApprovalModal}
+        title={approvalAction ? "Approuver l'entreprise" : "Rejeter l'entreprise"}
+        message={
+          approvalAction 
+            ? `Êtes-vous sûr de vouloir approuver l'entreprise "${enterprise?.name}" comme partenaire ? Elle pourra publier des offres de stage.`
+            : `Êtes-vous sûr de vouloir rejeter l'entreprise "${enterprise?.name}" ? Elle sera marquée comme rejetée et recevra une notification de rejet.`
+        }
+        confirmText={approvalAction ? "Approuver" : "Rejeter"}
+        cancelText="Annuler"
+        onConfirm={confirmApproval}
+        onCancel={() => {
+          setShowApprovalModal(false);
+          setApprovalAction(null);
+        }}
+        type={approvalAction ? "info" : "warning"}
       />
     </div>
   );

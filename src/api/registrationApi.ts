@@ -69,7 +69,14 @@ export const resendToken = async (email: string) => {
       throw new Error('Format d\'email invalide');
     }
     return await api.post('/registration/resendToken', null, { params: { email } });
-  } catch (error) {
+  } catch (error: any) {
+    // Propager l'erreur avec les détails du backend
+    if (error.response?.status === 400 && error.response?.data === 'User is already verified') {
+      throw new Error('Utilisateur déjà vérifié');
+    }
+    if (error.response?.status === 404) {
+      throw new Error('Utilisateur non trouvé avec cet email');
+    }
     throw error;
   }
 };

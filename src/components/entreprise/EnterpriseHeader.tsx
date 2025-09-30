@@ -13,7 +13,7 @@ const navLinks = [
 
 const rightLinks = [
   { to: '/entreprise/profil', label: 'Profil entreprise' },
-  { to: '/entreprise/parametres', label: 'Paramètre' },
+  { to: '/entreprise/parametres', label: 'Paramètres' },
 ];
 
 export default function EntrepriseHeader() {

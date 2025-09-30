@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
-import { getPendingEnterprises, getEnterpriseInPartnership } from '../../api/adminApi';
+import { getPendingEnterprises, getRejectedEnterprises, getEnterpriseInPartnership } from '../../api/adminApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import EnterpriseLogo from '../entreprise/EnterpriseLogo';
+import { secureLog } from '../../utils/security';
 
 const EnterprisesList: React.FC = () => {
   const navigate = useNavigate();
   const [pendingEnterprises, setPendingEnterprises] = useState<EnterpriseResponseDto[]>([]);
+  const [rejectedEnterprises, setRejectedEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [partnerEnterprises, setPartnerEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,16 +35,20 @@ const EnterprisesList: React.FC = () => {
         const pendingEnts = pendingResponse.data || [];
         setPendingEnterprises(pendingEnts);
         
+        // Récupérer les entreprises rejetées
+        const rejectedResponse = await getRejectedEnterprises();
+        const rejectedEnts = rejectedResponse.data || [];
+        setRejectedEnterprises(rejectedEnts);
+        
         // Récupérer les entreprises partenaires (approuvées)
         const partnerResponse = await getEnterpriseInPartnership();
-        console.log('Entreprises partenaires - réponse complète:', partnerResponse);
-        console.log('Entreprises partenaires - données:', partnerResponse.data);
+        secureLog.info('Entreprises partenaires récupérées');
         const partnerEnts = partnerResponse.data || [];
-        console.log('Entreprises partenaires - après traitement:', partnerEnts);
         setPartnerEnterprises(partnerEnts);
         
         try {
           sessionStorage.setItem('pendingEnterprises', JSON.stringify(pendingEnts));
+          sessionStorage.setItem('rejectedEnterprises', JSON.stringify(rejectedEnts));
           sessionStorage.setItem('partnerEnterprises', JSON.stringify(partnerEnts));
         } catch (e) {
           console.warn('Impossible de mettre en cache les entreprises', e);
@@ -91,14 +97,14 @@ const EnterprisesList: React.FC = () => {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-xl font-medium mb-4">Demandes de partenariats en attente</h2>
+            <h2 className="text-xl font-medium mb-4">Demandes de partenariats</h2>
             
             {loading ? (
               <div className="flex justify-center py-8">Chargement...</div>
             ) : error ? (
               <div className="text-red-500 py-4">{error}</div>
             ) : pendingEnterprises.length === 0 ? (
-              <div className="py-4">Aucune demande de partenariat en attente.</div>
+              <div className="py-4">Aucune demande de partenariat.</div>
             ) : (
               <div className="relative">
                 <div className="flex items-center">
@@ -130,8 +136,12 @@ const EnterprisesList: React.FC = () => {
                           </div>
                           <div className="flex-1">
                             <h3 className="font-medium">{enterprise.name}</h3>
-                            <div className="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 mb-2 rounded text-xs my-1">
-                              En attente
+                            <div className={`inline-block px-2 py-0.5 mb-2 rounded text-xs my-1 ${
+                              enterprise.enterpriseState === 'REJECTED' 
+                                ? 'bg-red-100 text-red-800' 
+                                : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {enterprise.enterpriseState === 'REJECTED' ? 'Rejeté' : 'En attente'}
                             </div>
                             <p className="text-xs text-gray-600 mb-1">Immatriculation: {enterprise.matriculation}</p>
                             <p className="text-xs text-gray-700 mb-1">Secteur: {enterprise.sectorOfActivity}</p>
@@ -150,6 +160,49 @@ const EnterprisesList: React.FC = () => {
                     </button>
                   )}
                 </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Entreprises rejetées</h2>
+            
+            {loading ? (
+              <div className="flex justify-center py-8">Chargement...</div>
+            ) : error ? (
+              <div className="text-red-500 py-4">{error}</div>
+            ) : rejectedEnterprises.length === 0 ? (
+              <div className="py-4">Aucune entreprise rejetée.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {rejectedEnterprises.map((enterprise) => (
+                  <div 
+                    key={enterprise.id} 
+                    className="bg-red-50 rounded-lg p-4 shadow-md border border-red-200 cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(`/admin/enterprises/${enterprise.id}`, { state: { enterprise } })}
+                  >
+                    <div className="flex items-start gap-3">
+                      <EnterpriseLogo 
+                        enterpriseName={enterprise.name}
+                        enterpriseId={enterprise.id}
+                        hasLogo={enterprise.hasLogo?.hasLogo}
+                        size="lg"
+                        className="flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">{enterprise.name}</h3>
+                        <div className="inline-block bg-red-100 text-red-800 px-2 py-0.5 mb-2 rounded text-xs my-1">
+                          Rejetée
+                        </div>
+                        <p className="text-xs text-gray-600 mb-1">{enterprise.email}</p>
+                        <p className="text-xs text-gray-700">Secteur: {enterprise.sectorOfActivity}</p>
+                        {enterprise.matriculation && (
+                          <p className="text-xs text-gray-500 mt-1">Immatriculation: {enterprise.matriculation}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -187,7 +240,7 @@ const EnterprisesList: React.FC = () => {
                         <p className="text-xs text-gray-600 mb-1">{enterprise.email}</p>
                         <p className="text-xs text-gray-700">Secteur: {enterprise.sectorOfActivity}</p>
                         {enterprise.matriculation && (
-                          <p className="text-xs text-gray-500 mt-1">immatriculaion: {enterprise.matriculation}</p>
+                          <p className="text-xs text-gray-500 mt-1">Immatriculation: {enterprise.matriculation}</p>
                         )}
                       </div>
                     </div>

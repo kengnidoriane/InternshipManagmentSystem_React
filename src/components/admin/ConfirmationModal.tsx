@@ -34,16 +34,16 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case 'warning':
         return {
           icon: '⚠️',
-          confirmBg: 'bg-yellow-600 hover:bg-yellow-700',
-          iconBg: 'bg-yellow-100',
-          iconColor: 'text-yellow-600'
+          confirmBg: 'bg-[var(--color-rouge)] hover:bg-red-700',
+          iconBg: 'bg-red-100',
+          iconColor: 'text-red-600'
         };
       case 'info':
         return {
-          icon: 'ℹ️',
-          confirmBg: 'bg-blue-600 hover:bg-blue-700',
-          iconBg: 'bg-blue-100',
-          iconColor: 'text-blue-600'
+          icon: '✓',
+          confirmBg: 'bg-[var(--color-vert)] hover:bg-green-700',
+          iconBg: 'bg-green-100',
+          iconColor: 'text-green-600'
         };
       default:
         return {

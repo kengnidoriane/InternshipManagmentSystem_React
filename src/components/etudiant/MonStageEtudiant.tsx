@@ -4,6 +4,7 @@ import EtudiantHeader from '../EtudiantHeader';
 import ConfirmationModal from '../admin/ConfirmationModal';
 import { updateStudentStatus, deleteApplication } from '../../api';
 import { getStudentStatus, getCurrentStudentInfo, getCurrentInternship } from '../../api/studentApi';
+import { secureLog } from '../../utils/security';
 import { useStudentStatus } from '../../hooks/useStudentStatus';
 import EnterpriseLogo from '../entreprise/EnterpriseLogo';
 import { Link } from 'react-router-dom';
@@ -37,7 +38,7 @@ export default function MonStageEtudiant() {
             try {
               const parsedInternship = JSON.parse(savedInternship);
               setCurrentInternship(parsedInternship);
-              console.log('Loaded internship from localStorage:', parsedInternship);
+              secureLog.info('Loaded internship from localStorage');
             } catch (e) {
               console.error('Error parsing saved internship:', e);
               localStorage.removeItem('currentInternship');
@@ -50,9 +51,9 @@ export default function MonStageEtudiant() {
               const internshipResponse = await getCurrentInternship();
               setCurrentInternship(internshipResponse.data);
               localStorage.setItem('currentInternship', JSON.stringify(internshipResponse.data));
-              console.log('Loaded internship from backend:', internshipResponse.data);
+              secureLog.info('Loaded internship from backend');
             } catch (error) {
-              console.error('Error loading internship from backend:', error);
+              secureLog.error('Error loading internship from backend', error);
             }
           }
         }
@@ -88,12 +89,12 @@ export default function MonStageEtudiant() {
                 }
               };
               
-              console.log('Enriched approved application:', enrichedApp);
+              secureLog.info('Enriched approved application loaded');
               setCurrentInternship(enrichedApp);
               // ✅ Sauvegarder les données enrichies en localStorage
               localStorage.setItem('currentInternship', JSON.stringify(enrichedApp));
             } catch (error) {
-              console.error('Error enriching internship data:', error);
+              secureLog.error('Error enriching internship data', error);
               // Fallback: utiliser les données de base
               setCurrentInternship(acceptedApp);
               localStorage.setItem('currentInternship', JSON.stringify(acceptedApp));
@@ -137,11 +138,11 @@ export default function MonStageEtudiant() {
           }
         };
         
-        console.log('Enriched internship after acceptance:', enrichedInternship);
+        secureLog.info('Internship accepted and enriched');
         setCurrentInternship(enrichedInternship);
         localStorage.setItem('currentInternship', JSON.stringify(enrichedInternship));
       } catch (profileError) {
-        console.error('Error enriching profile data:', profileError);
+        secureLog.error('Error enriching profile data', profileError);
         // Fallback: utiliser les données de base
         setCurrentInternship(response.data);
         localStorage.setItem('currentInternship', JSON.stringify(response.data));
@@ -229,9 +230,9 @@ export default function MonStageEtudiant() {
                         studentStatus.isOnInternship || 
                         currentInternship !== null;
   
-  console.log('Debug - isInInternship:', isInInternship);
-  console.log('Debug - currentInternship:', currentInternship);
-  console.log('Debug - internshipStatus:', internshipStatus);
+  secureLog.info('Debug - isInInternship status checked');
+  secureLog.info('Debug - currentInternship status checked');
+  secureLog.info('Debug - internshipStatus checked');
   
   if (isInInternship && currentInternship) {
     return (

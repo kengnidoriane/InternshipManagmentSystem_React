@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import AdminHeader from './AdminHeader';
-import { getPendingEnterprises, approveEnterprise, downloadInternshipsExcel, getAllTeachers, getAllStudents, getEnterpriseInPartnership } from '../../api/adminApi';
+import { getPendingEnterprises, getRejectedEnterprises, approveEnterprise, downloadInternshipsExcel, getAllTeachers, getAllStudents, getEnterpriseInPartnership } from '../../api/adminApi';
 import type { EnterpriseResponseDto } from '../../types/enterprise';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const AdminDashboard: React.FC = () => {
   const [pendingEnterprises, setPendingEnterprises] = useState<EnterpriseResponseDto[]>([]);
+  const [rejectedEnterprises, setRejectedEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [partnerEnterprises, setPartnerEnterprises] = useState<EnterpriseResponseDto[]>([]);
   const [teachersCount, setTeachersCount] = useState(0);
   const [studentsCount, setStudentsCount] = useState(0);
@@ -21,13 +22,15 @@ const AdminDashboard: React.FC = () => {
   const fetchData = async () => {
     try {
       setError(null);
-      const [enterprisesRes, partnerRes, teachersRes, studentsRes] = await Promise.all([
+      const [enterprisesRes, rejectedRes, partnerRes, teachersRes, studentsRes] = await Promise.all([
         getPendingEnterprises(),
+        getRejectedEnterprises(),
         getEnterpriseInPartnership(),
         getAllTeachers(),
         getAllStudents()
       ]);
       setPendingEnterprises(enterprisesRes.data || []);
+      setRejectedEnterprises(rejectedRes.data || []);
       setPartnerEnterprises(partnerRes.data || []);
       setTeachersCount(teachersRes.data?.length || 0);
       const students = studentsRes.data || [];
@@ -118,7 +121,8 @@ const AdminDashboard: React.FC = () => {
                   <Pie
                     data={[
                       { name: 'En attente', value: pendingEnterprises.length, color: '#f59e0b' },
-                      { name: 'Approuvées', value: partnerEnterprises.length, color: '#10b981' }
+                      { name: 'Approuvées', value: partnerEnterprises.length, color: '#10b981' },
+                      { name: 'Rejetées', value: rejectedEnterprises.length, color: '#ef4444' }
                     ]}
                     cx="50%"
                     cy="50%"
@@ -128,10 +132,25 @@ const AdminDashboard: React.FC = () => {
                   >
                     <Cell fill="#f59e0b" />
                     <Cell fill="#10b981" />
+                    <Cell fill="#ef4444" />
                   </Pie>
-                  <Tooltip />
+                  <Tooltip formatter={(value, name) => [`${value} entreprises`, name]} />
                 </PieChart>
               </ResponsiveContainer>
+              <div className="flex justify-center gap-4 mt-2 text-xs flex-wrap">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-[#f59e0b] rounded-full"></div>
+                  <span>En attente ({pendingEnterprises.length})</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-[#10b981] rounded-full"></div>
+                  <span>Approuvées ({partnerEnterprises.length})</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-[#ef4444] rounded-full"></div>
+                  <span>Rejetées ({rejectedEnterprises.length})</span>
+                </div>
+              </div>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -195,8 +214,8 @@ const AdminDashboard: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Taux d'approbation</span>
                   <span className="font-semibold text-green-600">
-                    {pendingEnterprises.length + partnerEnterprises.length > 0 
-                      ? Math.round((partnerEnterprises.length / (pendingEnterprises.length + partnerEnterprises.length)) * 100)
+                    {pendingEnterprises.length + partnerEnterprises.length + rejectedEnterprises.length > 0 
+                      ? Math.round((partnerEnterprises.length / (pendingEnterprises.length + partnerEnterprises.length + rejectedEnterprises.length)) * 100)
                       : 0}%
                   </span>
                 </div>
